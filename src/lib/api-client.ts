@@ -1,4 +1,5 @@
 import "server-only";
+import { redirect } from "next/navigation";
 import { getSession } from "./session";
 
 const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:5266/api";
@@ -54,6 +55,13 @@ async function request<T>(method: string, path: string, body?: unknown, options?
   });
 
   if (!response.ok) {
+    // الجلسة بقت غير صالحة (توكين منتهي، أو الداتابيز اتصفرت والحساب مبقاش موجود...) -
+    // بدل ما نسيب الصفحة تكسر بـ Error Boundary، نوديه على Route Handler بيمسح الكوكي ويرجّعه لصفحة الدخول
+    // (مش ممكن نمسح الكوكي هنا مباشرة لأن الدالة دي بتتنادى من جوه Server Components كمان،
+    // وتعديل الكوكيز مسموح بس من Server Actions/Route Handlers)
+    if ((response.status === 401 || response.status === 403) && !options?.tokenOverride) {
+      redirect("/session-expired");
+    }
     throw new ApiError(await extractErrorMessage(response), response.status);
   }
 

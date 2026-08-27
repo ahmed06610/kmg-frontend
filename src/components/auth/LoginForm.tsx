@@ -39,6 +39,12 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
+      {searchParams.get("sessionExpired") && (
+        <div className="rounded bg-warning-container text-on-warning-container text-body-sm px-stack-md py-2">
+          انتهت صلاحية الجلسة، سجّل الدخول مرة أخرى
+        </div>
+      )}
+
       <FieldGroup label="اسم المستخدم أو البريد الإلكتروني" error={errors.usernameOrEmail?.message}>
         <Input autoFocus autoComplete="username" {...register("usernameOrEmail")} />
       </FieldGroup>
