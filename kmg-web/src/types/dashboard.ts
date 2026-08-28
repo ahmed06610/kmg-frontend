@@ -4,6 +4,12 @@ export interface ProjectsByTypeDTO {
   totalValue: number;
 }
 
+export interface RecentActivityDTO {
+  description: string;
+  amount: number;
+  date: string;
+}
+
 export interface DashboardDTO {
   totalIncome: number;
   totalExpenses: number;
@@ -18,4 +24,8 @@ export interface DashboardDTO {
   cashBoxTotal: number;
   suppliersWithOutstandingBalanceCount: number;
   supplierPaymentsThisMonth: number;
+  openMissionsCount: number;
+  totalOutstandingAdvances: number;
+  clientsWithOutstandingBalanceCount: number;
+  recentActivity: RecentActivityDTO[];
 }

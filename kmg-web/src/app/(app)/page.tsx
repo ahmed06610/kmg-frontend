@@ -2,7 +2,7 @@ import { getDashboard } from "@/lib/api/dashboard";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { projectTypeLabels } from "@/types/enums";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 function StatCard({ label, value, icon, tone }: { label: string; value: string; icon: string; tone: string }) {
   return (
@@ -16,6 +16,20 @@ function StatCard({ label, value, icon, tone }: { label: string; value: string; 
           {value}
         </p>
       </div>
+    </Card>
+  );
+}
+
+function MiniStat({ label, value, icon, tone }: { label: string; value: string; icon: string; tone: string }) {
+  return (
+    <Card className="p-stack-md">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-semibold text-on-surface-variant">{label}</span>
+        <Icon name={icon} size={16} className={tone} />
+      </div>
+      <p dir="ltr" className="text-title-sm text-mono-data text-on-surface text-right">
+        {value}
+      </p>
     </Card>
   );
 }
@@ -53,8 +67,15 @@ export default async function DashboardPage() {
           label="رصيد الخزنة"
           value={formatCurrency(dashboard.cashBoxTotal)}
           icon="account_balance_wallet"
-          tone="bg-info-container text-on-info-container"
+          tone="bg-primary-container text-on-primary-container"
         />
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-gutter">
+        <MiniStat label="مأموريات مفتوحة" value={String(dashboard.openMissionsCount)} icon="engineering" tone="text-secondary" />
+        <MiniStat label="سلف قائمة" value={formatCurrency(dashboard.totalOutstandingAdvances)} icon="request_quote" tone="text-warning" />
+        <MiniStat label="عملاء لهم مستحقات" value={String(dashboard.clientsWithOutstandingBalanceCount)} icon="groups" tone="text-error" />
+        <MiniStat label="موردين لهم مستحقات" value={String(dashboard.suppliersWithOutstandingBalanceCount)} icon="local_shipping" tone="text-error" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
@@ -109,18 +130,38 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-gutter">
-        <Card>
-          <p className="text-body-sm text-on-surface-variant">موردين لهم مستحقات</p>
-          <p className="text-headline-md text-on-surface mt-1">{dashboard.suppliersWithOutstandingBalanceCount}</p>
-        </Card>
-        <Card>
-          <p className="text-body-sm text-on-surface-variant">مدفوعات للموردين هذا الشهر</p>
-          <p dir="ltr" className="text-headline-md text-mono-data text-on-surface mt-1 text-right">
-            {formatCurrency(dashboard.supplierPaymentsThisMonth)}
-          </p>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>آخر الأنشطة</CardTitle>
+        </CardHeader>
+        {dashboard.recentActivity.length > 0 ? (
+          <div className="flex flex-col divide-y divide-outline-variant">
+            {dashboard.recentActivity.map((a, i) => (
+              <div key={i} className="flex items-center justify-between gap-stack-md py-stack-sm">
+                <span className="text-body-sm text-on-surface">{a.description}</span>
+                <div className="flex items-center gap-stack-md shrink-0">
+                  <span dir="ltr" className={`text-mono-data text-body-sm ${a.amount >= 0 ? "text-success" : "text-error"}`}>
+                    {a.amount >= 0 ? "+" : ""}
+                    {formatCurrency(a.amount)}
+                  </span>
+                  <span dir="ltr" className="text-mono-data text-xs text-on-surface-variant">
+                    {formatDate(a.date)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-body-sm text-on-surface-variant text-center py-stack-md">لا توجد حركات مسجلة بعد</p>
+        )}
+      </Card>
+
+      <Card>
+        <p className="text-body-sm text-on-surface-variant">مدفوعات للموردين هذا الشهر</p>
+        <p dir="ltr" className="text-headline-md text-mono-data text-on-surface mt-1 text-right">
+          {formatCurrency(dashboard.supplierPaymentsThisMonth)}
+        </p>
+      </Card>
     </div>
   );
 }
