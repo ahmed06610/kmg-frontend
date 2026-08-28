@@ -19,21 +19,25 @@
   --color-outline-variant: #c6c6cd;
   --color-surface-tint: #565e74;
 
-  --color-primary: #000000;
+  /* primary/tertiary كانوا #000000 حرفيًا في تصدير Stitch الخام (باگ في الأداة) -
+     نص kmg_construction_manufacturing/DESIGN.md بيقول صراحة "Primary: Deep Navy #0f172a"،
+     واستخدمت هنا زوج primary-fixed/on-primary-fixed (الصحيح فعليًا في نفس الملف) كـ container/on-container
+     بدل الزوج المعكوس الأصلي (كونتينر غامق + نص باهت) */
+  --color-primary: #0f172a;
   --color-on-primary: #ffffff;
-  --color-primary-container: #131b2e;
-  --color-on-primary-container: #7c839b;
+  --color-primary-container: #dae2fd;
+  --color-on-primary-container: #131b2e;
   --color-inverse-primary: #bec6e0;
 
   --color-secondary: #505f76;
   --color-on-secondary: #ffffff;
   --color-secondary-container: #d0e1fb;
-  --color-on-secondary-container: #54647a;
+  --color-on-secondary-container: #38485d;
 
-  --color-tertiary: #000000;
+  --color-tertiary: #3f465c;
   --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #191c1e;
-  --color-on-tertiary-container: #818486;
+  --color-tertiary-container: #e0e3e5;
+  --color-on-tertiary-container: #191c1e;
 
   --color-error: #ba1a1a;
   --color-on-error: #ffffff;
