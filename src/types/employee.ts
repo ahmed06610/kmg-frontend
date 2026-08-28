@@ -9,6 +9,7 @@ export interface EmployeeListDTO {
   managerName: string | null;
   suspended: boolean;
   hasLoginAccount: boolean;
+  remainingAdvances: number;
 }
 
 export interface CreateWorkerDTO {
