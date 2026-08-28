@@ -3,13 +3,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { createAdvance } from "@/actions/payroll";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Combobox } from "@/components/ui/Combobox";
 import { Dialog } from "@/components/ui/Dialog";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { FieldGroup, Input, Select } from "@/components/ui/Field";
+import { FieldGroup, Input } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { advanceStatusTone } from "@/lib/status-tone";
@@ -75,6 +76,7 @@ function CreateAdvanceDialog({ open, onClose, employees }: { open: boolean; onCl
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -115,14 +117,18 @@ function CreateAdvanceDialog({ open, onClose, employees }: { open: boolean; onCl
     >
       <form id="create-advance-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
         <FieldGroup label="الموظف" error={errors.employeeId?.message}>
-          <Select {...register("employeeId", { valueAsNumber: true })}>
-            <option value={0}>اختر موظف</option>
-            {employees.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.name}
-              </option>
-            ))}
-          </Select>
+          <Controller
+            name="employeeId"
+            control={control}
+            render={({ field }) => (
+              <Combobox
+                value={field.value ? String(field.value) : ""}
+                onChange={(v) => field.onChange(Number(v))}
+                placeholder="اختر موظف"
+                options={employees.map((e) => ({ value: String(e.id), label: e.name }))}
+              />
+            )}
+          />
         </FieldGroup>
         <div className="grid grid-cols-2 gap-stack-md">
           <FieldGroup label="قيمة السلفة" error={errors.totalAmount?.message}>

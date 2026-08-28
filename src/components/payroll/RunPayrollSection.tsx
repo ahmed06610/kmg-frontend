@@ -3,12 +3,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { previewPayroll, runPayroll } from "@/actions/payroll";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Combobox } from "@/components/ui/Combobox";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { FieldGroup, Input, Select } from "@/components/ui/Field";
+import { ExportButton } from "@/components/ui/ExportButton";
+import { FieldGroup, Input } from "@/components/ui/Field";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { runPayrollSchema, type RunPayrollFormValues } from "@/schema/payroll";
@@ -24,6 +26,7 @@ export function RunPayrollSection({ employees, history }: { employees: EmployeeL
 
   const {
     register,
+    control,
     handleSubmit,
     getValues,
     formState: { errors },
@@ -64,14 +67,18 @@ export function RunPayrollSection({ employees, history }: { employees: EmployeeL
         <form onSubmit={onPreview} className="flex flex-col gap-stack-md">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-stack-md">
             <FieldGroup label="الموظف" error={errors.employeeId?.message}>
-              <Select {...register("employeeId", { valueAsNumber: true })}>
-                <option value={0}>اختر موظف</option>
-                {employees.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.name}
-                  </option>
-                ))}
-              </Select>
+              <Controller
+                name="employeeId"
+                control={control}
+                render={({ field }) => (
+                  <Combobox
+                    value={field.value ? String(field.value) : ""}
+                    onChange={(v) => field.onChange(Number(v))}
+                    placeholder="اختر موظف"
+                    options={employees.map((e) => ({ value: String(e.id), label: e.name }))}
+                  />
+                )}
+              />
             </FieldGroup>
             <FieldGroup label="بداية الفترة" error={errors.periodStart?.message}>
               <Input type="date" {...register("periodStart")} />
@@ -114,7 +121,28 @@ export function RunPayrollSection({ employees, history }: { employees: EmployeeL
       </Card>
 
       <div>
-        <h3 className="text-title-sm text-on-surface mb-stack-sm">آخر عمليات الصرف</h3>
+        <div className="flex items-center justify-between mb-stack-sm">
+          <h3 className="text-title-sm text-on-surface">آخر عمليات الصرف</h3>
+          {history.length > 0 && (
+            <ExportButton
+              filename="سجل_الرواتب"
+              columns={[
+                { header: "الموظف", key: "employee" },
+                { header: "بداية الفترة", key: "start" },
+                { header: "نهاية الفترة", key: "end" },
+                { header: "الصافي", key: "net" },
+                { header: "تاريخ الصرف", key: "paidDate" },
+              ]}
+              rows={history.map((p) => ({
+                employee: p.employeeName,
+                start: formatDate(p.periodStart),
+                end: formatDate(p.periodEnd),
+                net: p.netPaid,
+                paidDate: formatDate(p.paidDate),
+              }))}
+            />
+          )}
+        </div>
         {history.length === 0 ? (
           <EmptyState icon="history" title="لا يوجد رواتب مصروفة بعد" />
         ) : (

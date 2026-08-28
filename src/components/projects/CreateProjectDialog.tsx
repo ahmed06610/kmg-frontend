@@ -3,9 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { createProjectAndRedirect } from "@/actions/projects";
 import { Button } from "@/components/ui/Button";
+import { Combobox } from "@/components/ui/Combobox";
 import { Dialog } from "@/components/ui/Dialog";
 import { FieldGroup, Input, Select, Textarea } from "@/components/ui/Field";
 import { createProjectSchema, type CreateProjectFormValues } from "@/schema/project";
@@ -19,6 +20,7 @@ export function CreateProjectDialog({ open, onClose, clients }: { open: boolean;
 
   const {
     register,
+    control,
     handleSubmit,
     watch,
     formState: { errors },
@@ -80,14 +82,18 @@ export function CreateProjectDialog({ open, onClose, clients }: { open: boolean;
         </FieldGroup>
 
         <FieldGroup label="العميل" error={errors.clientId?.message}>
-          <Select {...register("clientId", { valueAsNumber: true })}>
-            <option value={0}>اختر العميل</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </Select>
+          <Controller
+            name="clientId"
+            control={control}
+            render={({ field }) => (
+              <Combobox
+                value={field.value ? String(field.value) : ""}
+                onChange={(v) => field.onChange(Number(v))}
+                placeholder="اختر العميل"
+                options={clients.map((c) => ({ value: String(c.id), label: c.name }))}
+              />
+            )}
+          />
         </FieldGroup>
 
         <FieldGroup label="قيمة العقد" error={errors.contractValue?.message}>
