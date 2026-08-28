@@ -3,11 +3,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { issueToProject, returnFromProject } from "@/actions/stock";
 import { Button } from "@/components/ui/Button";
+import { Combobox } from "@/components/ui/Combobox";
 import { Dialog } from "@/components/ui/Dialog";
-import { FieldGroup, Input, Select } from "@/components/ui/Field";
+import { FieldGroup, Input } from "@/components/ui/Field";
 import { issueReturnSchema, type IssueReturnFormValues } from "@/schema/stock";
 import type { MaterialDTO } from "@/types/stock";
 import type { ProjectListDTO } from "@/types/project";
@@ -30,6 +31,7 @@ export function IssueReturnDialog({ open, onClose, mode, materials, projects, de
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -71,24 +73,34 @@ export function IssueReturnDialog({ open, onClose, mode, materials, projects, de
     >
       <form id="issue-return-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
         <FieldGroup label="الخامة" error={errors.materialId?.message}>
-          <Select {...register("materialId", { valueAsNumber: true })} disabled={!!defaultMaterialId}>
-            <option value={0}>اختر خامة</option>
-            {materials.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name} (متاح: {m.quantity})
-              </option>
-            ))}
-          </Select>
+          <Controller
+            name="materialId"
+            control={control}
+            render={({ field }) => (
+              <Combobox
+                value={field.value ? String(field.value) : ""}
+                onChange={(v) => field.onChange(Number(v))}
+                disabled={!!defaultMaterialId}
+                placeholder="اختر خامة"
+                options={materials.map((m) => ({ value: String(m.id), label: m.name, hint: `متاح: ${m.quantity}` }))}
+              />
+            )}
+          />
         </FieldGroup>
         <FieldGroup label="المشروع" error={errors.projectId?.message}>
-          <Select {...register("projectId", { valueAsNumber: true })} disabled={!!defaultProjectId}>
-            <option value={0}>اختر مشروع</option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.projectCode}
-              </option>
-            ))}
-          </Select>
+          <Controller
+            name="projectId"
+            control={control}
+            render={({ field }) => (
+              <Combobox
+                value={field.value ? String(field.value) : ""}
+                onChange={(v) => field.onChange(Number(v))}
+                disabled={!!defaultProjectId}
+                placeholder="اختر مشروع"
+                options={projects.map((p) => ({ value: String(p.id), label: p.projectCode }))}
+              />
+            )}
+          />
         </FieldGroup>
         <FieldGroup label="الكمية" error={errors.quantity?.message}>
           <Input type="number" step="0.01" dir="ltr" {...register("quantity", { valueAsNumber: true })} />

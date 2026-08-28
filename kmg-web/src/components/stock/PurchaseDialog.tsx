@@ -3,11 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { recordPurchase } from "@/actions/stock";
 import { Button } from "@/components/ui/Button";
+import { Combobox } from "@/components/ui/Combobox";
 import { Dialog } from "@/components/ui/Dialog";
-import { FieldGroup, Input, Select } from "@/components/ui/Field";
+import { FieldGroup, Input } from "@/components/ui/Field";
+import { formatCurrency } from "@/lib/utils";
 import { purchaseSchema, type PurchaseFormValues } from "@/schema/stock";
 import type { MaterialDTO } from "@/types/stock";
 import type { SupplierListDTO } from "@/types/supplier";
@@ -31,13 +33,19 @@ export function PurchaseDialog({
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<PurchaseFormValues>({
     resolver: zodResolver(purchaseSchema),
     defaultValues: { materialId: defaultMaterialId ?? 0, supplierId: 0, quantity: 0, unitPrice: 0, notes: "" },
   });
+
+  const selectedMaterialId = watch("materialId");
+  const selectedMaterial = materials.find((m) => m.id === selectedMaterialId);
 
   const onSubmit = async (data: PurchaseFormValues) => {
     setLoading(true);
@@ -71,24 +79,43 @@ export function PurchaseDialog({
     >
       <form id="purchase-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
         <FieldGroup label="الخامة" error={errors.materialId?.message}>
-          <Select {...register("materialId", { valueAsNumber: true })} disabled={!!defaultMaterialId}>
-            <option value={0}>اختر خامة</option>
-            {materials.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </Select>
+          <Controller
+            name="materialId"
+            control={control}
+            render={({ field }) => (
+              <Combobox
+                value={field.value ? String(field.value) : ""}
+                onChange={(v) => {
+                  const id = Number(v);
+                  field.onChange(id);
+                  const material = materials.find((m) => m.id === id);
+                  if (material) setValue("unitPrice", material.unitPrice);
+                }}
+                disabled={!!defaultMaterialId}
+                placeholder="اختر خامة"
+                options={materials.map((m) => ({ value: String(m.id), label: m.name, hint: `متاح: ${m.quantity}` }))}
+              />
+            )}
+          />
+          {selectedMaterial && (
+            <p className="text-xs text-on-surface-variant mt-1">
+              الرصيد الحالي: {selectedMaterial.quantity} {selectedMaterial.unit} · آخر سعر: {formatCurrency(selectedMaterial.unitPrice)}
+            </p>
+          )}
         </FieldGroup>
         <FieldGroup label="المورد" error={errors.supplierId?.message}>
-          <Select {...register("supplierId", { valueAsNumber: true })}>
-            <option value={0}>اختر مورد</option>
-            {suppliers.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </Select>
+          <Controller
+            name="supplierId"
+            control={control}
+            render={({ field }) => (
+              <Combobox
+                value={field.value ? String(field.value) : ""}
+                onChange={(v) => field.onChange(Number(v))}
+                placeholder="اختر مورد"
+                options={suppliers.map((s) => ({ value: String(s.id), label: s.name }))}
+              />
+            )}
+          />
         </FieldGroup>
         <div className="grid grid-cols-2 gap-stack-md">
           <FieldGroup label="الكمية" error={errors.quantity?.message}>

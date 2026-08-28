@@ -3,11 +3,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { createMission } from "@/actions/missions";
 import { Button } from "@/components/ui/Button";
+import { Combobox } from "@/components/ui/Combobox";
 import { Dialog } from "@/components/ui/Dialog";
-import { FieldGroup, Input, Select } from "@/components/ui/Field";
+import { FieldGroup, Input } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
 import { formatDate } from "@/lib/utils";
 import { createMissionSchema, type CreateMissionFormValues } from "@/schema/mission";
@@ -64,14 +65,18 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
     >
       <form id="create-mission-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
         <FieldGroup label="رئيس العمال" error={errors.foremanEmployeeId?.message}>
-          <Select {...register("foremanEmployeeId", { valueAsNumber: true })}>
-            <option value={0}>اختر رئيس عمال</option>
-            {workers.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-              </option>
-            ))}
-          </Select>
+          <Controller
+            name="foremanEmployeeId"
+            control={control}
+            render={({ field }) => (
+              <Combobox
+                value={field.value ? String(field.value) : ""}
+                onChange={(v) => field.onChange(Number(v))}
+                placeholder="اختر رئيس عمال"
+                options={workers.map((w) => ({ value: String(w.id), label: w.name }))}
+              />
+            )}
+          />
         </FieldGroup>
 
         <div className="grid grid-cols-2 gap-stack-md">
@@ -103,14 +108,20 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
 
           {fields.map((field, index) => (
             <div key={field.id} className="flex items-center gap-stack-sm">
-              <Select {...register(`workers.${index}.employeeId`, { valueAsNumber: true })} className="flex-1">
-                <option value={0}>اختر عامل</option>
-                {workers.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.name}
-                  </option>
-                ))}
-              </Select>
+              <div className="flex-1">
+                <Controller
+                  name={`workers.${index}.employeeId`}
+                  control={control}
+                  render={({ field }) => (
+                    <Combobox
+                      value={field.value ? String(field.value) : ""}
+                      onChange={(v) => field.onChange(Number(v))}
+                      placeholder="اختر عامل"
+                      options={workers.map((w) => ({ value: String(w.id), label: w.name }))}
+                    />
+                  )}
+                />
+              </div>
               <Input
                 type="number"
                 dir="ltr"
