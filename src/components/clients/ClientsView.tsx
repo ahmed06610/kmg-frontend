@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ExportButton } from "@/components/ui/ExportButton";
 import { Icon } from "@/components/ui/Icon";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/utils";
@@ -27,6 +28,30 @@ export function ClientsView({ clients, canManage }: { clients: ClientListDTO[]; 
           </Button>
         )}
       </div>
+
+      {clients.length > 0 && (
+        <div className="flex justify-end">
+          <ExportButton
+            filename="العملاء"
+            columns={[
+              { header: "اسم العميل", key: "name" },
+              { header: "الهاتف", key: "phone" },
+              { header: "عدد المشاريع", key: "projectsCount" },
+              { header: "إجمالي التعاقدات", key: "totalContractValue" },
+              { header: "المحصَّل", key: "totalCollected" },
+              { header: "المتبقي", key: "totalRemaining" },
+            ]}
+            rows={clients.map((c) => ({
+              name: c.name,
+              phone: c.phone ?? "-",
+              projectsCount: c.projectsCount,
+              totalContractValue: c.totalContractValue,
+              totalCollected: c.totalCollected,
+              totalRemaining: c.totalRemaining,
+            }))}
+          />
+        </div>
+      )}
 
       {clients.length === 0 ? (
         <EmptyState icon="groups" title="لا يوجد عملاء بعد" description="ابدأ بإضافة أول عميل للشركة" />

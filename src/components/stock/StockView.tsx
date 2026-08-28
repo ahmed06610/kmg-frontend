@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ExportButton } from "@/components/ui/ExportButton";
 import { Icon } from "@/components/ui/Icon";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/utils";
@@ -59,6 +60,30 @@ export function StockView({
           </div>
         )}
       </div>
+
+      {materials.length > 0 && (
+        <div className="flex justify-end">
+          <ExportButton
+            filename="المخزون"
+            columns={[
+              { header: "الخامة", key: "name" },
+              { header: "الوحدة", key: "unit" },
+              { header: "الكمية المتاحة", key: "quantity" },
+              { header: "سعر الوحدة", key: "unitPrice" },
+              { header: "الحد الأدنى", key: "minimumThreshold" },
+              { header: "الحالة", key: "status" },
+            ]}
+            rows={materials.map((m) => ({
+              name: m.name,
+              unit: m.unit,
+              quantity: m.quantity,
+              unitPrice: m.unitPrice,
+              minimumThreshold: m.minimumThreshold,
+              status: m.isLowStock ? "نقص مخزون" : "متاح",
+            }))}
+          />
+        </div>
+      )}
 
       {materials.length === 0 ? (
         <EmptyState icon="inventory_2" title="لا توجد خامات بعد" />

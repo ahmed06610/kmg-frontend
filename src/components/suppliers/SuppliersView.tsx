@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ExportButton } from "@/components/ui/ExportButton";
 import { Icon } from "@/components/ui/Icon";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/utils";
@@ -27,6 +28,28 @@ export function SuppliersView({ suppliers, canManage }: { suppliers: SupplierLis
           </Button>
         )}
       </div>
+
+      {suppliers.length > 0 && (
+        <div className="flex justify-end">
+          <ExportButton
+            filename="الموردين"
+            columns={[
+              { header: "اسم المورد", key: "name" },
+              { header: "الهاتف", key: "phone" },
+              { header: "إجمالي المشتريات", key: "totalPurchases" },
+              { header: "المدفوع", key: "totalPaid" },
+              { header: "المتبقي", key: "totalRemaining" },
+            ]}
+            rows={suppliers.map((s) => ({
+              name: s.name,
+              phone: s.phone ?? "-",
+              totalPurchases: s.totalPurchases,
+              totalPaid: s.totalPaid,
+              totalRemaining: s.totalRemaining,
+            }))}
+          />
+        </div>
+      )}
 
       {suppliers.length === 0 ? (
         <EmptyState icon="local_shipping" title="لا يوجد موردين بعد" />
