@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ExportButton } from "@/components/ui/ExportButton";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { transactionTypeLabels } from "@/types/enums";
@@ -35,7 +36,32 @@ export function CashBoxView({ cashbox }: { cashbox: CashBoxDetailsDTO }) {
       </div>
 
       <div>
-        <h3 className="text-title-sm text-on-surface mb-stack-sm">آخر الحركات</h3>
+        <div className="flex items-center justify-between mb-stack-sm">
+          <h3 className="text-title-sm text-on-surface">آخر الحركات</h3>
+          {cashbox.recentTransactions.length > 0 && (
+            <ExportButton
+              filename="حركات_الخزنة"
+              columns={[
+                { header: "النوع", key: "type" },
+                { header: "الوصف", key: "description" },
+                { header: "كاش", key: "cash" },
+                { header: "كريديت", key: "credit" },
+                { header: "المصدر", key: "source" },
+                { header: "التاريخ", key: "date" },
+                { header: "المستخدم", key: "user" },
+              ]}
+              rows={cashbox.recentTransactions.map((t) => ({
+                type: transactionTypeLabels[t.transactionType] ?? t.transactionType,
+                description: t.description,
+                cash: t.amountCash,
+                credit: t.amountCredit,
+                source: t.projectCode ?? t.supplierName ?? "-",
+                date: formatDate(t.transactionDate),
+                user: t.createdByEmployeeName,
+              }))}
+            />
+          )}
+        </div>
         {cashbox.recentTransactions.length === 0 ? (
           <EmptyState icon="account_balance_wallet" title="لا توجد حركات مسجلة بعد" />
         ) : (

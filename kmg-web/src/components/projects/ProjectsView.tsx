@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ExportButton } from "@/components/ui/ExportButton";
 import { Icon } from "@/components/ui/Icon";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/utils";
@@ -31,6 +32,32 @@ export function ProjectsView({ projects, clients, canManage }: { projects: Proje
           </Button>
         )}
       </div>
+
+      {projects.length > 0 && (
+        <div className="flex justify-end">
+          <ExportButton
+            filename="المشاريع"
+            columns={[
+              { header: "المشروع", key: "code" },
+              { header: "العميل", key: "client" },
+              { header: "النوع", key: "type" },
+              { header: "الحالة", key: "status" },
+              { header: "القيمة", key: "value" },
+              { header: "المحصَّل", key: "collected" },
+              { header: "صافي الربح", key: "netProfit" },
+            ]}
+            rows={projects.map((p) => ({
+              code: p.projectCode,
+              client: p.clientName,
+              type: projectTypeLabels[p.projectType] ?? p.projectType,
+              status: projectStatusLabels[p.status] ?? p.status,
+              value: p.contractValue,
+              collected: p.totalCollected,
+              netProfit: p.netProfit,
+            }))}
+          />
+        </div>
+      )}
 
       {projects.length === 0 ? (
         <EmptyState icon="account_tree" title="لا توجد مشاريع بعد" description="ابدأ بإنشاء أول مشروع" />
