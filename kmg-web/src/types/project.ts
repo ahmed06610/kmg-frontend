@@ -49,6 +49,9 @@ export interface ProjectAuditDTO {
 
 export interface ProjectDetailsDTO extends ProjectListDTO {
   clientId: number;
+  clientPhone: string | null;
+  clientEmail: string | null;
+  clientAddress: string | null;
   description: string | null;
   tenderInsuranceAmount: number | null;
   tenderTaxAmount: number | null;

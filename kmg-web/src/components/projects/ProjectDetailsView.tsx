@@ -65,7 +65,7 @@ export function ProjectDetailsView({
       />
 
       <div>
-        {tab === "overview" && <OverviewTab project={project} />}
+        {tab === "overview" && <OverviewTab project={project} missions={missions} />}
         {tab === "materials" && (
           <MaterialsTab
             projectId={project.id}
