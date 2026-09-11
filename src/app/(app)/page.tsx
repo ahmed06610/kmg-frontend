@@ -61,7 +61,7 @@ export default async function DashboardPage() {
                 الدخل
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#bec6e0" }} />
+                <span className="w-3 h-3 rounded-full bg-outline" />
                 المصروفات
               </span>
               <span className="flex items-center gap-1.5">

@@ -10,7 +10,7 @@ interface Alert {
 }
 
 const toneClasses: Record<Alert["tone"], { border: string; bg: string; icon: string; title: string }> = {
-  warning: { border: "border-[#ffe5a0]", bg: "bg-[#fff8e6]", icon: "text-[#b06000]", title: "text-[#b06000]" },
+  warning: { border: "border-warning/30", bg: "bg-warning-container/40", icon: "text-warning", title: "text-warning" },
   error: { border: "border-error-container", bg: "bg-error-container/30", icon: "text-error", title: "text-error" },
   neutral: { border: "border-outline-variant", bg: "bg-surface", icon: "text-secondary", title: "text-secondary" },
 };
@@ -62,7 +62,7 @@ export function AttentionCenter({ dashboard }: { dashboard: DashboardDTO }) {
     <div className="bg-surface-container-lowest rounded-xl elevation-1 shadow-[var(--shadow-soft)] border border-outline-variant p-stack-lg flex flex-col h-full">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-title-sm text-on-surface font-bold flex items-center gap-2">
-          <Icon name="notifications_active" size={20} className="text-[#b06000]" filled />
+          <Icon name="notifications_active" size={20} className="text-warning" filled />
           مركز الانتباه
         </h3>
         {alerts.length > 0 && (

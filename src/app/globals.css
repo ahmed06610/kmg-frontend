@@ -1,67 +1,63 @@
 @import "tailwindcss";
 
 @theme {
-  /* ---------- الألوان (من kmg_construction_manufacturing/DESIGN.md - المرجع الفعلي في تصميم Stitch) ---------- */
-  --color-surface: #f8f9ff;
-  --color-surface-dim: #ccdbf3;
-  --color-surface-bright: #f8f9ff;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #eff4ff;
-  --color-surface-container: #e6eeff;
-  --color-surface-container-high: #dce9ff;
-  --color-surface-container-highest: #d5e3fc;
-  --color-surface-variant: #d5e3fc;
-  --color-on-surface: #0d1c2e;
-  --color-on-surface-variant: #45464d;
-  --color-inverse-surface: #233144;
-  --color-inverse-on-surface: #eaf1ff;
-  --color-outline: #76777d;
-  --color-outline-variant: #c6c6cd;
-  --color-surface-tint: #565e74;
+  /* ---------- الألوان (Dark Mode احترافي - بدّلنا الوضع الفاتح بالكامل بطلب المستخدم) ---------- */
+  --color-surface: #0b0f18;
+  --color-surface-dim: #070a11;
+  --color-surface-bright: #1a2333;
+  --color-surface-container-lowest: #080b12;
+  --color-surface-container-low: #10151f;
+  --color-surface-container: #141b29;
+  --color-surface-container-high: #1c2536;
+  --color-surface-container-highest: #253044;
+  --color-surface-variant: #26334c;
+  --color-on-surface: #e6eaf3;
+  --color-on-surface-variant: #98a2b8;
+  --color-inverse-surface: #e6eaf3;
+  --color-inverse-on-surface: #101725;
+  --color-outline: #4a5568;
+  --color-outline-variant: #2a3446;
+  --color-surface-tint: #8fa8d9;
 
-  /* primary/tertiary كانوا #000000 حرفيًا في تصدير Stitch الخام (باگ في الأداة) -
-     نص kmg_construction_manufacturing/DESIGN.md بيقول صراحة "Primary: Deep Navy #0f172a"،
-     واستخدمت هنا زوج primary-fixed/on-primary-fixed (الصحيح فعليًا في نفس الملف) كـ container/on-container
-     بدل الزوج المعكوس الأصلي (كونتينر غامق + نص باهت) */
-  --color-primary: #0f172a;
-  --color-on-primary: #ffffff;
-  --color-primary-container: #dae2fd;
-  --color-on-primary-container: #131b2e;
-  --color-inverse-primary: #bec6e0;
+  --color-primary: #5b8def;
+  --color-on-primary: #06101f;
+  --color-primary-container: #1b2a4a;
+  --color-on-primary-container: #c9d7f8;
+  --color-inverse-primary: #2f4a7a;
 
-  --color-secondary: #505f76;
-  --color-on-secondary: #ffffff;
-  --color-secondary-container: #d0e1fb;
-  --color-on-secondary-container: #38485d;
+  --color-secondary: #9fb0cc;
+  --color-on-secondary: #101725;
+  --color-secondary-container: #29354c;
+  --color-on-secondary-container: #cdd8ec;
 
-  --color-tertiary: #3f465c;
-  --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #e0e3e5;
-  --color-on-tertiary-container: #191c1e;
+  --color-tertiary: #b4bccb;
+  --color-on-tertiary: #101725;
+  --color-tertiary-container: #2e3648;
+  --color-on-tertiary-container: #d6dbe6;
 
-  --color-error: #ba1a1a;
-  --color-on-error: #ffffff;
-  --color-error-container: #ffdad6;
-  --color-on-error-container: #93000a;
+  --color-error: #ff6467;
+  --color-on-error: #2a0000;
+  --color-error-container: #4c1414;
+  --color-on-error-container: #ffb4ab;
 
   /* ألوان دلالية إضافية - مش موجودة في تصميم Stitch الأصلي (كانت بتتحل بألوان عشوائية غير متسقة) */
-  --color-success: #166534;
-  --color-on-success: #ffffff;
-  --color-success-container: #dcfce7;
-  --color-on-success-container: #166534;
+  --color-success: #4ddb85;
+  --color-on-success: #04331a;
+  --color-success-container: #0f4429;
+  --color-on-success-container: #a8f0c6;
 
-  --color-warning: #92400e;
-  --color-on-warning: #ffffff;
-  --color-warning-container: #fef3c7;
-  --color-on-warning-container: #92400e;
+  --color-warning: #ffc247;
+  --color-on-warning: #3a2500;
+  --color-warning-container: #503b00;
+  --color-on-warning-container: #ffe0a3;
 
-  --color-info: #1d4ed8;
-  --color-on-info: #ffffff;
-  --color-info-container: #dbeafe;
-  --color-on-info-container: #1e40af;
+  --color-info: #6fa8ff;
+  --color-on-info: #062143;
+  --color-info-container: #16345c;
+  --color-on-info-container: #c1dcff;
 
-  --color-background: #f8f9ff;
-  --color-on-background: #0d1c2e;
+  --color-background: #0b0f18;
+  --color-on-background: #e6eaf3;
 
   /* ---------- الخطوط ---------- */
   --font-arabic: var(--font-ibm-plex-arabic), "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
@@ -111,8 +107,8 @@
   --spacing-container-margin: 32px;
   --spacing-sidebar-width: 280px;
 
-  --shadow-soft: 0px 4px 12px rgba(15, 23, 42, 0.03);
-  --shadow-elevated: 0px 10px 25px rgba(15, 23, 42, 0.08);
+  --shadow-soft: 0px 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-elevated: 0px 10px 25px rgba(0, 0, 0, 0.45);
 }
 
 body {
