@@ -1,11 +1,13 @@
 "use client";
 
 import {
+  BarController,
   BarElement,
   CategoryScale,
   Chart as ChartJS,
   Legend,
   LinearScale,
+  LineController,
   LineElement,
   PointElement,
   Tooltip,
@@ -13,7 +15,17 @@ import {
 import { Chart } from "react-chartjs-2";
 import type { MonthlyTrendDTO } from "@/types/dashboard";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarController,
+  BarElement,
+  LineController,
+  LineElement,
+  PointElement,
+  Tooltip,
+  Legend,
+);
 
 export function FinancialTrendChart({ data }: { data: MonthlyTrendDTO[] }) {
   return (
