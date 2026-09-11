@@ -71,8 +71,30 @@ async function request<T>(method: string, path: string, body?: unknown, options?
   return text ? (JSON.parse(text) as T) : (undefined as T);
 }
 
+async function uploadFile<T>(path: string, formData: FormData): Promise<T> {
+  const token = (await getSession())?.token;
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers,
+    body: formData,
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) redirect("/session-expired");
+    throw new ApiError(await extractErrorMessage(response), response.status);
+  }
+
+  const text = await response.text();
+  return text ? (JSON.parse(text) as T) : (undefined as T);
+}
+
 export const apiClient = {
   get: <T>(path: string, options?: RequestOptions) => request<T>("GET", path, undefined, options),
   post: <T>(path: string, body?: unknown, options?: RequestOptions) => request<T>("POST", path, body, options),
   put: <T>(path: string, body?: unknown, options?: RequestOptions) => request<T>("PUT", path, body, options),
+  upload: <T>(path: string, formData: FormData) => uploadFile<T>(path, formData),
 };

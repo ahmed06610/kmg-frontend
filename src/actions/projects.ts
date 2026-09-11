@@ -77,3 +77,35 @@ export async function addProjectAttachment(data: CreateProjectAttachmentDTO): Pr
     return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
   }
 }
+
+export async function uploadProjectAttachment(
+  projectId: number,
+  formData: FormData,
+): Promise<ActionResult<ProjectAttachmentDTO>> {
+  try {
+    const file = formData.get("file") as File | null;
+    if (!file || file.size === 0) {
+      return { success: false, message: "اختر ملف أولاً" };
+    }
+
+    const uploadForm = new FormData();
+    uploadForm.set("file", file);
+    const { fileUrl, fileName } = await apiClient.upload<{ fileUrl: string; fileName: string }>(
+      "/Project/attachments/upload",
+      uploadForm,
+    );
+
+    const description = (formData.get("description") as string) || null;
+    const attachment = await apiClient.post<ProjectAttachmentDTO>("/Project/attachments", {
+      projectId,
+      fileUrl,
+      fileName,
+      description,
+    });
+
+    revalidatePath(`/projects/${projectId}`);
+    return { success: true, data: attachment };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ أثناء رفع الملف" };
+  }
+}
