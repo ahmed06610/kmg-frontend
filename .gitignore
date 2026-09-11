@@ -6,3 +6,4 @@ appsettings.Development.json
 appsettings.Production.json
 appsettings.*.local.json
 *.pubxml.user
+KMG.Api/wwwroot/uploads/
