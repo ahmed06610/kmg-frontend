@@ -24,7 +24,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       dir="rtl"
       lang="ar"
-      className={`${ibmPlexArabic.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={`${ibmPlexArabic.variable} ${jetBrainsMono.variable} h-full antialiased dark`}
+      style={{ colorScheme: "dark" }}
     >
       <head>
         <link
