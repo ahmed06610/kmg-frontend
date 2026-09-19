@@ -26,7 +26,7 @@ export function CreateProjectDialog({ open, onClose, clients }: { open: boolean;
     formState: { errors },
   } = useForm<CreateProjectFormValues>({
     resolver: zodResolver(createProjectSchema),
-    defaultValues: { projectType: 0, clientId: 0, contractValue: 0, description: "" },
+    defaultValues: { name: "", projectType: 0, clientId: 0, contractValue: 0, description: "" },
   });
 
   const projectType = watch("projectType");
@@ -36,6 +36,7 @@ export function CreateProjectDialog({ open, onClose, clients }: { open: boolean;
     setServerError(null);
 
     const payload = {
+      name: data.name,
       projectType: data.projectType,
       clientId: data.clientId,
       contractValue: data.contractValue,
@@ -72,6 +73,10 @@ export function CreateProjectDialog({ open, onClose, clients }: { open: boolean;
       }
     >
       <form id="create-project-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
+        <FieldGroup label="اسم المشروع" error={errors.name?.message}>
+          <Input {...register("name")} />
+        </FieldGroup>
+
         <FieldGroup label="نوع المشروع" error={errors.projectType?.message}>
           <Select {...register("projectType", { valueAsNumber: true })}>
             <option value={0}>اختر نوع المشروع</option>

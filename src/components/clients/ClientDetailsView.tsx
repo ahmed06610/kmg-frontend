@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { deleteClient } from "@/actions/clients";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
@@ -15,7 +18,9 @@ import type { ClientDetailsDTO } from "@/types/client";
 import { ClientFormDialog } from "./ClientFormDialog";
 
 export function ClientDetailsView({ client, canManage }: { client: ClientDetailsDTO; canManage: boolean }) {
+  const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-stack-lg">
@@ -28,10 +33,16 @@ export function ClientDetailsView({ client, canManage }: { client: ClientDetails
           {client.address && <p className="text-body-sm text-on-surface-variant">{client.address}</p>}
         </div>
         {canManage && (
-          <Button variant="secondary" onClick={() => setEditOpen(true)}>
-            <Icon name="edit" size={18} />
-            تعديل
-          </Button>
+          <div className="flex gap-stack-sm">
+            <Button variant="secondary" onClick={() => setEditOpen(true)}>
+              <Icon name="edit" size={18} />
+              تعديل
+            </Button>
+            <Button variant="danger" onClick={() => setDeleteOpen(true)}>
+              <Icon name="delete" size={18} />
+              حذف
+            </Button>
+          </div>
         )}
       </div>
 
@@ -78,7 +89,7 @@ export function ClientDetailsView({ client, canManage }: { client: ClientDetails
                 <Tr key={p.id}>
                   <Td>
                     <Link href={`/projects/${p.id}`} className="text-primary font-semibold hover:underline">
-                      {p.projectCode}
+                      {p.name}
                     </Link>
                   </Td>
                   <Td>{projectTypeLabels[p.projectType] ?? p.projectType}</Td>
@@ -95,6 +106,14 @@ export function ClientDetailsView({ client, canManage }: { client: ClientDetails
       </Card>
 
       <ClientFormDialog open={editOpen} onClose={() => setEditOpen(false)} client={client} />
+      <ConfirmDialog
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="حذف العميل"
+        message={`هل أنت متأكد من حذف العميل "${client.name}"؟`}
+        onConfirm={() => deleteClient(client.id)}
+        onConfirmed={() => router.push("/clients")}
+      />
     </div>
   );
 }

@@ -1,8 +1,12 @@
 import { apiClient } from "@/lib/api-client";
-import type { MaterialDTO, StockMovementDTO } from "@/types/stock";
+import type { MaterialCategoryDTO, MaterialDTO, StockMovementDTO } from "@/types/stock";
 
 export function getMaterials() {
   return apiClient.get<MaterialDTO[]>("/Stock/materials");
+}
+
+export function getMaterialCategories() {
+  return apiClient.get<MaterialCategoryDTO[]>("/Stock/categories");
 }
 
 export function getMaterialById(id: number) {

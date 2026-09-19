@@ -1,14 +1,13 @@
 import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { AnimatedLogo } from "@/components/ui/AnimatedLogo";
 
 export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-gutter">
       <div className="w-full max-w-sm">
         <div className="text-center mb-stack-lg">
-          <div className="inline-flex w-14 h-14 items-center justify-center rounded-xl bg-primary text-on-primary text-headline-md font-bold mb-stack-sm">
-            K
-          </div>
+          <AnimatedLogo size={56} className="mx-auto mb-stack-sm" />
           <h1 className="text-headline-md text-on-surface">KMG</h1>
           <p className="text-body-sm text-on-surface-variant">نظام إدارة الأعمال الداخلي</p>
         </div>

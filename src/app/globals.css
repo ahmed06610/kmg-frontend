@@ -152,3 +152,40 @@ body {
   background: var(--color-outline-variant);
   border-radius: 9999px;
 }
+
+/* لوجو متحرك: بريق بيمشي فوق شكل اللوجو نفسه (متقصوص عليه كـ mask) - مستخدم كمؤشر تحميل */
+@keyframes logo-shine {
+  0% {
+    background-position: 160% 0;
+  }
+  100% {
+    background-position: -60% 0;
+  }
+}
+
+.animated-logo {
+  background-image: linear-gradient(
+    100deg,
+    var(--color-primary) 30%,
+    #ffffff 50%,
+    var(--color-error) 65%,
+    var(--color-primary) 85%
+  );
+  background-size: 300% 100%;
+  -webkit-mask-image: var(--logo-mask-image);
+  mask-image: var(--logo-mask-image);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  animation: logo-shine 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated-logo {
+    animation: none;
+    background-position: 50% 0;
+  }
+}

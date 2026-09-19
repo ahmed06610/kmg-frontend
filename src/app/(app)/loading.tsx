@@ -1,8 +1,12 @@
+import { AnimatedLogo } from "@/components/ui/AnimatedLogo";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function DashboardLoading() {
   return (
     <div className="flex flex-col gap-stack-lg">
+      <div className="flex items-center justify-center py-stack-sm">
+        <AnimatedLogo size={32} />
+      </div>
       <div className="flex flex-col gap-2">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-4 w-64" />

@@ -93,6 +93,16 @@ export function OverviewTab({ project, missions }: { project: ProjectDetailsDTO;
         />
       </div>
 
+      {project.totalWriteOffs > 0 && (
+        <p className="text-xs text-on-surface-variant -mt-2">
+          (المتبقي أعلاه بعد خصم أعمال بقيمة{" "}
+          <span dir="ltr" className="font-mono-data">
+            {formatCurrency(project.totalWriteOffs)}
+          </span>
+          )
+        </p>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter items-start">
         <div className="flex flex-col gap-gutter">
           <Card>

@@ -8,10 +8,17 @@ export const supplierSchema = z.object({
 });
 export type SupplierFormValues = z.infer<typeof supplierSchema>;
 
-export const supplierPaymentSchema = z.object({
-  amountCash: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
-  amountCredit: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
-  paymentDate: z.string().min(1, "التاريخ مطلوب"),
-  notes: z.string().optional().or(z.literal("")),
-});
+export const supplierPaymentSchema = z
+  .object({
+    amountCash: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+    amountCredit: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+    paymentDate: z.string().min(1, "التاريخ مطلوب"),
+    notes: z.string().optional().or(z.literal("")),
+    isCheck: z.boolean(),
+    checkDueDate: z.string().optional().or(z.literal("")),
+  })
+  .refine((data) => !data.isCheck || !!data.checkDueDate, {
+    message: "تاريخ استحقاق الشيك مطلوب",
+    path: ["checkDueDate"],
+  });
 export type SupplierPaymentFormValues = z.infer<typeof supplierPaymentSchema>;

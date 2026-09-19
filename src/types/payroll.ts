@@ -17,6 +17,13 @@ export interface CreateAdvanceDTO {
   notes?: string | null;
 }
 
+export interface UpdateAdvanceDTO {
+  id: number;
+  totalAmount: number;
+  installmentAmount: number;
+  notes?: string | null;
+}
+
 export interface PayrollAdjustmentDTO {
   id: number;
   employeeId: number;
@@ -30,6 +37,14 @@ export interface PayrollAdjustmentDTO {
 
 export interface CreateAdjustmentDTO {
   employeeId: number;
+  type: number;
+  amount: number;
+  reason: string;
+  date: string;
+}
+
+export interface UpdateAdjustmentDTO {
+  id: number;
   type: number;
   amount: number;
   reason: string;

@@ -27,7 +27,7 @@ export function ActiveProjectsPanel({ projects }: { projects: ActiveProjectSumma
             >
               <div className="flex justify-between items-start mb-3 gap-2">
                 <div className="min-w-0">
-                  <h4 className="text-title-sm font-semibold text-on-surface truncate">{p.projectCode}</h4>
+                  <h4 className="text-title-sm font-semibold text-on-surface truncate">{p.name}</h4>
                   <p className="text-xs text-on-surface-variant mt-1 truncate">العميل: {p.clientName}</p>
                 </div>
                 <Badge tone={projectStatusTone(p.status)}>{projectStatusLabels[p.status] ?? p.status}</Badge>

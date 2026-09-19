@@ -2,20 +2,24 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { addProjectAttachment, uploadProjectAttachment } from "@/actions/projects";
+import { addProjectAttachment, deleteProjectAttachment, updateProjectAttachment, uploadProjectAttachment } from "@/actions/projects";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Dialog } from "@/components/ui/Dialog";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FieldGroup, Input } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
 import { formatDate } from "@/lib/utils";
-import { projectAttachmentSchema, type ProjectAttachmentFormValues } from "@/schema/project";
+import { projectAttachmentSchema, updateProjectAttachmentSchema, type ProjectAttachmentFormValues, type UpdateProjectAttachmentFormValues } from "@/schema/project";
 import type { ProjectAttachmentDTO } from "@/types/project";
 
 export function AttachmentsTab({ projectId, attachments, canManage }: { projectId: number; attachments: ProjectAttachmentDTO[]; canManage: boolean }) {
+  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingAttachment, setEditingAttachment] = useState<ProjectAttachmentDTO | null>(null);
+  const [deletingAttachment, setDeletingAttachment] = useState<ProjectAttachmentDTO | null>(null);
 
   return (
     <div className="flex flex-col gap-stack-md">
@@ -34,30 +38,126 @@ export function AttachmentsTab({ projectId, attachments, canManage }: { projectI
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-gutter">
           {attachments.map((a) => (
-            <a
+            <div
               key={a.id}
-              href={a.fileUrl}
-              target="_blank"
-              rel="noreferrer"
               className="flex items-start gap-stack-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-stack-md hover:border-primary transition-colors"
             >
-              <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0">
-                <Icon name="description" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-body-sm text-on-surface font-semibold truncate">{a.fileName || a.fileUrl}</p>
-                {a.description && <p className="text-xs text-on-surface-variant truncate">{a.description}</p>}
-                <p className="text-xs text-on-surface-variant mt-1">
-                  {a.uploadedByEmployeeName} · {formatDate(a.uploadedAt)}
-                </p>
-              </div>
-            </a>
+              <a href={a.fileUrl} target="_blank" rel="noreferrer" className="flex items-start gap-stack-sm min-w-0 flex-1">
+                <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0">
+                  <Icon name="description" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-body-sm text-on-surface font-semibold truncate">{a.fileName || a.fileUrl}</p>
+                  {a.description && <p className="text-xs text-on-surface-variant truncate">{a.description}</p>}
+                  <p className="text-xs text-on-surface-variant mt-1">
+                    {a.uploadedByEmployeeName} · {formatDate(a.uploadedAt)}
+                  </p>
+                </div>
+              </a>
+              {canManage && (
+                <div className="flex items-center gap-1 shrink-0">
+                  <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingAttachment(a)}>
+                    <Icon name="edit" size={18} />
+                  </button>
+                  <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeletingAttachment(a)}>
+                    <Icon name="delete" size={18} />
+                  </button>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       )}
 
       <AddAttachmentDialog open={dialogOpen} onClose={() => setDialogOpen(false)} projectId={projectId} />
+      <EditAttachmentDialog
+        open={!!editingAttachment}
+        onClose={() => setEditingAttachment(null)}
+        projectId={projectId}
+        attachment={editingAttachment}
+      />
+      <ConfirmDialog
+        open={!!deletingAttachment}
+        onClose={() => setDeletingAttachment(null)}
+        title="حذف المرفق"
+        message="هل أنت متأكد من حذف هذا المرفق؟"
+        onConfirm={() => deleteProjectAttachment(deletingAttachment!.id, projectId)}
+        onConfirmed={() => router.refresh()}
+      />
     </div>
+  );
+}
+
+function EditAttachmentDialog({
+  open,
+  onClose,
+  projectId,
+  attachment,
+}: {
+  open: boolean;
+  onClose: () => void;
+  projectId: number;
+  attachment: ProjectAttachmentDTO | null;
+}) {
+  const router = useRouter();
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<UpdateProjectAttachmentFormValues>({
+    resolver: zodResolver(updateProjectAttachmentSchema),
+    defaultValues: { description: "" },
+  });
+
+  useEffect(() => {
+    if (open && attachment) {
+      reset({ description: attachment.description ?? "" });
+      setServerError(null);
+    }
+  }, [open, attachment, reset]);
+
+  if (!attachment) return null;
+
+  const onSubmit = async (data: UpdateProjectAttachmentFormValues) => {
+    setLoading(true);
+    setServerError(null);
+    const result = await updateProjectAttachment({ id: attachment.id, description: data.description || null }, projectId);
+    setLoading(false);
+    if (!result.success) {
+      setServerError(result.message ?? "حدث خطأ");
+      return;
+    }
+    onClose();
+    router.refresh();
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title="تعديل وصف المرفق"
+      footer={
+        <>
+          <Button variant="secondary" type="button" onClick={onClose}>
+            إلغاء
+          </Button>
+          <Button type="submit" form="edit-attachment-form" disabled={loading}>
+            {loading ? "جاري الحفظ..." : "حفظ"}
+          </Button>
+        </>
+      }
+    >
+      <form id="edit-attachment-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
+        <FieldGroup label="الوصف" error={errors.description?.message}>
+          <Input {...register("description")} />
+        </FieldGroup>
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+      </form>
+    </Dialog>
   );
 }
 

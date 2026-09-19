@@ -8,13 +8,20 @@ export interface SupplierListDTO {
   totalRemaining: number;
 }
 
+export type CheckStatus = "Pending" | "Cleared" | "Cancelled";
+
 export interface SupplierPaymentDTO {
   id: number;
+  supplierId: number;
+  supplierName: string | null;
   amount: number;
   amountCash: number;
   amountCredit: number;
   paymentDate: string;
   notes: string | null;
+  isCheck: boolean;
+  checkDueDate: string | null;
+  checkStatus: CheckStatus | null;
 }
 
 export interface SupplierPurchaseDTO {
@@ -49,4 +56,22 @@ export interface CreateSupplierPaymentDTO {
   amountCredit: number;
   paymentDate: string;
   notes?: string | null;
+  isCheck: boolean;
+  checkDueDate?: string | null;
+}
+
+export interface UpdateSupplierPaymentDTO {
+  id: number;
+  amountCash: number;
+  amountCredit: number;
+  paymentDate: string;
+  notes?: string | null;
+  isCheck: boolean;
+  checkDueDate?: string | null;
+}
+
+export interface ResolveCheckDTO {
+  paymentId: number;
+  action: number;
+  newDueDate?: string | null;
 }

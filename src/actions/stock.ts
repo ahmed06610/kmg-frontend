@@ -4,10 +4,12 @@ import { revalidatePath } from "next/cache";
 import { apiClient, ApiError } from "@/lib/api-client";
 import type {
   CreateIssueDTO,
+  CreateMaterialCategoryDTO,
   CreateMaterialDTO,
   CreatePurchaseDTO,
   CreateReturnDTO,
   StockMovementDTO,
+  UpdateMaterialCategoryDTO,
   UpdateMaterialDTO,
 } from "@/types/stock";
 import type { ActionResult } from "./auth";
@@ -27,6 +29,46 @@ export async function updateMaterial(data: UpdateMaterialDTO): Promise<ActionRes
     await apiClient.put("/Stock/materials", data);
     revalidatePath("/stock");
     revalidatePath(`/stock/${data.id}`);
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function deleteMaterial(id: number): Promise<ActionResult> {
+  try {
+    await apiClient.delete(`/Stock/materials/${id}`);
+    revalidatePath("/stock");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function createMaterialCategory(data: CreateMaterialCategoryDTO): Promise<ActionResult<number>> {
+  try {
+    const id = await apiClient.post<number>("/Stock/categories", data);
+    revalidatePath("/stock");
+    return { success: true, data: id };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function updateMaterialCategory(data: UpdateMaterialCategoryDTO): Promise<ActionResult> {
+  try {
+    await apiClient.put("/Stock/categories", data);
+    revalidatePath("/stock");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function deleteMaterialCategory(id: number): Promise<ActionResult> {
+  try {
+    await apiClient.delete(`/Stock/categories/${id}`);
+    revalidatePath("/stock");
     return { success: true };
   } catch (error) {
     return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };

@@ -25,3 +25,13 @@ export async function updateClient(data: UpdateClientDTO): Promise<ActionResult>
     return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
   }
 }
+
+export async function deleteClient(id: number): Promise<ActionResult> {
+  try {
+    await apiClient.delete(`/Client/${id}`);
+    revalidatePath("/clients");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
