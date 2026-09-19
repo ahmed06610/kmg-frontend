@@ -24,6 +24,23 @@ export const ExpenseCategory = {
 
 export const AdjustmentType = { Deduction: 1, Bonus: 2 } as const;
 
+export const CheckResolutionAction = { Clear: 1, Reschedule: 2, Cancel: 3 } as const;
+
+export const MiscExpenseCategory = { Administrative: 1, Operational: 2, Other: 3 } as const;
+
+export const TransactionType = {
+  ProjectPaymentIn: 1,
+  SupplierPaymentOut: 2,
+  ProjectExpenseOut: 3,
+  MissionAdvanceOut: 4,
+  MissionSettlementIn: 5,
+  PayrollOut: 6,
+  StockPurchaseOut: 7,
+  AdvanceOut: 8,
+  MissionSettlementOut: 9,
+  MiscExpenseOut: 10,
+} as const;
+
 export const projectTypeLabels: Record<string, string> = {
   ManufactureExecution: "تصنيع وتنفيذ",
   Subcontracting: "مقاولات من الباطن",
@@ -66,6 +83,13 @@ export const transactionTypeLabels: Record<string, string> = {
   PayrollOut: "صرف راتب",
   StockPurchaseOut: "دفع شراء خامة",
   AdvanceOut: "سلفة موظف",
+  MiscExpenseOut: "مصروف نثري عام",
+};
+
+export const miscExpenseCategoryLabels: Record<string, string> = {
+  Administrative: "إداري",
+  Operational: "تشغيلي",
+  Other: "أخرى",
 };
 
 export const employeeTypeLabels: Record<string, string> = {
@@ -81,4 +105,10 @@ export const wageTypeLabels: Record<string, string> = {
 export const adjustmentTypeLabels: Record<string, string> = {
   Deduction: "خصم",
   Bonus: "حافز",
+};
+
+export const checkStatusLabels: Record<string, string> = {
+  Pending: "معلّق",
+  Cleared: "متحصّل",
+  Cancelled: "ملغي",
 };

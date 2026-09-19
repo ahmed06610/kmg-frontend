@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "kmg-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "kmg-web", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}

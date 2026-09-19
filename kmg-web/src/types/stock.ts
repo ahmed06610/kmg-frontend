@@ -7,6 +7,10 @@ export interface MaterialDTO {
   minimumThreshold: number;
   isLowStock: boolean;
   lastUpdated: string;
+  totalPrice: number;
+  categoryId: number | null;
+  categoryName: string | null;
+  extraFieldValues: Record<string, string>;
 }
 
 export interface CreateMaterialDTO {
@@ -15,6 +19,8 @@ export interface CreateMaterialDTO {
   unitPrice: number;
   minimumThreshold: number;
   initialQuantity: number;
+  categoryId?: number | null;
+  extraFieldValues?: Record<string, string>;
 }
 
 export interface UpdateMaterialDTO {
@@ -23,6 +29,32 @@ export interface UpdateMaterialDTO {
   unit: string;
   unitPrice: number;
   minimumThreshold: number;
+  categoryId?: number | null;
+  extraFieldValues?: Record<string, string>;
+}
+
+export interface CategoryFieldDefinitionDTO {
+  key: string;
+  label: string;
+  fieldType: string;
+}
+
+export interface MaterialCategoryDTO {
+  id: number;
+  name: string;
+  extraFieldDefinitions: CategoryFieldDefinitionDTO[];
+  materialsCount: number;
+}
+
+export interface CreateMaterialCategoryDTO {
+  name: string;
+  extraFieldDefinitions: CategoryFieldDefinitionDTO[];
+}
+
+export interface UpdateMaterialCategoryDTO {
+  id: number;
+  name: string;
+  extraFieldDefinitions: CategoryFieldDefinitionDTO[];
 }
 
 export interface StockMovementDTO {
@@ -34,6 +66,7 @@ export interface StockMovementDTO {
   unitPriceAtTime: number;
   projectId: number | null;
   projectCode: string | null;
+  projectName: string | null;
   supplierId: number | null;
   supplierName: string | null;
   movementDate: string;

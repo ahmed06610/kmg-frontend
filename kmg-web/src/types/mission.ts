@@ -2,6 +2,7 @@ export interface MissionListDTO {
   id: number;
   projectId: number;
   projectCode: string;
+  foremanEmployeeId: number;
   foremanName: string;
   startDate: string;
   endDate: string | null;
@@ -41,5 +42,13 @@ export interface SettleMissionDTO {
   missionId: number;
   endDate: string;
   actualSpent: number;
+  notes?: string | null;
+}
+
+export interface UpdateMissionDTO {
+  missionId: number;
+  foremanEmployeeId: number;
+  startDate: string;
+  advanceAmount: number;
   notes?: string | null;
 }

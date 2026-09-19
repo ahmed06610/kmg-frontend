@@ -11,6 +11,7 @@ export interface ClientListDTO {
 
 export interface ClientProjectSummaryDTO {
   id: number;
+  name: string;
   projectCode: string;
   projectType: string;
   status: string;

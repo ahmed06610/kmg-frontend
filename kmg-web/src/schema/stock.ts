@@ -21,6 +21,21 @@ export const purchaseSchema = z.object({
 });
 export type PurchaseFormValues = z.infer<typeof purchaseSchema>;
 
+export const categoryFieldDefinitionSchema = z.object({
+  key: z
+    .string()
+    .min(1, "المفتاح مطلوب")
+    .regex(/^[a-zA-Z][a-zA-Z0-9_]*$/, "المفتاح لازم يبدأ بحرف ويحتوي حروف/أرقام إنجليزية فقط"),
+  label: z.string().min(1, "الاسم الظاهر مطلوب"),
+  fieldType: z.enum(["text", "number"]),
+});
+
+export const materialCategorySchema = z.object({
+  name: z.string().min(2, "اسم الفئة لازم يكون حرفين على الأقل"),
+  extraFieldDefinitions: z.array(categoryFieldDefinitionSchema),
+});
+export type MaterialCategoryFormValues = z.infer<typeof materialCategorySchema>;
+
 export const issueReturnSchema = z.object({
   materialId: z.number().min(1, "اختر خامة"),
   projectId: z.number().min(1, "اختر مشروع"),

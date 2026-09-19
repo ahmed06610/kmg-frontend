@@ -12,6 +12,7 @@ export interface ProjectsPipelineDTO {
 
 export interface ActiveProjectSummaryDTO {
   id: number;
+  name: string;
   projectCode: string;
   clientName: string;
   status: string;

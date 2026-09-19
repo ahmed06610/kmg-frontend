@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ExportButton } from "@/components/ui/ExportButton";
 import { Icon } from "@/components/ui/Icon";
+import { Pagination } from "@/components/ui/Pagination";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/utils";
+import { useTableState } from "@/lib/useTableState";
 import { employeeTypeLabels, wageTypeLabels } from "@/types/enums";
 import type { RoleDto } from "@/types/auth";
 import type { EmployeeListDTO } from "@/types/employee";
@@ -40,17 +43,16 @@ export function EmployeesView({
 }) {
   const [workerDialogOpen, setWorkerDialogOpen] = useState(false);
   const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
-  const [search, setSearch] = useState("");
 
   const admins = employees.filter((e) => e.employeeType === 1);
   const workers = employees.filter((e) => e.employeeType === 2);
   const totalAdvances = employees.reduce((sum, e) => sum + e.remainingAdvances, 0);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return employees;
-    return employees.filter((e) => e.name.toLowerCase().includes(q));
-  }, [employees, search]);
+  const table = useTableState({
+    rows: employees,
+    pageSize: 10,
+    searchPredicate: (e, term) => e.name.toLowerCase().includes(term),
+  });
 
   return (
     <div className="flex flex-col gap-stack-lg">
@@ -83,15 +85,7 @@ export function EmployeesView({
       </div>
 
       <div className="flex items-center justify-between gap-stack-sm flex-wrap">
-        <div className="relative w-full sm:w-72">
-          <Icon name="search" size={18} className="absolute top-1/2 right-3 -translate-y-1/2 text-on-surface-variant" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="بحث بالاسم..."
-            className="w-full rounded bg-surface-container-lowest border border-outline-variant py-2 pr-10 pl-3 text-body-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-          />
-        </div>
+        <SearchInput value={table.search} onChange={table.setSearch} placeholder="بحث بالاسم..." />
         <ExportButton
           filename="الموظفين"
           columns={[
@@ -102,7 +96,7 @@ export function EmployeesView({
             { header: "السلف المتبقية", key: "advances" },
             { header: "الحالة", key: "status" },
           ]}
-          rows={filtered.map((e) => ({
+          rows={table.filteredRows.map((e) => ({
             name: e.name,
             type: e.employeeType === 1 ? employeeTypeLabels.Admin : employeeTypeLabels.Worker,
             wageType: e.wageType === 1 ? wageTypeLabels.Monthly : wageTypeLabels.Daily,
@@ -113,43 +107,46 @@ export function EmployeesView({
         />
       </div>
 
-      {filtered.length === 0 ? (
+      {table.totalCount === 0 ? (
         <EmptyState icon="badge" title="لا يوجد موظفين مطابقين" />
       ) : (
-        <Table>
-          <THead>
-            <tr>
-              <Th>الاسم</Th>
-              <Th>النوع</Th>
-              <Th>نوع الأجر</Th>
-              <Th>قيمة الأجر</Th>
-              <Th>السلف المتبقية</Th>
-              <Th>المدير</Th>
-              <Th>حساب دخول</Th>
-              <Th>الحالة</Th>
-            </tr>
-          </THead>
-          <TBody>
-            {filtered.map((e) => (
-              <Tr key={e.id}>
-                <Td>
-                  <Link href={`/employees/${e.id}`} className="text-primary font-semibold hover:underline">
-                    {e.name}
-                  </Link>
-                </Td>
-                <Td>{e.employeeType === 1 ? employeeTypeLabels.Admin : employeeTypeLabels.Worker}</Td>
-                <Td>{e.wageType === 1 ? wageTypeLabels.Monthly : wageTypeLabels.Daily}</Td>
-                <TdMono>{formatCurrency(e.wageAmount)}</TdMono>
-                <TdMono className={e.remainingAdvances > 0 ? "text-error font-semibold" : undefined}>
-                  {e.remainingAdvances > 0 ? formatCurrency(e.remainingAdvances) : "-"}
-                </TdMono>
-                <Td>{e.managerName ?? "-"}</Td>
-                <Td>{e.hasLoginAccount ? <Badge tone="info">نعم</Badge> : <Badge tone="neutral">لا</Badge>}</Td>
-                <Td>{e.suspended ? <Badge tone="error">موقوف</Badge> : <Badge tone="success">نشط</Badge>}</Td>
-              </Tr>
-            ))}
-          </TBody>
-        </Table>
+        <>
+          <Table>
+            <THead>
+              <tr>
+                <Th>الاسم</Th>
+                <Th>النوع</Th>
+                <Th>نوع الأجر</Th>
+                <Th>قيمة الأجر</Th>
+                <Th>السلف المتبقية</Th>
+                <Th>المدير</Th>
+                <Th>حساب دخول</Th>
+                <Th>الحالة</Th>
+              </tr>
+            </THead>
+            <TBody>
+              {table.pageRows.map((e) => (
+                <Tr key={e.id}>
+                  <Td>
+                    <Link href={`/employees/${e.id}`} className="text-primary font-semibold hover:underline">
+                      {e.name}
+                    </Link>
+                  </Td>
+                  <Td>{e.employeeType === 1 ? employeeTypeLabels.Admin : employeeTypeLabels.Worker}</Td>
+                  <Td>{e.wageType === 1 ? wageTypeLabels.Monthly : wageTypeLabels.Daily}</Td>
+                  <TdMono>{formatCurrency(e.wageAmount)}</TdMono>
+                  <TdMono className={e.remainingAdvances > 0 ? "text-error font-semibold" : undefined}>
+                    {e.remainingAdvances > 0 ? formatCurrency(e.remainingAdvances) : "-"}
+                  </TdMono>
+                  <Td>{e.managerName ?? "-"}</Td>
+                  <Td>{e.hasLoginAccount ? <Badge tone="info">نعم</Badge> : <Badge tone="neutral">لا</Badge>}</Td>
+                  <Td>{e.suspended ? <Badge tone="error">موقوف</Badge> : <Badge tone="success">نشط</Badge>}</Td>
+                </Tr>
+              ))}
+            </TBody>
+          </Table>
+          <Pagination page={table.page} pageSize={table.pageSize} totalCount={table.totalCount} onPageChange={table.setPage} />
+        </>
       )}
 
       <CreateWorkerDialog open={workerDialogOpen} onClose={() => setWorkerDialogOpen(false)} />

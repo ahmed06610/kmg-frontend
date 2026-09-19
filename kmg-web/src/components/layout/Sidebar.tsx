@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/actions/auth";
@@ -14,9 +15,7 @@ export function Sidebar({ abilities }: { abilities: string[] }) {
   return (
     <aside className="hidden md:flex fixed right-0 top-0 h-full w-sidebar-width flex-col bg-surface-container-lowest border-l border-outline-variant z-20">
       <div className="flex items-center gap-2 px-stack-lg h-16 border-b border-outline-variant">
-        <div className="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center font-bold shrink-0">
-          K
-        </div>
+        <Image src="/logo-mark.png" alt="KMG" width={32} height={32} className="shrink-0 object-contain" />
         <div className="leading-tight">
           <p className="text-title-sm text-on-surface">KMG</p>
           <p className="text-xs text-on-surface-variant">نظام إدارة الأعمال</p>

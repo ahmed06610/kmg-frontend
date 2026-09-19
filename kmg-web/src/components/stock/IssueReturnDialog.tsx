@@ -97,7 +97,7 @@ export function IssueReturnDialog({ open, onClose, mode, materials, projects, de
                 onChange={(v) => field.onChange(Number(v))}
                 disabled={!!defaultProjectId}
                 placeholder="اختر مشروع"
-                options={projects.map((p) => ({ value: String(p.id), label: p.projectCode }))}
+                options={projects.map((p) => ({ value: String(p.id), label: p.name }))}
               />
             )}
           />

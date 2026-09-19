@@ -8,10 +8,17 @@ import type {
   CreateProjectDTO,
   CreateProjectExpenseDTO,
   CreateProjectPaymentDTO,
+  CreateProjectWriteOffDTO,
   ProjectAttachmentDTO,
   ProjectExpenseDTO,
   ProjectPaymentDTO,
+  ProjectWriteOffDTO,
+  UpdateProjectAttachmentDTO,
+  UpdateProjectDTO,
+  UpdateProjectExpenseDTO,
+  UpdateProjectPaymentDTO,
   UpdateProjectStatusDTO,
+  UpdateProjectWriteOffDTO,
 } from "@/types/project";
 import type { ActionResult } from "./auth";
 
@@ -31,6 +38,27 @@ export async function createProjectAndRedirect(data: CreateProjectDTO) {
     redirect(`/projects/${result.data}`);
   }
   return result;
+}
+
+export async function updateProject(data: UpdateProjectDTO): Promise<ActionResult> {
+  try {
+    await apiClient.put("/Project", data);
+    revalidatePath("/projects");
+    revalidatePath(`/projects/${data.id}`);
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function deleteProject(id: number): Promise<ActionResult> {
+  try {
+    await apiClient.delete(`/Project/${id}`);
+    revalidatePath("/projects");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
 }
 
 export async function updateProjectStatus(data: UpdateProjectStatusDTO): Promise<ActionResult> {
@@ -56,6 +84,30 @@ export async function recordProjectPayment(data: CreateProjectPaymentDTO): Promi
   }
 }
 
+export async function updateProjectPayment(data: UpdateProjectPaymentDTO, projectId: number): Promise<ActionResult<ProjectPaymentDTO>> {
+  try {
+    const payment = await apiClient.put<ProjectPaymentDTO>("/Project/payments", data);
+    revalidatePath(`/projects/${projectId}`);
+    revalidatePath("/projects");
+    revalidatePath("/cashbox");
+    return { success: true, data: payment };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function deleteProjectPayment(id: number, projectId: number): Promise<ActionResult> {
+  try {
+    await apiClient.delete(`/Project/payments/${id}`);
+    revalidatePath(`/projects/${projectId}`);
+    revalidatePath("/projects");
+    revalidatePath("/cashbox");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
 export async function recordProjectExpense(data: CreateProjectExpenseDTO): Promise<ActionResult<ProjectExpenseDTO>> {
   try {
     const expense = await apiClient.post<ProjectExpenseDTO>("/Project/expenses", data);
@@ -68,11 +120,86 @@ export async function recordProjectExpense(data: CreateProjectExpenseDTO): Promi
   }
 }
 
+export async function updateProjectExpense(data: UpdateProjectExpenseDTO, projectId: number): Promise<ActionResult<ProjectExpenseDTO>> {
+  try {
+    const expense = await apiClient.put<ProjectExpenseDTO>("/Project/expenses", data);
+    revalidatePath(`/projects/${projectId}`);
+    revalidatePath("/cashbox");
+    return { success: true, data: expense };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function deleteProjectExpense(id: number, projectId: number): Promise<ActionResult> {
+  try {
+    await apiClient.delete(`/Project/expenses/${id}`);
+    revalidatePath(`/projects/${projectId}`);
+    revalidatePath("/cashbox");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
 export async function addProjectAttachment(data: CreateProjectAttachmentDTO): Promise<ActionResult<ProjectAttachmentDTO>> {
   try {
     const attachment = await apiClient.post<ProjectAttachmentDTO>("/Project/attachments", data);
     revalidatePath(`/projects/${data.projectId}`);
     return { success: true, data: attachment };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function updateProjectAttachment(data: UpdateProjectAttachmentDTO, projectId: number): Promise<ActionResult> {
+  try {
+    await apiClient.put("/Project/attachments", data);
+    revalidatePath(`/projects/${projectId}`);
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function deleteProjectAttachment(id: number, projectId: number): Promise<ActionResult> {
+  try {
+    await apiClient.delete(`/Project/attachments/${id}`);
+    revalidatePath(`/projects/${projectId}`);
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function createProjectWriteOff(data: CreateProjectWriteOffDTO): Promise<ActionResult<ProjectWriteOffDTO>> {
+  try {
+    const writeOff = await apiClient.post<ProjectWriteOffDTO>("/Project/write-offs", data);
+    revalidatePath(`/projects/${data.projectId}`);
+    revalidatePath("/projects");
+    return { success: true, data: writeOff };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function updateProjectWriteOff(data: UpdateProjectWriteOffDTO, projectId: number): Promise<ActionResult<ProjectWriteOffDTO>> {
+  try {
+    const writeOff = await apiClient.put<ProjectWriteOffDTO>("/Project/write-offs", data);
+    revalidatePath(`/projects/${projectId}`);
+    revalidatePath("/projects");
+    return { success: true, data: writeOff };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function deleteProjectWriteOff(id: number, projectId: number): Promise<ActionResult> {
+  try {
+    await apiClient.delete(`/Project/write-offs/${id}`);
+    revalidatePath(`/projects/${projectId}`);
+    revalidatePath("/projects");
+    return { success: true };
   } catch (error) {
     return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
   }

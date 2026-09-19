@@ -21,5 +21,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // بيستثني كمان ملفات public/ الثابتة (زي اللوجو) - كانت بتترفض للـ /login غلط لأنها مش صفحة
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico)$).*)"],
 };

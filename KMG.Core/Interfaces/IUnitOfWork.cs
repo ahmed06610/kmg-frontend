@@ -16,6 +16,7 @@ namespace KMG.Core.Interfaces
         ISupplierPaymentRepository SupplierPayment { get; }
 
         IMaterialRepository Material { get; }
+        IMaterialCategoryRepository MaterialCategory { get; }
         IStockMovementRepository StockMovement { get; }
 
         IProjectRepository Project { get; }
@@ -23,6 +24,7 @@ namespace KMG.Core.Interfaces
         IProjectExpenseRepository ProjectExpense { get; }
         IProjectAttachmentRepository ProjectAttachment { get; }
         IProjectAuditRepository ProjectAudit { get; }
+        IProjectWriteOffRepository ProjectWriteOff { get; }
 
         IMissionRepository Mission { get; }
         IMissionWorkerRepository MissionWorker { get; }
@@ -33,6 +35,7 @@ namespace KMG.Core.Interfaces
 
         ICashBoxRepository CashBox { get; }
         ICashBoxTransactionRepository CashBoxTransaction { get; }
+        IMiscExpenseRepository MiscExpense { get; }
 
         Task<int> CompleteAsync();
         Task RollbackAsync();
