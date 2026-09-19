@@ -11,7 +11,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen">
       <Sidebar abilities={session.abilities} />
       <div className="md:mr-sidebar-width flex flex-col min-h-screen">
-        <Topbar roleName={session.roleName} username={session.username} />
+        <Topbar roleName={session.roleName} username={session.username} abilities={session.abilities} />
         <main className="flex-1 p-container-margin">{children}</main>
       </div>
     </div>

@@ -14,4 +14,5 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/employees", label: "الموظفين", icon: "badge", ability: "عرض الموظفين" },
   { href: "/payroll", label: "الرواتب", icon: "payments", ability: "إدارة الرواتب" },
   { href: "/cashbox", label: "الخزنة", icon: "account_balance_wallet", ability: "عرض الخزنة" },
+  { href: "/ai-settings", label: "تكامل AI", icon: "smart_toy", ability: "إدارة تكامل AI" },
 ];
