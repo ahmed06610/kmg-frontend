@@ -4,6 +4,7 @@ using KMG.EF.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KMG.EF.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260919122932_AddNotifications")]
+    partial class AddNotifications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -101,101 +104,6 @@ namespace KMG.EF.Migrations
                     b.HasIndex("UpdatedByEmployeeId");
 
                     b.ToTable("AiPromptConfigs");
-                });
-
-            modelBuilder.Entity("KMG.Core.Models.AiTenderResult", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool?>("AiDocumentRelevant")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("BookletFee")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BusinessCategory")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ContactInfo")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("DaysUntilDeadline")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DocumentEntity")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DocumentReadStatus")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DocumentSubmitBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("FirstReceivedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("InitialInsurance")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDismissed")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("IsNewCategory")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("IssuingEntity")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LastUpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MatchReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MatchedVia")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MaterialsRequired")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Quantities")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RelevanceNote")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ScopeOfWork")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SourceSite")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SourceUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SubmissionDeadline")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TenderId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("TenderTitle")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenderId")
-                        .IsUnique();
-
-                    b.ToTable("AiTenderResults");
                 });
 
             modelBuilder.Entity("KMG.Core.Models.ApplicationUser", b =>

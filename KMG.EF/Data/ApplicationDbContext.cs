@@ -43,6 +43,10 @@ namespace KMG.EF.Data
         public DbSet<CashBoxTransaction> CashBoxTransactions { get; set; } = null!;
         public DbSet<MiscExpense> MiscExpenses { get; set; } = null!;
 
+        public DbSet<AiPromptConfig> AiPromptConfigs { get; set; } = null!;
+        public DbSet<Notification> Notifications { get; set; } = null!;
+        public DbSet<AiTenderResult> AiTenderResults { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -366,6 +370,20 @@ namespace KMG.EF.Data
                 .WithMany()
                 .HasForeignKey(t => t.CreatedByEmployeeId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AiPromptConfig>()
+                .HasOne(a => a.UpdatedByEmployee)
+                .WithMany()
+                .HasForeignKey(a => a.UpdatedByEmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => n.DedupeKey)
+                .IsUnique();
+
+            modelBuilder.Entity<AiTenderResult>()
+                .HasIndex(t => t.TenderId)
+                .IsUnique();
         }
     }
 }

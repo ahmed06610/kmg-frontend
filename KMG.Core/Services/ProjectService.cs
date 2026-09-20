@@ -276,7 +276,7 @@ namespace KMG.Core.Services
                 ProjectId = project.Id,
                 EmployeeId = employeeId,
                 ActionDate = TimeHelper.NowInEgypt,
-                ActionDescription = $"تم تغيير حالة المشروع إلى: {model.Status}"
+                ActionDescription = $"تم تغيير حالة المشروع إلى: {model.Status.Arabic()}"
             });
 
             await _unitOfWork.CompleteAsync();
@@ -489,7 +489,7 @@ namespace KMG.Core.Services
                     ProjectId = model.ProjectId,
                     EmployeeId = createdByEmployeeId,
                     ActionDate = TimeHelper.NowInEgypt,
-                    ActionDescription = $"تسجيل مصروف نثري بقيمة {model.Amount} ({model.Category})"
+                    ActionDescription = $"تسجيل مصروف نثري بقيمة {model.Amount} ({model.Category.Arabic()})"
                 });
 
                 await _unitOfWork.CompleteAsync();

@@ -37,6 +37,10 @@ namespace KMG.Core.Interfaces
         ICashBoxTransactionRepository CashBoxTransaction { get; }
         IMiscExpenseRepository MiscExpense { get; }
 
+        IAiPromptConfigRepository AiPromptConfig { get; }
+        INotificationRepository Notification { get; }
+        IAiTenderResultRepository AiTenderResult { get; }
+
         Task<int> CompleteAsync();
         Task RollbackAsync();
         Task CommitAsync();
