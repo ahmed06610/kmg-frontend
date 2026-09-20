@@ -1,9 +1,12 @@
 import { getDashboard } from "@/lib/api/dashboard";
+import { getAiTenderResults } from "@/lib/api/aiTenderResults";
+import { getSession } from "@/lib/session";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { ExportButton } from "@/components/ui/ExportButton";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import { FinancialTrendChart } from "@/components/dashboard/FinancialTrendChart";
 import { AttentionCenter } from "@/components/dashboard/AttentionCenter";
+import { AiTendersSummary } from "@/components/dashboard/AiTendersSummary";
 import { ActiveProjectsPanel } from "@/components/dashboard/ActiveProjectsPanel";
 import { ProjectsPipelinePanel } from "@/components/dashboard/ProjectsPipelinePanel";
 import { InventoryHealthPanel } from "@/components/dashboard/InventoryHealthPanel";
@@ -12,7 +15,13 @@ import { RecentTransactionsTable } from "@/components/dashboard/RecentTransactio
 import { ActivityTimeline } from "@/components/dashboard/ActivityTimeline";
 
 export default async function DashboardPage() {
-  const dashboard = await getDashboard();
+  const session = await getSession();
+  const canViewAiTenders = session?.abilities.includes("إدارة تكامل AI") ?? false;
+
+  const [dashboard, aiTenderResults] = await Promise.all([
+    getDashboard(),
+    canViewAiTenders ? getAiTenderResults() : Promise.resolve([]),
+  ]);
 
   return (
     <div className="flex flex-col gap-stack-lg">
@@ -79,14 +88,19 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Active projects + pipeline */}
+      {/* Active projects + pipeline + AI tenders */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-        <div className="lg:col-span-8">
+        <div className={canViewAiTenders ? "lg:col-span-5" : "lg:col-span-8"}>
           <ActiveProjectsPanel projects={dashboard.activeProjectsSummary} />
         </div>
-        <div className="lg:col-span-4">
+        <div className={canViewAiTenders ? "lg:col-span-3" : "lg:col-span-4"}>
           <ProjectsPipelinePanel pipeline={dashboard.projectsPipeline} />
         </div>
+        {canViewAiTenders && (
+          <div className="lg:col-span-4">
+            <AiTendersSummary results={aiTenderResults} />
+          </div>
+        )}
       </div>
 
       {/* Inventory + collections/payables */}
