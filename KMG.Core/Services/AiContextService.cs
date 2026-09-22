@@ -142,6 +142,26 @@ namespace KMG.Core.Services
         public async Task<AiTenderResultDTO> IngestTenderResultAsync(CreateAiTenderResultDTO model)
         {
             var now = TimeHelper.NowInEgypt;
+            var existing = await UpsertTenderResultAsync(model, now);
+            await _unitOfWork.CompleteAsync();
+            return MapTenderResult(existing);
+        }
+
+        public async Task<List<AiTenderResultDTO>> IngestTenderResultsAsync(List<CreateAiTenderResultDTO> matches)
+        {
+            var now = TimeHelper.NowInEgypt;
+            var saved = new List<AiTenderResult>();
+            foreach (var model in matches)
+                saved.Add(await UpsertTenderResultAsync(model, now));
+
+            await _unitOfWork.CompleteAsync();
+            return saved.Select(MapTenderResult).ToList();
+        }
+
+        // منطق الإضافة/التحديث المشترك بين استقبال مناقصة واحدة ودفعة كاملة - بيضيف/يعدّل الكيان
+        // في الـ context بس من غير CompleteAsync() عشان المنادي يقدر يجمّع كذا عملية في معاملة واحدة
+        private async Task<AiTenderResult> UpsertTenderResultAsync(CreateAiTenderResultDTO model, DateTime now)
+        {
             var existing = await _unitOfWork.AiTenderResult.GetQueryable(t => t.TenderId == model.TenderId).FirstOrDefaultAsync();
             var isNew = existing == null;
 
@@ -179,9 +199,7 @@ namespace KMG.Core.Services
             else
                 _unitOfWork.AiTenderResult.Update(existing);
 
-            await _unitOfWork.CompleteAsync();
-
-            return MapTenderResult(existing);
+            return existing;
         }
 
         public async Task<List<AiTenderResultDTO>> GetActiveTenderResultsAsync()

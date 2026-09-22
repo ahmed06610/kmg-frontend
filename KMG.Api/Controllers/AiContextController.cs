@@ -48,14 +48,15 @@ namespace KMG.Api.Controllers
             }
         }
 
-        // بينادى من خدمة الـ AI الخارجية بمفتاح API ثابت - بتبعت مناقصة واحدة في كل نداء
+        // بينادى من خدمة الـ AI الخارجية بمفتاح API ثابت - بتبعت دفعة كاملة من نتائج فحص واحد
+        // (مش مناقصة واحدة - الرد بيوصل كـ { runAt, totalMatches, matches: [...] })
         [HttpPost("aiResults")]
         [ServiceFilter(typeof(ApiKeyAuthFilter))]
-        public async Task<IActionResult> IngestTenderResult([FromBody] CreateAiTenderResultDTO model)
+        public async Task<IActionResult> IngestTenderResults([FromBody] IngestAiTenderResultsRequestDTO model)
         {
             try
             {
-                return Ok(await _aiContextService.IngestTenderResultAsync(model));
+                return Ok(await _aiContextService.IngestTenderResultsAsync(model.Matches));
             }
             catch (Exception ex)
             {

@@ -9,6 +9,7 @@ namespace KMG.Core.Interfaces.Services
         Task<AiContextResponseDTO> GetContextDataAsync();
 
         Task<AiTenderResultDTO> IngestTenderResultAsync(CreateAiTenderResultDTO model);
+        Task<List<AiTenderResultDTO>> IngestTenderResultsAsync(List<CreateAiTenderResultDTO> matches);
         Task<List<AiTenderResultDTO>> GetActiveTenderResultsAsync();
         Task<AiTenderResultDTO?> GetTenderResultByIdAsync(int id);
         Task DismissTenderResultAsync(int id);

@@ -36,4 +36,14 @@ namespace KMG.Core.DTOs.AiContext
         public DateTime FirstReceivedAt { get; set; }
         public DateTime LastUpdatedAt { get; set; }
     }
+
+    // شكل الرد الفعلي من خدمة الـ AI الخارجية: مش مناقصة واحدة، دفعة كاملة من نتائج فحص واحد
+    // (RunAt/TotalMatches بيانات وصفية عن الفحص نفسه - مش بتتخزن حاليًا، بس بنستقبلها عشان
+    // الطلب ميفشلش، ولو احتجنا نتتبع تاريخ الفحصات لاحقًا هيبقوا جاهزين)
+    public class IngestAiTenderResultsRequestDTO
+    {
+        public DateTime? RunAt { get; set; }
+        public int? TotalMatches { get; set; }
+        public List<CreateAiTenderResultDTO> Matches { get; set; } = new();
+    }
 }
