@@ -40,3 +40,19 @@ export interface RegisterEmployeeDTO {
   managerId?: number | null;
   abilityIds?: number[] | null;
 }
+
+export interface EditEmployeeDTO {
+  id: number;
+  name: string;
+  userName: string;
+  email?: string | null;
+  phone?: string | null;
+  password?: string | null;
+  roleId: string;
+  managerId?: number | null;
+  suspended: boolean;
+  employeeType: number;
+  wageType: number;
+  wageAmount: number;
+  abilityIds?: number[] | null;
+}

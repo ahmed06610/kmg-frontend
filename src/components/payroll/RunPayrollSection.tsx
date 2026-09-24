@@ -12,10 +12,145 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ExportButton } from "@/components/ui/ExportButton";
 import { FieldGroup, Input } from "@/components/ui/Field";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
+import { downloadWorkbook } from "@/lib/excel";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { runPayrollSchema, type RunPayrollFormValues } from "@/schema/payroll";
 import type { EmployeeListDTO } from "@/types/employee";
 import type { PayrollPayoutDTO, PayrollPreviewDTO } from "@/types/payroll";
+
+function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
+  const router = useRouter();
+  const activeEmployees = employees.filter((e) => !e.suspended);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [periodStart, setPeriodStart] = useState("");
+  const [periodEnd, setPeriodEnd] = useState("");
+  const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function toggle(id: number) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    setSelected((prev) => (prev.size === activeEmployees.length ? new Set() : new Set(activeEmployees.map((e) => e.id))));
+  }
+
+  async function handleDisburse() {
+    if (!periodStart || !periodEnd) {
+      setError("حدد بداية ونهاية الفترة أولًا");
+      return;
+    }
+    if (selected.size === 0) {
+      setError("اختر موظف واحد على الأقل");
+      return;
+    }
+
+    setRunning(true);
+    setError(null);
+
+    const succeeded: PayrollPayoutDTO[] = [];
+    const failed: { name: string; message: string }[] = [];
+
+    for (const employeeId of selected) {
+      const employee = activeEmployees.find((e) => e.id === employeeId)!;
+      const result = await runPayroll({ employeeId, periodStart, periodEnd });
+      if (result.success && result.data) {
+        succeeded.push(result.data);
+      } else {
+        failed.push({ name: employee.name, message: result.message ?? "حدث خطأ" });
+      }
+    }
+
+    setRunning(false);
+
+    if (succeeded.length > 0) {
+      downloadWorkbook(`صرف_رواتب_${periodStart}_${periodEnd}`, [
+        {
+          name: "صرف الرواتب",
+          columns: [
+            { header: "الموظف", key: "employee" },
+            { header: "الأساسي", key: "base" },
+            { header: "مضاعفة المأمورية", key: "missionDoubleUp" },
+            { header: "حوافز", key: "bonus" },
+            { header: "خصومات", key: "deductions" },
+            { header: "قسط سلفة", key: "advanceInstallment" },
+            { header: "الصافي", key: "net" },
+          ],
+          rows: succeeded.map((p) => ({
+            employee: p.employeeName,
+            base: p.baseAmount,
+            missionDoubleUp: p.missionDoubleUpAmount,
+            bonus: p.bonusAmount,
+            deductions: p.deductionsAmount,
+            advanceInstallment: p.advanceInstallmentAmount,
+            net: p.netPaid,
+          })),
+        },
+      ]);
+    }
+
+    if (failed.length > 0) {
+      setError(`فشل صرف راتب ${failed.length} موظف: ${failed.map((f) => `${f.name} (${f.message})`).join("، ")}`);
+    }
+
+    setSelected(new Set());
+    router.refresh();
+  }
+
+  return (
+    <Card>
+      <p className="text-title-sm text-on-surface mb-stack-md">صرف رواتب جماعي</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-stack-md mb-stack-md">
+        <FieldGroup label="بداية الفترة">
+          <Input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} />
+        </FieldGroup>
+        <FieldGroup label="نهاية الفترة">
+          <Input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} />
+        </FieldGroup>
+      </div>
+
+      {activeEmployees.length === 0 ? (
+        <EmptyState icon="groups" title="لا يوجد موظفين نشطين" />
+      ) : (
+        <Table>
+          <THead>
+            <tr>
+              <Th>
+                <input type="checkbox" checked={selected.size === activeEmployees.length} onChange={toggleAll} />
+              </Th>
+              <Th>الموظف</Th>
+              <Th>نوع الأجر</Th>
+            </tr>
+          </THead>
+          <TBody>
+            {activeEmployees.map((e) => (
+              <Tr key={e.id}>
+                <Td>
+                  <input type="checkbox" checked={selected.has(e.id)} onChange={() => toggle(e.id)} />
+                </Td>
+                <Td>{e.name}</Td>
+                <Td>{e.wageType === 1 ? "شهري" : "يومي"}</Td>
+              </Tr>
+            ))}
+          </TBody>
+        </Table>
+      )}
+
+      {error && <div className="mt-stack-md rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{error}</div>}
+
+      <div className="mt-stack-md">
+        <Button onClick={handleDisburse} disabled={running || selected.size === 0}>
+          {running ? "جاري الصرف..." : `صرف رواتب المحددين (${selected.size})`}
+        </Button>
+      </div>
+    </Card>
+  );
+}
 
 export function RunPayrollSection({ employees, history }: { employees: EmployeeListDTO[]; history: PayrollPayoutDTO[] }) {
   const router = useRouter();
@@ -63,6 +198,7 @@ export function RunPayrollSection({ employees, history }: { employees: EmployeeL
 
   return (
     <div className="flex flex-col gap-stack-lg">
+      <BulkPayrollSection employees={employees} />
       <Card>
         <form onSubmit={onPreview} className="flex flex-col gap-stack-md">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-stack-md">

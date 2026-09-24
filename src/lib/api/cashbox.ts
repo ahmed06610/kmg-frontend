@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import type { CashBoxDetailsDTO, CashBoxTransactionDTO, CashBoxTransactionFilter, PagedResultDTO } from "@/types/cashbox";
+import type { CashBoxDetailsDTO, CashBoxTransactionFilter, CashBoxTransactionsResultDTO } from "@/types/cashbox";
 
 export function getCashBox(recentCount = 50) {
   return apiClient.get<CashBoxDetailsDTO>(`/CashBox?recentCount=${recentCount}`);
@@ -15,5 +15,5 @@ export function getCashBoxTransactions(filter: CashBoxTransactionFilter) {
   if (filter.isIn !== undefined) params.set("isIn", String(filter.isIn));
   if (filter.search) params.set("search", filter.search);
 
-  return apiClient.get<PagedResultDTO<CashBoxTransactionDTO>>(`/CashBox/transactions?${params.toString()}`);
+  return apiClient.get<CashBoxTransactionsResultDTO>(`/CashBox/transactions?${params.toString()}`);
 }

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { ProjectDetailsView } from "@/components/projects/ProjectDetailsView";
 import { getProjectById } from "@/lib/api/projects";
 import { getMissionsByProject } from "@/lib/api/missions";
-import { getMaterials } from "@/lib/api/stock";
+import { getMaterialCategories, getMaterials } from "@/lib/api/stock";
 import { getEmployees } from "@/lib/api/employees";
 import { getClients } from "@/lib/api/clients";
 import { getSession } from "@/lib/session";
@@ -11,10 +11,11 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
   const { id } = await params;
   const projectId = Number(id);
 
-  const [project, missions, materials, employees, clients, session] = await Promise.all([
+  const [project, missions, materials, categories, employees, clients, session] = await Promise.all([
     getProjectById(projectId),
     getMissionsByProject(projectId),
     getMaterials(),
+    getMaterialCategories(),
     getEmployees(),
     getClients(),
     getSession(),
@@ -29,6 +30,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
       project={project}
       missions={missions}
       materials={materials}
+      categories={categories}
       workers={workers}
       clients={clients}
       canManage={canManage}

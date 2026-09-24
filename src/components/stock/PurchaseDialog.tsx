@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/Button";
 import { Combobox } from "@/components/ui/Combobox";
 import { Dialog } from "@/components/ui/Dialog";
 import { FieldGroup, Input } from "@/components/ui/Field";
+import { InvoiceAttachmentField, type InvoiceAttachmentValue } from "@/components/ui/InvoiceAttachmentField";
+import { formatMaterialLabel } from "@/lib/material-label";
 import { formatCurrency } from "@/lib/utils";
 import { purchaseSchema, type PurchaseFormValues } from "@/schema/stock";
-import type { MaterialDTO } from "@/types/stock";
+import type { MaterialCategoryDTO, MaterialDTO } from "@/types/stock";
 import type { SupplierListDTO } from "@/types/supplier";
 
 export function PurchaseDialog({
@@ -19,17 +21,20 @@ export function PurchaseDialog({
   onClose,
   materials,
   suppliers,
+  categories,
   defaultMaterialId,
 }: {
   open: boolean;
   onClose: () => void;
   materials: MaterialDTO[];
   suppliers: SupplierListDTO[];
+  categories: MaterialCategoryDTO[];
   defaultMaterialId?: number;
 }) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [attachment, setAttachment] = useState<InvoiceAttachmentValue | null>(null);
 
   const {
     register,
@@ -50,13 +55,19 @@ export function PurchaseDialog({
   const onSubmit = async (data: PurchaseFormValues) => {
     setLoading(true);
     setServerError(null);
-    const result = await recordPurchase({ ...data, notes: data.notes || null });
+    const result = await recordPurchase({
+      ...data,
+      notes: data.notes || null,
+      attachmentUrl: attachment?.attachmentUrl ?? null,
+      attachmentFileName: attachment?.attachmentFileName ?? null,
+    });
     setLoading(false);
     if (!result.success) {
       setServerError(result.message ?? "حدث خطأ");
       return;
     }
     reset();
+    setAttachment(null);
     onClose();
     router.refresh();
   };
@@ -93,7 +104,7 @@ export function PurchaseDialog({
                 }}
                 disabled={!!defaultMaterialId}
                 placeholder="اختر خامة"
-                options={materials.map((m) => ({ value: String(m.id), label: m.name, hint: `متاح: ${m.quantity}` }))}
+                options={materials.map((m) => ({ value: String(m.id), label: formatMaterialLabel(m, categories), hint: `متاح: ${m.quantity}` }))}
               />
             )}
           />
@@ -128,6 +139,7 @@ export function PurchaseDialog({
         <FieldGroup label="ملاحظات" error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
+        <InvoiceAttachmentField folder="stock" value={attachment} onChange={setAttachment} />
         {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
       </form>
     </Dialog>

@@ -9,10 +9,20 @@ import type {
   CreatePurchaseDTO,
   CreateReturnDTO,
   StockMovementDTO,
+  StockPriceBatchDTO,
   UpdateMaterialCategoryDTO,
   UpdateMaterialDTO,
 } from "@/types/stock";
 import type { ActionResult } from "./auth";
+
+export async function getMaterialPriceBatches(materialId: number): Promise<ActionResult<StockPriceBatchDTO[]>> {
+  try {
+    const batches = await apiClient.get<StockPriceBatchDTO[]>(`/Stock/materials/${materialId}/price-batches`);
+    return { success: true, data: batches };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
 
 export async function createMaterial(data: CreateMaterialDTO): Promise<ActionResult<number>> {
   try {

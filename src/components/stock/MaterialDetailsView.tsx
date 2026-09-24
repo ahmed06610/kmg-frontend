@@ -12,6 +12,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
+import { formatMaterialLabel } from "@/lib/material-label";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useTableState } from "@/lib/useTableState";
 import { movementTypeLabels } from "@/types/enums";
@@ -53,11 +54,14 @@ export function MaterialDetailsView({
       (m.notes ?? "").toLowerCase().includes(term),
   });
 
+  const purchases = movements.filter((m) => m.movementType === "Purchase");
+  const purchasesTable = useTableState({ rows: purchases, pageSize: 10 });
+
   return (
     <div className="flex flex-col gap-stack-lg">
       <div className="flex items-start justify-between flex-wrap gap-stack-sm">
         <div>
-          <h1 className="text-headline-md text-on-surface">{material.name}</h1>
+          <h1 className="text-headline-md text-on-surface">{formatMaterialLabel(material, categories)}</h1>
           <p className="text-body-sm text-on-surface-variant">
             {material.unit} · {material.isLowStock ? <Badge tone="error">نقص مخزون</Badge> : <Badge tone="success">متاح</Badge>}
           </p>
@@ -139,6 +143,41 @@ export function MaterialDetailsView({
         </Card>
       )}
 
+      {purchases.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>سجل المشتريات ({purchases.length})</CardTitle>
+          </CardHeader>
+          <Table>
+            <THead>
+              <tr>
+                <Th>التاريخ</Th>
+                <Th>السعر</Th>
+                <Th>الكمية</Th>
+                <Th>الإجمالي</Th>
+                <Th>المورد</Th>
+              </tr>
+            </THead>
+            <TBody>
+              {purchasesTable.pageRows.map((m) => (
+                <Tr key={m.id}>
+                  <Td>{formatDate(m.movementDate)}</Td>
+                  <TdMono>{formatCurrency(m.unitPriceAtTime)}</TdMono>
+                  <TdMono>{m.quantity}</TdMono>
+                  <TdMono>{formatCurrency(m.quantity * m.unitPriceAtTime)}</TdMono>
+                  <Td>{m.supplierName ?? "-"}</Td>
+                </Tr>
+              ))}
+            </TBody>
+          </Table>
+          {purchases.length > purchasesTable.pageSize && (
+            <div className="mt-stack-sm">
+              <Pagination page={purchasesTable.page} pageSize={purchasesTable.pageSize} totalCount={purchasesTable.totalCount} onPageChange={purchasesTable.setPage} />
+            </div>
+          )}
+        </Card>
+      )}
+
       <Card>
         <CardHeader className="flex items-center justify-between flex-wrap gap-stack-sm">
           <CardTitle>سجل الحركات ({movements.length})</CardTitle>
@@ -184,9 +223,9 @@ export function MaterialDetailsView({
       </Card>
 
       <MaterialFormDialog open={editOpen} onClose={() => setEditOpen(false)} material={material} categories={categories} />
-      <PurchaseDialog open={purchaseOpen} onClose={() => setPurchaseOpen(false)} materials={[material]} suppliers={suppliers} defaultMaterialId={material.id} />
-      <IssueReturnDialog open={issueOpen} onClose={() => setIssueOpen(false)} mode="issue" materials={[material]} projects={projects} defaultMaterialId={material.id} />
-      <IssueReturnDialog open={returnOpen} onClose={() => setReturnOpen(false)} mode="return" materials={[material]} projects={projects} defaultMaterialId={material.id} />
+      <PurchaseDialog open={purchaseOpen} onClose={() => setPurchaseOpen(false)} materials={[material]} suppliers={suppliers} categories={categories} defaultMaterialId={material.id} />
+      <IssueReturnDialog open={issueOpen} onClose={() => setIssueOpen(false)} mode="issue" materials={[material]} projects={projects} categories={categories} defaultMaterialId={material.id} />
+      <IssueReturnDialog open={returnOpen} onClose={() => setReturnOpen(false)} mode="return" materials={[material]} projects={projects} categories={categories} defaultMaterialId={material.id} />
       <ConfirmDialog
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}

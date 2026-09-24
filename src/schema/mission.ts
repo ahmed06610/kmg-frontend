@@ -19,6 +19,7 @@ export const updateMissionSchema = z.object({
   startDate: z.string().min(1, "تاريخ البداية مطلوب"),
   advanceAmount: z.number().min(0, "لا يمكن أن تكون العهدة سالبة"),
   notes: z.string().optional().or(z.literal("")),
+  workers: z.array(missionWorkerInputSchema).min(1, "أضف عامل واحد على الأقل"),
 });
 export type UpdateMissionFormValues = z.infer<typeof updateMissionSchema>;
 

@@ -8,6 +8,7 @@ import { recordSupplierPayment, updateSupplierPayment } from "@/actions/supplier
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { FieldGroup, Input } from "@/components/ui/Field";
+import { InvoiceAttachmentField, type InvoiceAttachmentValue } from "@/components/ui/InvoiceAttachmentField";
 import { formatDate } from "@/lib/utils";
 import { supplierPaymentSchema, type SupplierPaymentFormValues } from "@/schema/supplier";
 import type { SupplierPaymentDTO } from "@/types/supplier";
@@ -24,6 +25,7 @@ export function SupplierPaymentDialog({ open, onClose, supplierId, outstanding, 
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [attachment, setAttachment] = useState<InvoiceAttachmentValue | null>(null);
   const isEdit = !!payment;
 
   const {
@@ -47,6 +49,9 @@ export function SupplierPaymentDialog({ open, onClose, supplierId, outstanding, 
         isCheck: payment?.isCheck ?? false,
         checkDueDate: payment?.checkDueDate ? payment.checkDueDate.slice(0, 10) : "",
       });
+      setAttachment(
+        payment?.attachmentUrl ? { attachmentUrl: payment.attachmentUrl, attachmentFileName: payment.attachmentFileName ?? payment.attachmentUrl } : null,
+      );
       setServerError(null);
     }
   }, [open, payment, reset]);
@@ -64,6 +69,8 @@ export function SupplierPaymentDialog({ open, onClose, supplierId, outstanding, 
       notes: data.notes || null,
       isCheck: data.isCheck,
       checkDueDate: data.isCheck ? data.checkDueDate || null : null,
+      attachmentUrl: attachment?.attachmentUrl ?? null,
+      attachmentFileName: attachment?.attachmentFileName ?? null,
     };
 
     const result = isEdit
@@ -132,6 +139,7 @@ export function SupplierPaymentDialog({ open, onClose, supplierId, outstanding, 
         <FieldGroup label="ملاحظات" error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
+        <InvoiceAttachmentField folder="suppliers" value={attachment} onChange={setAttachment} />
         {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
       </form>
     </Dialog>

@@ -13,6 +13,8 @@ export interface CashBoxTransactionDTO {
   miscExpenseNotes: string | null;
   miscExpenseCategory: string | null;
   miscExpenseDate: string | null;
+  miscExpenseAttachmentUrl: string | null;
+  miscExpenseAttachmentFileName: string | null;
 }
 
 export interface CashBoxDetailsDTO {
@@ -30,6 +32,11 @@ export interface PagedResultDTO<T> {
   pageSize: number;
 }
 
+export interface CashBoxTransactionsResultDTO extends PagedResultDTO<CashBoxTransactionDTO> {
+  filteredTotalCash: number;
+  filteredTotalCredit: number;
+}
+
 export interface CashBoxTransactionFilter {
   page?: number;
   pageSize?: number;
@@ -43,23 +50,33 @@ export interface CashBoxTransactionFilter {
 export interface MiscExpenseDTO {
   id: number;
   amount: number;
+  amountCash: number;
+  amountCredit: number;
   notes: string | null;
   category: string;
   expenseDate: string;
   createdByEmployeeName: string;
+  attachmentUrl: string | null;
+  attachmentFileName: string | null;
 }
 
 export interface CreateMiscExpenseDTO {
-  amount: number;
+  amountCash: number;
+  amountCredit: number;
   notes?: string | null;
   category: number;
   expenseDate: string;
+  attachmentUrl?: string | null;
+  attachmentFileName?: string | null;
 }
 
 export interface UpdateMiscExpenseDTO {
   id: number;
-  amount: number;
+  amountCash: number;
+  amountCredit: number;
   notes?: string | null;
   category: number;
   expenseDate: string;
+  attachmentUrl?: string | null;
+  attachmentFileName?: string | null;
 }

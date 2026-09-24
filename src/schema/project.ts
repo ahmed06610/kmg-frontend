@@ -6,8 +6,11 @@ export const createProjectSchema = z.object({
   clientId: z.number().min(1, "اختر العميل"),
   contractValue: z.number().gt(0, "قيمة المشروع يجب أن تكون أكبر من صفر"),
   description: z.string().optional().or(z.literal("")),
-  tenderInsuranceAmount: z.number().min(0).optional(),
-  tenderTaxAmount: z.number().min(0).optional(),
+  tenderInsurancePercent: z.number().min(0).max(100).optional(),
+  insuranceDueDate: z.string().optional().or(z.literal("")),
+  tenderTaxPercent: z.number().min(0).max(100).optional(),
+  workGuaranteePercent: z.number().min(0).max(100).optional(),
+  workGuaranteeDueDate: z.string().optional().or(z.literal("")),
   supplyProfitMargin: z.number().min(0).optional(),
 });
 export type CreateProjectFormValues = z.infer<typeof createProjectSchema>;
@@ -17,15 +20,27 @@ export const updateProjectSchema = z.object({
   clientId: z.number().min(1, "اختر العميل"),
   contractValue: z.number().gt(0, "قيمة المشروع يجب أن تكون أكبر من صفر"),
   description: z.string().optional().or(z.literal("")),
+  tenderInsurancePercent: z.number().min(0).max(100).optional(),
+  insuranceDueDate: z.string().optional().or(z.literal("")),
+  tenderTaxPercent: z.number().min(0).max(100).optional(),
+  workGuaranteePercent: z.number().min(0).max(100).optional(),
+  workGuaranteeDueDate: z.string().optional().or(z.literal("")),
 });
 export type UpdateProjectFormValues = z.infer<typeof updateProjectSchema>;
 
-export const projectPaymentSchema = z.object({
-  amountCash: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
-  amountCredit: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
-  paymentDate: z.string().min(1, "التاريخ مطلوب"),
-  notes: z.string().optional().or(z.literal("")),
-});
+export const projectPaymentSchema = z
+  .object({
+    amountCash: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+    amountCredit: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+    paymentDate: z.string().min(1, "التاريخ مطلوب"),
+    notes: z.string().optional().or(z.literal("")),
+    isCheck: z.boolean(),
+    checkDueDate: z.string().optional().or(z.literal("")),
+  })
+  .refine((data) => !data.isCheck || !!data.checkDueDate, {
+    message: "تاريخ استحقاق الشيك مطلوب",
+    path: ["checkDueDate"],
+  });
 export type ProjectPaymentFormValues = z.infer<typeof projectPaymentSchema>;
 
 export const projectExpenseSchema = z.object({

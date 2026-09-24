@@ -106,6 +106,14 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
           </div>
           {errors.workers?.message && <p className="text-error text-xs">{errors.workers.message}</p>}
 
+          {fields.length > 0 && (
+            <div className="flex items-center gap-stack-sm px-1">
+              <span className="flex-1 text-xs text-on-surface-variant">العامل</span>
+              <span className="w-28 text-xs text-on-surface-variant">عدد الأيام</span>
+              <span className="w-[18px]" />
+            </div>
+          )}
+
           {fields.map((field, index) => (
             <div key={field.id} className="flex items-center gap-stack-sm">
               <div className="flex-1">

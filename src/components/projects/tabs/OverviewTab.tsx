@@ -1,9 +1,68 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { recoverGuarantee, recoverInsurance } from "@/actions/projects";
 import { Card } from "@/components/ui/Card";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Icon } from "@/components/ui/Icon";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import type { ProjectDetailsDTO } from "@/types/project";
 import type { MissionListDTO } from "@/types/mission";
+
+function RecoveryCard({
+  title,
+  amount,
+  dueDate,
+  recovered,
+  canManage,
+  onRecover,
+}: {
+  title: string;
+  amount: number;
+  dueDate: string | null;
+  recovered: boolean;
+  canManage: boolean;
+  onRecover: () => Promise<{ success: boolean; message?: string }>;
+}) {
+  const router = useRouter();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-body-sm text-on-surface-variant">{title}</p>
+        {recovered ? (
+          <span className="text-xs text-success font-semibold flex items-center gap-1">
+            <Icon name="check_circle" size={14} />
+            مسترد
+          </span>
+        ) : (
+          canManage && (
+            <button type="button" onClick={() => setConfirmOpen(true)} className="text-xs text-primary font-semibold hover:underline">
+              تم الاسترداد
+            </button>
+          )
+        )}
+      </div>
+      <p dir="ltr" className="text-title-sm text-mono-data text-on-surface text-right">
+        {formatCurrency(amount)}
+      </p>
+      {dueDate && <p className="text-xs text-on-surface-variant mt-1">تاريخ الاستحقاق: {formatDate(dueDate)}</p>}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title={`استرداد ${title}`}
+        message={`هل أنت متأكد من استرداد ${title} بقيمة ${formatCurrency(amount)}؟ هيتسجل كحركة دخول فعلية في الخزنة.`}
+        confirmLabel="تأكيد الاسترداد"
+        onConfirm={onRecover}
+        onConfirmed={() => router.refresh()}
+      />
+    </Card>
+  );
+}
 
 function Kpi({ label, value, icon, tone }: { label: string; value: string; icon: string; tone: string }) {
   return (
@@ -72,7 +131,7 @@ function aggregateMaterialUsage(project: ProjectDetailsDTO): MaterialUsage[] {
     .sort((a, b) => b.netIssued - a.netIssued);
 }
 
-export function OverviewTab({ project, missions }: { project: ProjectDetailsDTO; missions: MissionListDTO[] }) {
+export function OverviewTab({ project, missions, canManage }: { project: ProjectDetailsDTO; missions: MissionListDTO[]; canManage: boolean }) {
   const totalCost = project.totalMaterialsCost + project.totalPettyExpenses + project.totalLaborCost;
   const spendRatio = project.contractValue > 0 ? Math.round((totalCost / project.contractValue) * 100) : 0;
   const activeMission = missions.find((m) => m.status !== "Settled");
@@ -92,6 +151,43 @@ export function OverviewTab({ project, missions }: { project: ProjectDetailsDTO;
           tone={project.netProfit >= 0 ? "text-success" : "text-error"}
         />
       </div>
+
+      {project.tenderTaxAmount > 0 && (
+        <div className="grid grid-cols-2 gap-gutter">
+          <Kpi
+            label={`الضريبة المضافة (${project.tenderTaxPercent}%)`}
+            value={formatCurrency(project.tenderTaxAmount)}
+            icon="percent"
+            tone="text-on-surface-variant"
+          />
+          <Kpi label="الإجمالي بالضريبة" value={formatCurrency(project.contractValueWithTax)} icon="summarize" tone="text-on-surface-variant" />
+        </div>
+      )}
+
+      {(project.tenderInsuranceAmount > 0 || project.workGuaranteeAmount > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-gutter">
+          {project.tenderInsuranceAmount > 0 && (
+            <RecoveryCard
+              title="تأمين المناقصة"
+              amount={project.tenderInsuranceAmount}
+              dueDate={project.insuranceDueDate}
+              recovered={project.insuranceRecovered}
+              canManage={canManage}
+              onRecover={() => recoverInsurance(project.id)}
+            />
+          )}
+          {project.workGuaranteeAmount > 0 && (
+            <RecoveryCard
+              title="ضمان الأعمال"
+              amount={project.workGuaranteeAmount}
+              dueDate={project.workGuaranteeDueDate}
+              recovered={project.workGuaranteeRecovered}
+              canManage={canManage}
+              onRecover={() => recoverGuarantee(project.id)}
+            />
+          )}
+        </div>
+      )}
 
       {project.totalWriteOffs > 0 && (
         <p className="text-xs text-on-surface-variant -mt-2">
