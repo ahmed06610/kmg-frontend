@@ -14,8 +14,8 @@ import { formatCurrency } from "@/lib/utils";
 import { projectTypeLabels } from "@/types/enums";
 import type { ClientListDTO } from "@/types/client";
 import type { EmployeeListDTO } from "@/types/employee";
-import type { MaterialDTO } from "@/types/stock";
-import type { MissionListDTO } from "@/types/mission";
+import type { MaterialCategoryDTO, MaterialDTO } from "@/types/stock";
+import type { MissionDetailsDTO } from "@/types/mission";
 import type { ProjectDetailsDTO } from "@/types/project";
 import { ProjectEditDialog } from "./ProjectEditDialog";
 import { ProjectStatusSelect } from "./ProjectStatusSelect";
@@ -32,13 +32,15 @@ export function ProjectDetailsView({
   project,
   missions,
   materials,
+  categories,
   workers,
   clients,
   canManage,
 }: {
   project: ProjectDetailsDTO;
-  missions: MissionListDTO[];
+  missions: MissionDetailsDTO[];
   materials: MaterialDTO[];
+  categories: MaterialCategoryDTO[];
   workers: EmployeeListDTO[];
   clients: ClientListDTO[];
   canManage: boolean;
@@ -96,13 +98,14 @@ export function ProjectDetailsView({
       />
 
       <div>
-        {tab === "overview" && <OverviewTab project={project} missions={missions} />}
+        {tab === "overview" && <OverviewTab project={project} missions={missions} canManage={canManage} />}
         {tab === "materials" && (
           <MaterialsTab
             projectId={project.id}
             movements={project.stockMovements}
             totalMaterialsCost={project.totalMaterialsCost}
             materials={materials}
+            categories={categories}
             canManage={canManage}
           />
         )}

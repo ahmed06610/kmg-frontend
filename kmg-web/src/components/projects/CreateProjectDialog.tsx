@@ -35,14 +35,18 @@ export function CreateProjectDialog({ open, onClose, clients }: { open: boolean;
     setLoading(true);
     setServerError(null);
 
+    const isManufacture = projectType === ProjectType.ManufactureExecution;
     const payload = {
       name: data.name,
       projectType: data.projectType,
       clientId: data.clientId,
       contractValue: data.contractValue,
       description: data.description || null,
-      tenderInsuranceAmount: projectType === ProjectType.ManufactureExecution ? data.tenderInsuranceAmount || null : null,
-      tenderTaxAmount: projectType === ProjectType.ManufactureExecution ? data.tenderTaxAmount || null : null,
+      tenderInsurancePercent: isManufacture ? data.tenderInsurancePercent || null : null,
+      insuranceDueDate: isManufacture ? data.insuranceDueDate || null : null,
+      tenderTaxPercent: isManufacture ? data.tenderTaxPercent || null : null,
+      workGuaranteePercent: isManufacture ? data.workGuaranteePercent || null : null,
+      workGuaranteeDueDate: isManufacture ? data.workGuaranteeDueDate || null : null,
       supplyProfitMargin: projectType === ProjectType.Supply ? data.supplyProfitMargin || null : null,
     };
 
@@ -110,14 +114,27 @@ export function CreateProjectDialog({ open, onClose, clients }: { open: boolean;
         </FieldGroup>
 
         {projectType === ProjectType.ManufactureExecution && (
-          <div className="grid grid-cols-2 gap-stack-md">
-            <FieldGroup label="تأمين المناقصة" error={errors.tenderInsuranceAmount?.message}>
-              <Input type="number" step="0.01" dir="ltr" {...register("tenderInsuranceAmount", { valueAsNumber: true })} />
+          <>
+            <div className="grid grid-cols-2 gap-stack-md">
+              <FieldGroup label="نسبة تأمين المناقصة %" error={errors.tenderInsurancePercent?.message}>
+                <Input type="number" step="0.01" dir="ltr" {...register("tenderInsurancePercent", { valueAsNumber: true })} />
+              </FieldGroup>
+              <FieldGroup label="تاريخ استحقاق استرداد التأمين" error={errors.insuranceDueDate?.message}>
+                <Input type="date" {...register("insuranceDueDate")} />
+              </FieldGroup>
+            </div>
+            <FieldGroup label="نسبة ضريبة المناقصة %" error={errors.tenderTaxPercent?.message}>
+              <Input type="number" step="0.01" dir="ltr" {...register("tenderTaxPercent", { valueAsNumber: true })} />
             </FieldGroup>
-            <FieldGroup label="ضريبة المناقصة" error={errors.tenderTaxAmount?.message}>
-              <Input type="number" step="0.01" dir="ltr" {...register("tenderTaxAmount", { valueAsNumber: true })} />
-            </FieldGroup>
-          </div>
+            <div className="grid grid-cols-2 gap-stack-md">
+              <FieldGroup label="نسبة ضمان الأعمال %" error={errors.workGuaranteePercent?.message}>
+                <Input type="number" step="0.01" dir="ltr" {...register("workGuaranteePercent", { valueAsNumber: true })} />
+              </FieldGroup>
+              <FieldGroup label="تاريخ استحقاق استرداد الضمان" error={errors.workGuaranteeDueDate?.message}>
+                <Input type="date" {...register("workGuaranteeDueDate")} />
+              </FieldGroup>
+            </div>
+          </>
         )}
 
         {projectType === ProjectType.Supply && (

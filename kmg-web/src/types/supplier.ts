@@ -22,6 +22,8 @@ export interface SupplierPaymentDTO {
   isCheck: boolean;
   checkDueDate: string | null;
   checkStatus: CheckStatus | null;
+  attachmentUrl: string | null;
+  attachmentFileName: string | null;
 }
 
 export interface SupplierPurchaseDTO {
@@ -58,6 +60,8 @@ export interface CreateSupplierPaymentDTO {
   notes?: string | null;
   isCheck: boolean;
   checkDueDate?: string | null;
+  attachmentUrl?: string | null;
+  attachmentFileName?: string | null;
 }
 
 export interface UpdateSupplierPaymentDTO {
@@ -68,6 +72,8 @@ export interface UpdateSupplierPaymentDTO {
   notes?: string | null;
   isCheck: boolean;
   checkDueDate?: string | null;
+  attachmentUrl?: string | null;
+  attachmentFileName?: string | null;
 }
 
 export interface ResolveCheckDTO {

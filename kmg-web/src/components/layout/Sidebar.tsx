@@ -13,7 +13,7 @@ export function Sidebar({ abilities }: { abilities: string[] }) {
   const items = NAV_ITEMS.filter((item) => abilities.includes(item.ability));
 
   return (
-    <aside className="hidden md:flex fixed right-0 top-0 h-full w-sidebar-width flex-col bg-surface-container-lowest border-l border-outline-variant z-20">
+    <aside data-print-hide className="hidden md:flex fixed right-0 top-0 h-full w-sidebar-width flex-col bg-surface-container-lowest border-l border-outline-variant z-20">
       <div className="flex items-center gap-2 px-stack-lg h-16 border-b border-outline-variant">
         <Image src="/logo-mark.png" alt="KMG" width={32} height={32} className="shrink-0 object-contain" />
         <div className="leading-tight">

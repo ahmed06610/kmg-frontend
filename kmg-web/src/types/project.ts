@@ -1,4 +1,5 @@
 import type { StockMovementDTO } from "./stock";
+import type { CheckStatus } from "./supplier";
 
 export interface ProjectListDTO {
   id: number;
@@ -21,6 +22,11 @@ export interface ProjectPaymentDTO {
   amountCredit: number;
   paymentDate: string;
   notes: string | null;
+  attachmentUrl: string | null;
+  attachmentFileName: string | null;
+  isCheck: boolean;
+  checkDueDate: string | null;
+  checkStatus: CheckStatus | null;
 }
 
 export interface ProjectExpenseDTO {
@@ -30,6 +36,7 @@ export interface ProjectExpenseDTO {
   description: string | null;
   expenseDate: string;
   attachmentUrl: string | null;
+  attachmentFileName: string | null;
 }
 
 export interface ProjectAttachmentDTO {
@@ -54,8 +61,17 @@ export interface ProjectDetailsDTO extends ProjectListDTO {
   clientEmail: string | null;
   clientAddress: string | null;
   description: string | null;
-  tenderInsuranceAmount: number | null;
-  tenderTaxAmount: number | null;
+  tenderInsurancePercent: number | null;
+  tenderInsuranceAmount: number;
+  insuranceDueDate: string | null;
+  insuranceRecovered: boolean;
+  tenderTaxPercent: number | null;
+  tenderTaxAmount: number;
+  workGuaranteePercent: number | null;
+  workGuaranteeAmount: number;
+  workGuaranteeDueDate: string | null;
+  workGuaranteeRecovered: boolean;
+  contractValueWithTax: number;
   supplyProfitMargin: number | null;
   totalMaterialsCost: number;
   totalPettyExpenses: number;
@@ -97,8 +113,11 @@ export interface CreateProjectDTO {
   clientId: number;
   contractValue: number;
   description?: string | null;
-  tenderInsuranceAmount?: number | null;
-  tenderTaxAmount?: number | null;
+  tenderInsurancePercent?: number | null;
+  insuranceDueDate?: string | null;
+  tenderTaxPercent?: number | null;
+  workGuaranteePercent?: number | null;
+  workGuaranteeDueDate?: string | null;
   supplyProfitMargin?: number | null;
 }
 
@@ -108,6 +127,11 @@ export interface UpdateProjectDTO {
   description?: string | null;
   clientId: number;
   contractValue: number;
+  tenderInsurancePercent?: number | null;
+  insuranceDueDate?: string | null;
+  tenderTaxPercent?: number | null;
+  workGuaranteePercent?: number | null;
+  workGuaranteeDueDate?: string | null;
 }
 
 export interface UpdateProjectStatusDTO {
@@ -121,6 +145,10 @@ export interface CreateProjectPaymentDTO {
   amountCredit: number;
   paymentDate: string;
   notes?: string | null;
+  attachmentUrl?: string | null;
+  attachmentFileName?: string | null;
+  isCheck: boolean;
+  checkDueDate?: string | null;
 }
 
 export interface UpdateProjectPaymentDTO {
@@ -129,6 +157,16 @@ export interface UpdateProjectPaymentDTO {
   amountCredit: number;
   paymentDate: string;
   notes?: string | null;
+  attachmentUrl?: string | null;
+  attachmentFileName?: string | null;
+  isCheck: boolean;
+  checkDueDate?: string | null;
+}
+
+export interface ResolveProjectPaymentCheckDTO {
+  paymentId: number;
+  action: number;
+  newDueDate?: string | null;
 }
 
 export interface CreateProjectExpenseDTO {
@@ -138,6 +176,7 @@ export interface CreateProjectExpenseDTO {
   description?: string | null;
   expenseDate: string;
   attachmentUrl?: string | null;
+  attachmentFileName?: string | null;
   paidFromCashBox: boolean;
 }
 

@@ -1,5 +1,8 @@
 import { CashBoxView } from "@/components/cashbox/CashBoxView";
 import { getCashBox, getCashBoxTransactions } from "@/lib/api/cashbox";
+import { getCustodies } from "@/lib/api/custody";
+import { getEmployees } from "@/lib/api/employees";
+import { getProjects } from "@/lib/api/projects";
 import { getSession } from "@/lib/session";
 
 const PAGE_SIZE = 20;
@@ -10,6 +13,7 @@ export default async function CashBoxPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await searchParams;
+  const tab = params.tab === "custody" ? "custody" : "transactions";
   const page = Number(params.page) || 1;
   const dateFrom = typeof params.dateFrom === "string" && params.dateFrom ? params.dateFrom : undefined;
   const dateTo = typeof params.dateTo === "string" && params.dateTo ? params.dateTo : undefined;
@@ -19,7 +23,14 @@ export default async function CashBoxPage({
 
   const filter = { page, pageSize: PAGE_SIZE, dateFrom, dateTo, type, isIn, search };
 
-  const [cashbox, transactions, session] = await Promise.all([getCashBox(1), getCashBoxTransactions(filter), getSession()]);
+  const [cashbox, transactions, custodies, employees, projects, session] = await Promise.all([
+    getCashBox(1),
+    getCashBoxTransactions(filter),
+    getCustodies(),
+    getEmployees(),
+    getProjects(),
+    getSession(),
+  ]);
 
   const canManage = session?.abilities.includes("إدارة المصاريف") ?? false;
 
@@ -28,6 +39,10 @@ export default async function CashBoxPage({
       totals={{ totalCash: cashbox.totalCash, totalCredit: cashbox.totalCredit, totalBalance: cashbox.totalBalance }}
       transactions={transactions}
       filter={filter}
+      custodies={custodies}
+      employees={employees}
+      projects={projects}
+      tab={tab}
       canManage={canManage}
     />
   );

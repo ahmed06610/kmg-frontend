@@ -1,8 +1,8 @@
 import { apiClient } from "@/lib/api-client";
-import type { MissionDetailsDTO, MissionListDTO } from "@/types/mission";
+import type { MissionDetailsDTO } from "@/types/mission";
 
 export function getMissionsByProject(projectId: number) {
-  return apiClient.get<MissionListDTO[]>(`/Mission/by-project/${projectId}`);
+  return apiClient.get<MissionDetailsDTO[]>(`/Mission/by-project/${projectId}`);
 }
 
 export function getMissionById(id: number) {

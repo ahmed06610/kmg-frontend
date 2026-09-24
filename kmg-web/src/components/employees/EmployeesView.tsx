@@ -17,6 +17,8 @@ import { employeeTypeLabels, wageTypeLabels } from "@/types/enums";
 import type { RoleDto } from "@/types/auth";
 import type { EmployeeListDTO } from "@/types/employee";
 import { CreateWorkerDialog } from "./CreateWorkerDialog";
+import { EditEmployeeDialog } from "./EditEmployeeDialog";
+import { EmployeeEditDialog } from "./EmployeeEditDialog";
 import { RegisterEmployeeDialog } from "./RegisterEmployeeDialog";
 
 function KpiCard({ label, value, tone }: { label: string; value: string; tone?: string }) {
@@ -43,6 +45,8 @@ export function EmployeesView({
 }) {
   const [workerDialogOpen, setWorkerDialogOpen] = useState(false);
   const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
+  const [editingWorker, setEditingWorker] = useState<EmployeeListDTO | null>(null);
+  const [editingAdmin, setEditingAdmin] = useState<EmployeeListDTO | null>(null);
 
   const admins = employees.filter((e) => e.employeeType === 1);
   const workers = employees.filter((e) => e.employeeType === 2);
@@ -122,6 +126,7 @@ export function EmployeesView({
                 <Th>المدير</Th>
                 <Th>حساب دخول</Th>
                 <Th>الحالة</Th>
+                {(canCreateWorker || canRegisterEmployee) && <Th>إجراءات</Th>}
               </tr>
             </THead>
             <TBody>
@@ -141,6 +146,21 @@ export function EmployeesView({
                   <Td>{e.managerName ?? "-"}</Td>
                   <Td>{e.hasLoginAccount ? <Badge tone="info">نعم</Badge> : <Badge tone="neutral">لا</Badge>}</Td>
                   <Td>{e.suspended ? <Badge tone="error">موقوف</Badge> : <Badge tone="success">نشط</Badge>}</Td>
+                  {(canCreateWorker || canRegisterEmployee) && (
+                    <Td>
+                      {e.hasLoginAccount
+                        ? canRegisterEmployee && (
+                            <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingAdmin(e)}>
+                              <Icon name="edit" size={18} />
+                            </button>
+                          )
+                        : canCreateWorker && (
+                            <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingWorker(e)}>
+                              <Icon name="edit" size={18} />
+                            </button>
+                          )}
+                    </Td>
+                  )}
                 </Tr>
               ))}
             </TBody>
@@ -151,6 +171,8 @@ export function EmployeesView({
 
       <CreateWorkerDialog open={workerDialogOpen} onClose={() => setWorkerDialogOpen(false)} />
       <RegisterEmployeeDialog open={registerDialogOpen} onClose={() => setRegisterDialogOpen(false)} roles={roles} />
+      <EmployeeEditDialog open={!!editingWorker} onClose={() => setEditingWorker(null)} employee={editingWorker} />
+      <EditEmployeeDialog open={!!editingAdmin} onClose={() => setEditingAdmin(null)} employee={editingAdmin} roles={roles} />
     </div>
   );
 }

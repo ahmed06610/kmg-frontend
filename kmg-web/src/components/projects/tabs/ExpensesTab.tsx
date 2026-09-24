@@ -11,6 +11,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FieldGroup, Input, Select } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
+import { InvoiceAttachmentField, type InvoiceAttachmentValue } from "@/components/ui/InvoiceAttachmentField";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
@@ -111,6 +112,7 @@ function RecordExpenseDialog({ open, onClose, projectId }: { open: boolean; onCl
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [attachment, setAttachment] = useState<InvoiceAttachmentValue | null>(null);
 
   const {
     register,
@@ -125,13 +127,20 @@ function RecordExpenseDialog({ open, onClose, projectId }: { open: boolean; onCl
   const onSubmit = async (data: ProjectExpenseFormValues) => {
     setLoading(true);
     setServerError(null);
-    const result = await recordProjectExpense({ projectId, ...data, description: data.description || null });
+    const result = await recordProjectExpense({
+      projectId,
+      ...data,
+      description: data.description || null,
+      attachmentUrl: attachment?.attachmentUrl ?? null,
+      attachmentFileName: attachment?.attachmentFileName ?? null,
+    });
     setLoading(false);
     if (!result.success) {
       setServerError(result.message ?? "حدث خطأ");
       return;
     }
     reset();
+    setAttachment(null);
     onClose();
     router.refresh();
   };
@@ -176,6 +185,7 @@ function RecordExpenseDialog({ open, onClose, projectId }: { open: boolean; onCl
           <input type="checkbox" {...register("paidFromCashBox")} defaultChecked />
           يخصم من الخزنة فورًا
         </label>
+        <InvoiceAttachmentField folder="projects" value={attachment} onChange={setAttachment} />
         {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
       </form>
     </Dialog>

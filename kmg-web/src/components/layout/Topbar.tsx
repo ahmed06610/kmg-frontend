@@ -4,7 +4,7 @@ import { NotificationBell } from "./NotificationBell";
 
 export function Topbar({ roleName, username, abilities }: { roleName: string; username: string; abilities: string[] }) {
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-outline-variant bg-surface px-container-margin">
+    <header data-print-hide className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-outline-variant bg-surface px-container-margin">
       <div className="flex items-center gap-2">
         <MobileNav abilities={abilities} />
         <NotificationBell />

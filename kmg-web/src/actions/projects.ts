@@ -13,6 +13,7 @@ import type {
   ProjectExpenseDTO,
   ProjectPaymentDTO,
   ProjectWriteOffDTO,
+  ResolveProjectPaymentCheckDTO,
   UpdateProjectAttachmentDTO,
   UpdateProjectDTO,
   UpdateProjectExpenseDTO,
@@ -72,6 +73,28 @@ export async function updateProjectStatus(data: UpdateProjectStatusDTO): Promise
   }
 }
 
+export async function recoverInsurance(projectId: number): Promise<ActionResult> {
+  try {
+    await apiClient.post(`/Project/${projectId}/recover-insurance`);
+    revalidatePath(`/projects/${projectId}`);
+    revalidatePath("/cashbox");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function recoverGuarantee(projectId: number): Promise<ActionResult> {
+  try {
+    await apiClient.post(`/Project/${projectId}/recover-guarantee`);
+    revalidatePath(`/projects/${projectId}`);
+    revalidatePath("/cashbox");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
 export async function recordProjectPayment(data: CreateProjectPaymentDTO): Promise<ActionResult<ProjectPaymentDTO>> {
   try {
     const payment = await apiClient.post<ProjectPaymentDTO>("/Project/payments", data);
@@ -87,6 +110,18 @@ export async function recordProjectPayment(data: CreateProjectPaymentDTO): Promi
 export async function updateProjectPayment(data: UpdateProjectPaymentDTO, projectId: number): Promise<ActionResult<ProjectPaymentDTO>> {
   try {
     const payment = await apiClient.put<ProjectPaymentDTO>("/Project/payments", data);
+    revalidatePath(`/projects/${projectId}`);
+    revalidatePath("/projects");
+    revalidatePath("/cashbox");
+    return { success: true, data: payment };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function resolveProjectCheck(data: ResolveProjectPaymentCheckDTO, projectId: number): Promise<ActionResult<ProjectPaymentDTO>> {
+  try {
+    const payment = await apiClient.post<ProjectPaymentDTO>("/Project/payments/resolve-check", data);
     revalidatePath(`/projects/${projectId}`);
     revalidatePath("/projects");
     revalidatePath("/cashbox");

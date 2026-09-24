@@ -3,16 +3,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { updateMission } from "@/actions/missions";
 import { Button } from "@/components/ui/Button";
 import { Combobox } from "@/components/ui/Combobox";
 import { Dialog } from "@/components/ui/Dialog";
 import { FieldGroup, Input } from "@/components/ui/Field";
+import { Icon } from "@/components/ui/Icon";
 import { formatDate } from "@/lib/utils";
 import { updateMissionSchema, type UpdateMissionFormValues } from "@/schema/mission";
 import type { EmployeeListDTO } from "@/types/employee";
-import type { MissionListDTO } from "@/types/mission";
+import type { MissionDetailsDTO } from "@/types/mission";
 
 export function MissionEditDialog({
   open,
@@ -23,7 +24,7 @@ export function MissionEditDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  mission: MissionListDTO | null;
+  mission: MissionDetailsDTO | null;
   projectId: number;
   workers: EmployeeListDTO[];
 }) {
@@ -39,8 +40,10 @@ export function MissionEditDialog({
     formState: { errors },
   } = useForm<UpdateMissionFormValues>({
     resolver: zodResolver(updateMissionSchema),
-    defaultValues: { foremanEmployeeId: 0, startDate: formatDate(new Date()), advanceAmount: 0, notes: "" },
+    defaultValues: { foremanEmployeeId: 0, startDate: formatDate(new Date()), advanceAmount: 0, notes: "", workers: [{ employeeId: 0, daysCount: 1 }] },
   });
+
+  const { fields, append, remove } = useFieldArray({ control, name: "workers" });
 
   useEffect(() => {
     if (open && mission) {
@@ -49,6 +52,7 @@ export function MissionEditDialog({
         startDate: mission.startDate.slice(0, 10),
         advanceAmount: mission.advanceAmount,
         notes: "",
+        workers: mission.workers.length > 0 ? mission.workers.map((w) => ({ employeeId: w.employeeId, daysCount: w.daysCount })) : [{ employeeId: 0, daysCount: 1 }],
       });
       setServerError(null);
     }
@@ -74,6 +78,7 @@ export function MissionEditDialog({
       open={open}
       onClose={onClose}
       title="تعديل بيانات المأمورية"
+      maxWidth="max-w-2xl"
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
@@ -113,6 +118,58 @@ export function MissionEditDialog({
         <FieldGroup label="ملاحظات" error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
+
+        <div className="flex flex-col gap-stack-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-label-caps text-on-surface-variant">العمال المشاركين</span>
+            <button
+              type="button"
+              onClick={() => append({ employeeId: 0, daysCount: 1 })}
+              className="text-primary text-body-sm font-semibold flex items-center gap-1"
+            >
+              <Icon name="add" size={16} />
+              إضافة عامل
+            </button>
+          </div>
+          {errors.workers?.message && <p className="text-error text-xs">{errors.workers.message}</p>}
+
+          {fields.length > 0 && (
+            <div className="flex items-center gap-stack-sm px-1">
+              <span className="flex-1 text-xs text-on-surface-variant">العامل</span>
+              <span className="w-28 text-xs text-on-surface-variant">عدد الأيام</span>
+              <span className="w-[18px]" />
+            </div>
+          )}
+
+          {fields.map((field, index) => (
+            <div key={field.id} className="flex items-center gap-stack-sm">
+              <div className="flex-1">
+                <Controller
+                  name={`workers.${index}.employeeId`}
+                  control={control}
+                  render={({ field }) => (
+                    <Combobox
+                      value={field.value ? String(field.value) : ""}
+                      onChange={(v) => field.onChange(Number(v))}
+                      placeholder="اختر عامل"
+                      options={workers.map((w) => ({ value: String(w.id), label: w.name }))}
+                    />
+                  )}
+                />
+              </div>
+              <Input
+                type="number"
+                dir="ltr"
+                placeholder="عدد الأيام"
+                className="w-28"
+                {...register(`workers.${index}.daysCount`, { valueAsNumber: true })}
+              />
+              <button type="button" onClick={() => remove(index)} className="text-error shrink-0" aria-label="حذف">
+                <Icon name="delete" size={18} />
+              </button>
+            </div>
+          ))}
+        </div>
 
         {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
       </form>

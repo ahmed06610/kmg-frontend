@@ -72,6 +72,8 @@ export interface StockMovementDTO {
   movementDate: string;
   notes: string | null;
   createdByEmployeeName: string;
+  attachmentUrl: string | null;
+  attachmentFileName: string | null;
 }
 
 export interface CreatePurchaseDTO {
@@ -80,13 +82,18 @@ export interface CreatePurchaseDTO {
   unitPrice: number;
   supplierId: number;
   notes?: string | null;
+  attachmentUrl?: string | null;
+  attachmentFileName?: string | null;
 }
 
 export interface CreateIssueDTO {
   materialId: number;
   quantity: number;
+  unitPrice: number;
   projectId: number;
   notes?: string | null;
+  attachmentUrl?: string | null;
+  attachmentFileName?: string | null;
 }
 
 export interface CreateReturnDTO {
@@ -94,4 +101,10 @@ export interface CreateReturnDTO {
   quantity: number;
   projectId: number;
   notes?: string | null;
+}
+
+export interface StockPriceBatchDTO {
+  unitPrice: number;
+  availableQuantity: number;
+  firstPurchaseDate: string;
 }

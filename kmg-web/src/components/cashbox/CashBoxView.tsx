@@ -12,28 +12,38 @@ import { Icon } from "@/components/ui/Icon";
 import { Pagination } from "@/components/ui/Pagination";
 import { Select } from "@/components/ui/Field";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
+import { Tabs } from "@/components/ui/Tabs";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { TransactionType, transactionTypeLabels } from "@/types/enums";
-import type { CashBoxTransactionDTO, CashBoxTransactionFilter, PagedResultDTO } from "@/types/cashbox";
+import type { CashBoxTransactionDTO, CashBoxTransactionFilter, CashBoxTransactionsResultDTO } from "@/types/cashbox";
+import type { CustodyDTO } from "@/types/custody";
+import type { EmployeeListDTO } from "@/types/employee";
+import type { ProjectListDTO } from "@/types/project";
+import { CustodyTab } from "./CustodyTab";
 import { MiscExpenseDialog } from "./MiscExpenseDialog";
 
 interface Props {
   totals: { totalCash: number; totalCredit: number; totalBalance: number };
-  transactions: PagedResultDTO<CashBoxTransactionDTO>;
+  transactions: CashBoxTransactionsResultDTO;
   filter: CashBoxTransactionFilter;
+  custodies: CustodyDTO[];
+  employees: EmployeeListDTO[];
+  projects: ProjectListDTO[];
+  tab: "transactions" | "custody";
   canManage: boolean;
 }
 
-export function CashBoxView({ totals, transactions, filter, canManage }: Props) {
+export function CashBoxView({ totals, transactions, filter, custodies, employees, projects, tab, canManage }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState(filter.search ?? "");
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<CashBoxTransactionDTO | undefined>(undefined);
   const [deletingTransaction, setDeletingTransaction] = useState<CashBoxTransactionDTO | null>(null);
 
-  function pushFilter(next: Partial<CashBoxTransactionFilter>) {
+  function pushFilter(next: Partial<CashBoxTransactionFilter> & { tab?: string }) {
     const merged = { ...filter, ...next, page: next.page ?? 1 };
     const params = new URLSearchParams();
+    params.set("tab", next.tab ?? tab);
     if (merged.dateFrom) params.set("dateFrom", merged.dateFrom);
     if (merged.dateTo) params.set("dateTo", merged.dateTo);
     if (merged.type) params.set("type", String(merged.type));
@@ -58,7 +68,7 @@ export function CashBoxView({ totals, transactions, filter, canManage }: Props) 
           <h1 className="text-headline-md text-on-surface">الخزنة</h1>
           <p className="text-body-sm text-on-surface-variant">كل حركة مالية في النظام مربوطة تلقائيًا بمصدرها</p>
         </div>
-        {canManage && (
+        {canManage && tab === "transactions" && (
           <Button
             onClick={() => {
               setEditingTransaction(undefined);
@@ -92,6 +102,19 @@ export function CashBoxView({ totals, transactions, filter, canManage }: Props) 
         </Card>
       </div>
 
+      <Tabs
+        items={[
+          { key: "transactions", label: "الحركات" },
+          { key: "custody", label: "عهد", badge: custodies.filter((c) => c.status === "Active").length },
+        ]}
+        active={tab}
+        onChange={(key) => pushFilter({ tab: key })}
+      />
+
+      {tab === "custody" ? (
+        <CustodyTab custodies={custodies} employees={employees} projects={projects} canManage={canManage} />
+      ) : (
+        <>
       <Card className="!p-stack-md">
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-stack-sm items-end">
           <div className="flex flex-col gap-1">
@@ -238,6 +261,21 @@ export function CashBoxView({ totals, transactions, filter, canManage }: Props) 
         )}
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-gutter">
+        <Card>
+          <p className="text-body-sm text-on-surface-variant">إجمالي الكاش (حسب الفلتر الحالي)</p>
+          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-right">
+            {formatCurrency(transactions.filteredTotalCash)}
+          </p>
+        </Card>
+        <Card>
+          <p className="text-body-sm text-on-surface-variant">إجمالي الكريديت (حسب الفلتر الحالي)</p>
+          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-right">
+            {formatCurrency(transactions.filteredTotalCredit)}
+          </p>
+        </Card>
+      </div>
+
       <MiscExpenseDialog
         open={expenseDialogOpen}
         onClose={() => {
@@ -254,6 +292,8 @@ export function CashBoxView({ totals, transactions, filter, canManage }: Props) 
         onConfirm={() => deleteMiscExpense(deletingTransaction!.miscExpenseId!)}
         onConfirmed={() => router.refresh()}
       />
+      </>
+      )}
     </div>
   );
 }

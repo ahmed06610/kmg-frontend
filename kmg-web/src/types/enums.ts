@@ -39,6 +39,11 @@ export const TransactionType = {
   AdvanceOut: 8,
   MissionSettlementOut: 9,
   MiscExpenseOut: 10,
+  InsuranceRecoveredIn: 11,
+  GuaranteeRecoveredIn: 12,
+  CustodyOut: 13,
+  CustodySettlementIn: 14,
+  CustodySettlementOut: 15,
 } as const;
 
 export const projectTypeLabels: Record<string, string> = {
@@ -64,6 +69,7 @@ export const expenseCategoryLabels: Record<string, string> = {
   MissionSettlementDiff: "فرق تسوية عهدة",
   Breakdown: "عطل",
   Other: "أخرى",
+  WorkGuarantee: "ضمان أعمال",
 };
 
 export const movementTypeLabels: Record<string, string> = {
@@ -84,6 +90,11 @@ export const transactionTypeLabels: Record<string, string> = {
   StockPurchaseOut: "دفع شراء خامة",
   AdvanceOut: "سلفة موظف",
   MiscExpenseOut: "مصروف نثري عام",
+  InsuranceRecoveredIn: "استرداد تأمين مناقصة",
+  GuaranteeRecoveredIn: "استرداد ضمان أعمال",
+  CustodyOut: "صرف عهدة جانبية",
+  CustodySettlementIn: "استرجاع فارق عهدة جانبية",
+  CustodySettlementOut: "سداد فارق عهدة جانبية",
 };
 
 export const miscExpenseCategoryLabels: Record<string, string> = {
@@ -111,4 +122,13 @@ export const checkStatusLabels: Record<string, string> = {
   Pending: "معلّق",
   Cleared: "متحصّل",
   Cancelled: "ملغي",
+};
+
+export const invoiceSourceTypeLabels: Record<string, string> = {
+  ProjectPayment: "دفعة مشروع",
+  ProjectExpense: "مصروف مشروع",
+  StockPurchase: "شراء مخزون",
+  StockIssue: "صرف مخزون",
+  SupplierPayment: "دفعة مورد",
+  MiscExpense: "مصروف نثري",
 };

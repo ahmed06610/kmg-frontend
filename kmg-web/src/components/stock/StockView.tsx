@@ -185,9 +185,9 @@ export function StockView({
         />
 
         <MaterialFormDialog open={createOpen} onClose={() => setCreateOpen(false)} categories={categories} />
-        <PurchaseDialog open={purchaseOpen} onClose={() => setPurchaseOpen(false)} materials={materials} suppliers={suppliers} />
-        <IssueReturnDialog open={issueOpen} onClose={() => setIssueOpen(false)} mode="issue" materials={materials} projects={projects} />
-        <IssueReturnDialog open={returnOpen} onClose={() => setReturnOpen(false)} mode="return" materials={materials} projects={projects} />
+        <PurchaseDialog open={purchaseOpen} onClose={() => setPurchaseOpen(false)} materials={materials} suppliers={suppliers} categories={categories} />
+        <IssueReturnDialog open={issueOpen} onClose={() => setIssueOpen(false)} mode="issue" materials={materials} projects={projects} categories={categories} />
+        <IssueReturnDialog open={returnOpen} onClose={() => setReturnOpen(false)} mode="return" materials={materials} projects={projects} categories={categories} />
       </div>
     );
   }
@@ -245,9 +245,9 @@ export function StockView({
       </div>
 
       <MaterialFormDialog open={createOpen} onClose={() => setCreateOpen(false)} categories={categories} />
-      <PurchaseDialog open={purchaseOpen} onClose={() => setPurchaseOpen(false)} materials={materials} suppliers={suppliers} />
-      <IssueReturnDialog open={issueOpen} onClose={() => setIssueOpen(false)} mode="issue" materials={materials} projects={projects} />
-      <IssueReturnDialog open={returnOpen} onClose={() => setReturnOpen(false)} mode="return" materials={materials} projects={projects} />
+      <PurchaseDialog open={purchaseOpen} onClose={() => setPurchaseOpen(false)} materials={materials} suppliers={suppliers} categories={categories} />
+      <IssueReturnDialog open={issueOpen} onClose={() => setIssueOpen(false)} mode="issue" materials={materials} projects={projects} categories={categories} />
+      <IssueReturnDialog open={returnOpen} onClose={() => setReturnOpen(false)} mode="return" materials={materials} projects={projects} categories={categories} />
       <CategoryManagerDialog open={categoriesOpen} onClose={() => setCategoriesOpen(false)} categories={categories} />
     </div>
   );

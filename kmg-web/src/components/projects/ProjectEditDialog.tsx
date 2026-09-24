@@ -38,8 +38,15 @@ export function ProjectEditDialog({ open, onClose, project, clients }: Props) {
       clientId: project.clientId,
       contractValue: project.contractValue,
       description: project.description ?? "",
+      tenderInsurancePercent: project.tenderInsurancePercent ?? undefined,
+      insuranceDueDate: project.insuranceDueDate?.slice(0, 10) ?? "",
+      tenderTaxPercent: project.tenderTaxPercent ?? undefined,
+      workGuaranteePercent: project.workGuaranteePercent ?? undefined,
+      workGuaranteeDueDate: project.workGuaranteeDueDate?.slice(0, 10) ?? "",
     },
   });
+
+  const isManufacture = project.projectType === "ManufactureExecution";
 
   useEffect(() => {
     if (open) {
@@ -48,6 +55,11 @@ export function ProjectEditDialog({ open, onClose, project, clients }: Props) {
         clientId: project.clientId,
         contractValue: project.contractValue,
         description: project.description ?? "",
+        tenderInsurancePercent: project.tenderInsurancePercent ?? undefined,
+        insuranceDueDate: project.insuranceDueDate?.slice(0, 10) ?? "",
+        tenderTaxPercent: project.tenderTaxPercent ?? undefined,
+        workGuaranteePercent: project.workGuaranteePercent ?? undefined,
+        workGuaranteeDueDate: project.workGuaranteeDueDate?.slice(0, 10) ?? "",
       });
       setServerError(null);
     }
@@ -63,6 +75,11 @@ export function ProjectEditDialog({ open, onClose, project, clients }: Props) {
       clientId: data.clientId,
       contractValue: data.contractValue,
       description: data.description || null,
+      tenderInsurancePercent: isManufacture ? data.tenderInsurancePercent ?? null : null,
+      insuranceDueDate: isManufacture ? data.insuranceDueDate || null : null,
+      tenderTaxPercent: isManufacture ? data.tenderTaxPercent ?? null : null,
+      workGuaranteePercent: isManufacture ? data.workGuaranteePercent ?? null : null,
+      workGuaranteeDueDate: isManufacture ? data.workGuaranteeDueDate || null : null,
     });
 
     setLoading(false);
@@ -117,6 +134,34 @@ export function ProjectEditDialog({ open, onClose, project, clients }: Props) {
         <FieldGroup label="وصف المشروع" error={errors.description?.message}>
           <Textarea rows={2} {...register("description")} />
         </FieldGroup>
+
+        {isManufacture && (
+          <>
+            <div className="grid grid-cols-2 gap-stack-md">
+              <FieldGroup label="نسبة تأمين المناقصة %" error={errors.tenderInsurancePercent?.message}>
+                <Input type="number" step="0.01" dir="ltr" disabled={project.insuranceRecovered} {...register("tenderInsurancePercent", { valueAsNumber: true })} />
+              </FieldGroup>
+              <FieldGroup label="تاريخ استحقاق استرداد التأمين" error={errors.insuranceDueDate?.message}>
+                <Input type="date" disabled={project.insuranceRecovered} {...register("insuranceDueDate")} />
+              </FieldGroup>
+            </div>
+            {project.insuranceRecovered && <p className="text-xs text-on-surface-variant -mt-2">التأمين مسترد بالفعل - مينفعش يتعدّل</p>}
+
+            <FieldGroup label="نسبة ضريبة المناقصة %" error={errors.tenderTaxPercent?.message}>
+              <Input type="number" step="0.01" dir="ltr" {...register("tenderTaxPercent", { valueAsNumber: true })} />
+            </FieldGroup>
+
+            <div className="grid grid-cols-2 gap-stack-md">
+              <FieldGroup label="نسبة ضمان الأعمال %" error={errors.workGuaranteePercent?.message}>
+                <Input type="number" step="0.01" dir="ltr" disabled={project.workGuaranteeRecovered} {...register("workGuaranteePercent", { valueAsNumber: true })} />
+              </FieldGroup>
+              <FieldGroup label="تاريخ استحقاق استرداد الضمان" error={errors.workGuaranteeDueDate?.message}>
+                <Input type="date" disabled={project.workGuaranteeRecovered} {...register("workGuaranteeDueDate")} />
+              </FieldGroup>
+            </div>
+            {project.workGuaranteeRecovered && <p className="text-xs text-on-surface-variant -mt-2">ضمان الأعمال مسترد بالفعل - مينفعش يتعدّل</p>}
+          </>
+        )}
 
         {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
       </form>

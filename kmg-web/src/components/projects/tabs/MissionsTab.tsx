@@ -15,7 +15,7 @@ import { missionStatusTone } from "@/lib/status-tone";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useTableState } from "@/lib/useTableState";
 import type { EmployeeListDTO } from "@/types/employee";
-import type { MissionListDTO } from "@/types/mission";
+import type { MissionDetailsDTO } from "@/types/mission";
 import { CreateMissionDialog } from "./CreateMissionDialog";
 import { MissionEditDialog } from "./MissionEditDialog";
 import { SettleMissionDialog } from "./SettleMissionDialog";
@@ -27,15 +27,15 @@ export function MissionsTab({
   canManage,
 }: {
   projectId: number;
-  missions: MissionListDTO[];
+  missions: MissionDetailsDTO[];
   workers: EmployeeListDTO[];
   canManage: boolean;
 }) {
   const router = useRouter();
   const [createOpen, setCreateOpen] = useState(false);
-  const [settleMission, setSettleMission] = useState<MissionListDTO | null>(null);
-  const [editingMission, setEditingMission] = useState<MissionListDTO | null>(null);
-  const [deletingMission, setDeletingMission] = useState<MissionListDTO | null>(null);
+  const [settleMission, setSettleMission] = useState<MissionDetailsDTO | null>(null);
+  const [editingMission, setEditingMission] = useState<MissionDetailsDTO | null>(null);
+  const [deletingMission, setDeletingMission] = useState<MissionDetailsDTO | null>(null);
 
   const table = useTableState({
     rows: missions,

@@ -5,25 +5,36 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { deleteProjectPayment, recordProjectPayment, updateProjectPayment } from "@/actions/projects";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Dialog } from "@/components/ui/Dialog";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FieldGroup, Input } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
+import { InvoiceAttachmentField, type InvoiceAttachmentValue } from "@/components/ui/InvoiceAttachmentField";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useTableState } from "@/lib/useTableState";
 import { projectPaymentSchema, type ProjectPaymentFormValues } from "@/schema/project";
+import { checkStatusLabels } from "@/types/enums";
 import type { ProjectPaymentDTO } from "@/types/project";
+import { ResolveProjectCheckDialog } from "./ResolveProjectCheckDialog";
+
+const checkStatusTone: Record<string, "warning" | "success" | "neutral"> = {
+  Pending: "warning",
+  Cleared: "success",
+  Cancelled: "neutral",
+};
 
 export function PaymentsTab({ projectId, payments, remainingBalance, canManage }: { projectId: number; payments: ProjectPaymentDTO[]; remainingBalance: number; canManage: boolean }) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<ProjectPaymentDTO | null>(null);
   const [deletingPayment, setDeletingPayment] = useState<ProjectPaymentDTO | null>(null);
+  const [resolvingPayment, setResolvingPayment] = useState<ProjectPaymentDTO | null>(null);
 
   const table = useTableState({
     rows: payments,
@@ -57,6 +68,7 @@ export function PaymentsTab({ projectId, payments, remainingBalance, canManage }
           <THead>
             <tr>
               <Th>المبلغ</Th>
+              <Th>الطريقة</Th>
               <Th>كاش</Th>
               <Th>كريديت</Th>
               <Th>التاريخ</Th>
@@ -68,6 +80,18 @@ export function PaymentsTab({ projectId, payments, remainingBalance, canManage }
             {table.pageRows.map((p) => (
               <Tr key={p.id}>
                 <TdMono>{formatCurrency(p.amount)}</TdMono>
+                <Td>
+                  {p.isCheck ? (
+                    <div className="flex items-center gap-1.5">
+                      <span>شيك{p.checkDueDate ? ` (${formatDate(p.checkDueDate)})` : ""}</span>
+                      {p.checkStatus && (
+                        <Badge tone={checkStatusTone[p.checkStatus] ?? "neutral"}>{checkStatusLabels[p.checkStatus] ?? p.checkStatus}</Badge>
+                      )}
+                    </div>
+                  ) : (
+                    "نقدي"
+                  )}
+                </Td>
                 <TdMono>{formatCurrency(p.amountCash)}</TdMono>
                 <TdMono>{formatCurrency(p.amountCredit)}</TdMono>
                 <Td>{formatDate(p.paymentDate)}</Td>
@@ -75,6 +99,11 @@ export function PaymentsTab({ projectId, payments, remainingBalance, canManage }
                 {canManage && (
                   <Td>
                     <div className="flex items-center gap-1">
+                      {p.isCheck && p.checkStatus === "Pending" && (
+                        <button className="text-warning hover:opacity-80" title="تسوية الشيك" onClick={() => setResolvingPayment(p)}>
+                          <Icon name="fact_check" size={18} />
+                        </button>
+                      )}
                       <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingPayment(p)}>
                         <Icon name="edit" size={18} />
                       </button>
@@ -108,6 +137,7 @@ export function PaymentsTab({ projectId, payments, remainingBalance, canManage }
         onConfirm={() => deleteProjectPayment(deletingPayment!.id, projectId)}
         onConfirmed={() => router.refresh()}
       />
+      <ResolveProjectCheckDialog open={!!resolvingPayment} onClose={() => setResolvingPayment(null)} payment={resolvingPayment} projectId={projectId} />
     </div>
   );
 }
@@ -128,16 +158,18 @@ function PaymentDialog({
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [attachment, setAttachment] = useState<InvoiceAttachmentValue | null>(null);
   const isEdit = !!payment;
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<ProjectPaymentFormValues>({
     resolver: zodResolver(projectPaymentSchema),
-    defaultValues: { amountCash: 0, amountCredit: 0, paymentDate: formatDate(new Date()), notes: "" },
+    defaultValues: { amountCash: 0, amountCredit: 0, paymentDate: formatDate(new Date()), notes: "", isCheck: false, checkDueDate: "" },
   });
 
   useEffect(() => {
@@ -147,15 +179,31 @@ function PaymentDialog({
         amountCredit: payment?.amountCredit ?? 0,
         paymentDate: payment ? payment.paymentDate.slice(0, 10) : formatDate(new Date()),
         notes: payment?.notes ?? "",
+        isCheck: payment?.isCheck ?? false,
+        checkDueDate: payment?.checkDueDate ? payment.checkDueDate.slice(0, 10) : "",
       });
+      setAttachment(
+        payment?.attachmentUrl ? { attachmentUrl: payment.attachmentUrl, attachmentFileName: payment.attachmentFileName ?? payment.attachmentUrl } : null,
+      );
       setServerError(null);
     }
   }, [open, payment, reset]);
 
+  const isCheck = watch("isCheck");
+
   const onSubmit = async (data: ProjectPaymentFormValues) => {
     setLoading(true);
     setServerError(null);
-    const payload = { ...data, notes: data.notes || null };
+    const payload = {
+      amountCash: data.amountCash,
+      amountCredit: data.isCheck ? 0 : data.amountCredit,
+      paymentDate: data.paymentDate,
+      notes: data.notes || null,
+      attachmentUrl: attachment?.attachmentUrl ?? null,
+      attachmentFileName: attachment?.attachmentFileName ?? null,
+      isCheck: data.isCheck,
+      checkDueDate: data.isCheck ? data.checkDueDate || null : null,
+    };
     const result = isEdit
       ? await updateProjectPayment({ id: payment!.id, ...payload }, projectId)
       : await recordProjectPayment({ projectId, ...payload });
@@ -189,20 +237,39 @@ function PaymentDialog({
         المتبقي: <span dir="ltr" className="font-mono-data text-on-surface">{remainingBalance.toFixed(2)}</span>
       </p>
       <form id="project-payment-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <div className="grid grid-cols-2 gap-stack-md">
-          <FieldGroup label="المبلغ كاش" error={errors.amountCash?.message}>
+        <label className="flex items-center gap-2 text-body-sm text-on-surface">
+          <input type="checkbox" {...register("isCheck")} />
+          دفعة بشيك
+        </label>
+
+        {isCheck ? (
+          <FieldGroup label="قيمة الشيك" error={errors.amountCash?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("amountCash", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="المبلغ كريديت" error={errors.amountCredit?.message}>
-            <Input type="number" step="0.01" dir="ltr" {...register("amountCredit", { valueAsNumber: true })} />
+        ) : (
+          <div className="grid grid-cols-2 gap-stack-md">
+            <FieldGroup label="المبلغ كاش" error={errors.amountCash?.message}>
+              <Input type="number" step="0.01" dir="ltr" {...register("amountCash", { valueAsNumber: true })} />
+            </FieldGroup>
+            <FieldGroup label="المبلغ كريديت" error={errors.amountCredit?.message}>
+              <Input type="number" step="0.01" dir="ltr" {...register("amountCredit", { valueAsNumber: true })} />
+            </FieldGroup>
+          </div>
+        )}
+
+        {isCheck && (
+          <FieldGroup label="تاريخ استحقاق الشيك" error={errors.checkDueDate?.message}>
+            <Input type="date" {...register("checkDueDate")} />
           </FieldGroup>
-        </div>
+        )}
+
         <FieldGroup label="تاريخ الدفعة" error={errors.paymentDate?.message}>
           <Input type="date" {...register("paymentDate")} />
         </FieldGroup>
         <FieldGroup label="ملاحظات" error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
+        <InvoiceAttachmentField folder="projects" value={attachment} onChange={setAttachment} />
         {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
       </form>
     </Dialog>

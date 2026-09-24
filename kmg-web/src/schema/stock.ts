@@ -40,6 +40,7 @@ export const issueReturnSchema = z.object({
   materialId: z.number().min(1, "اختر خامة"),
   projectId: z.number().min(1, "اختر مشروع"),
   quantity: z.number().gt(0, "الكمية يجب أن تكون أكبر من صفر"),
+  unitPrice: z.number().optional(),
   notes: z.string().optional().or(z.literal("")),
 });
 export type IssueReturnFormValues = z.infer<typeof issueReturnSchema>;

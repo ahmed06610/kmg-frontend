@@ -11,7 +11,7 @@ import { IssueReturnDialog } from "@/components/stock/IssueReturnDialog";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useTableState } from "@/lib/useTableState";
 import { movementTypeLabels } from "@/types/enums";
-import type { MaterialDTO, StockMovementDTO } from "@/types/stock";
+import type { MaterialCategoryDTO, MaterialDTO, StockMovementDTO } from "@/types/stock";
 import type { ProjectListDTO } from "@/types/project";
 
 export function MaterialsTab({
@@ -19,12 +19,14 @@ export function MaterialsTab({
   movements,
   totalMaterialsCost,
   materials,
+  categories,
   canManage,
 }: {
   projectId: number;
   movements: StockMovementDTO[];
   totalMaterialsCost: number;
   materials: MaterialDTO[];
+  categories: MaterialCategoryDTO[];
   canManage: boolean;
 }) {
   const [issueOpen, setIssueOpen] = useState(false);
@@ -93,8 +95,8 @@ export function MaterialsTab({
         </>
       )}
 
-      <IssueReturnDialog open={issueOpen} onClose={() => setIssueOpen(false)} mode="issue" materials={materials} projects={projectAsList} defaultProjectId={projectId} />
-      <IssueReturnDialog open={returnOpen} onClose={() => setReturnOpen(false)} mode="return" materials={materials} projects={projectAsList} defaultProjectId={projectId} />
+      <IssueReturnDialog open={issueOpen} onClose={() => setIssueOpen(false)} mode="issue" materials={materials} projects={projectAsList} categories={categories} defaultProjectId={projectId} />
+      <IssueReturnDialog open={returnOpen} onClose={() => setReturnOpen(false)} mode="return" materials={materials} projects={projectAsList} categories={categories} defaultProjectId={projectId} />
     </div>
   );
 }

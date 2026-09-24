@@ -51,4 +51,5 @@ export interface UpdateMissionDTO {
   startDate: string;
   advanceAmount: number;
   notes?: string | null;
+  workers: MissionWorkerInputDTO[];
 }
