@@ -2,10 +2,19 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "kmg-api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "KMG.Api", "--launch-profile", "http"],
+      "port": 5266
+    },
+    {
       "name": "kmg-web",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "kmg-web", "run", "dev"],
-      "port": 3000
+      "port": 3000,
+      "env": {
+        "API_BASE_URL": "http://localhost:5266/api"
+      }
     }
   ]
 }

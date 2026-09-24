@@ -143,6 +143,7 @@ namespace KMG.Core.Services
 
             candidates.AddRange(await LowStockCandidatesAsync());
             candidates.AddRange(await CheckDueSoonCandidatesAsync(now));
+            candidates.AddRange(await ProjectPaymentCheckDueSoonCandidatesAsync(now));
 
             var projects = await _unitOfWork.Project.GetQueryable(null)
                 .Include(p => p.Payments)
@@ -155,7 +156,79 @@ namespace KMG.Core.Services
             candidates.AddRange(await SupplierPaymentDueCandidatesAsync(now));
             candidates.AddRange(await PayrollMonthEndCandidatesAsync(now));
             candidates.AddRange(await MissionOpenTooLongCandidatesAsync(now));
+            candidates.AddRange(InsuranceDueSoonCandidates(projects, now));
+            candidates.AddRange(GuaranteeDueSoonCandidates(projects, now));
+            candidates.AddRange(await CustodyPendingSettlementCandidatesAsync(now));
 
+            return candidates;
+        }
+
+        private async Task<List<Candidate>> CustodyPendingSettlementCandidatesAsync(DateTime now)
+        {
+            var activeCustodies = await _unitOfWork.Custody.GetQueryable(c => c.Status == CustodyStatus.Active)
+                .Include(c => c.Employee)
+                .ToListAsync();
+
+            var candidates = new List<Candidate>();
+            foreach (var custody in activeCustodies)
+            {
+                var daysOpen = (int)(now.Date - custody.IssueDate.Date).TotalDays;
+                if (daysOpen < MissionOpenTooLongDays) continue;
+
+                candidates.Add(new Candidate
+                {
+                    DedupeKey = $"CustodyPendingSettlement:{custody.Id}",
+                    Type = NotificationType.MissionOpenTooLong,
+                    Severity = NotificationSeverity.Warning,
+                    Title = "عهدة جانبية بدون تسوية",
+                    Message = $"عهدة \"{custody.Description}\" للموظف {custody.Employee.Name} بقيمة {custody.Amount:N2} مفتوحة من {daysOpen} يوم من غير تسوية",
+                    LinkUrl = "/cashbox"
+                });
+            }
+            return candidates;
+        }
+
+        private static List<Candidate> InsuranceDueSoonCandidates(List<Project> projects, DateTime now)
+        {
+            var candidates = new List<Candidate>();
+            foreach (var project in projects.Where(p => !p.InsuranceRecovered && p.InsuranceDueDate != null && p.TenderInsuranceAmount > 0))
+            {
+                var dueDate = project.InsuranceDueDate!.Value;
+                if (dueDate.Date > now.Date.AddDays(CheckDueSoonDays)) continue;
+
+                var overdue = dueDate.Date < now.Date;
+                candidates.Add(new Candidate
+                {
+                    DedupeKey = $"InsuranceDueSoon:{project.Id}",
+                    Type = NotificationType.InsuranceDueSoon,
+                    Severity = overdue ? NotificationSeverity.Critical : NotificationSeverity.Warning,
+                    Title = overdue ? "تأمين مناقصة متأخر الاسترداد" : "تأمين مناقصة مستحق الاسترداد قريبًا",
+                    Message = $"تأمين مناقصة مشروع \"{project.Name}\" بقيمة {project.TenderInsuranceAmount:N2} {(overdue ? "متأخر عن تاريخ" : "مستحق في")} {dueDate:yyyy-MM-dd}",
+                    LinkUrl = $"/projects/{project.Id}"
+                });
+            }
+            return candidates;
+        }
+
+        private static List<Candidate> GuaranteeDueSoonCandidates(List<Project> projects, DateTime now)
+        {
+            var candidates = new List<Candidate>();
+            foreach (var project in projects.Where(p => !p.WorkGuaranteeRecovered && p.WorkGuaranteeDueDate != null && p.WorkGuaranteeAmount > 0))
+            {
+                var dueDate = project.WorkGuaranteeDueDate!.Value;
+                if (dueDate.Date > now.Date.AddDays(CheckDueSoonDays)) continue;
+
+                var overdue = dueDate.Date < now.Date;
+                candidates.Add(new Candidate
+                {
+                    DedupeKey = $"GuaranteeDueSoon:{project.Id}",
+                    Type = NotificationType.GuaranteeDueSoon,
+                    Severity = overdue ? NotificationSeverity.Critical : NotificationSeverity.Warning,
+                    Title = overdue ? "ضمان أعمال متأخر الاسترداد" : "ضمان أعمال مستحق الاسترداد قريبًا",
+                    Message = $"ضمان أعمال مشروع \"{project.Name}\" بقيمة {project.WorkGuaranteeAmount:N2} {(overdue ? "متأخر عن تاريخ" : "مستحق في")} {dueDate:yyyy-MM-dd}",
+                    LinkUrl = $"/projects/{project.Id}"
+                });
+            }
             return candidates;
         }
 
@@ -196,6 +269,33 @@ namespace KMG.Core.Services
                     Title = overdue ? "شيك متأخر" : "شيك مستحق قريبًا",
                     Message = $"شيك المورد \"{check.Supplier.Name}\" بقيمة {check.Amount:N2} {(overdue ? "متأخر عن تاريخ" : "مستحق في")} {dueDate:yyyy-MM-dd}",
                     LinkUrl = $"/suppliers/{check.SupplierId}"
+                });
+            }
+            return candidates;
+        }
+
+        private async Task<List<Candidate>> ProjectPaymentCheckDueSoonCandidatesAsync(DateTime now)
+        {
+            var pendingChecks = await _unitOfWork.ProjectPayment
+                .GetQueryable(p => p.IsCheck && p.CheckStatus == CheckStatus.Pending && p.CheckDueDate != null)
+                .Include(p => p.Project)
+                .ToListAsync();
+
+            var candidates = new List<Candidate>();
+            foreach (var check in pendingChecks)
+            {
+                var dueDate = check.CheckDueDate!.Value;
+                if (dueDate.Date > now.Date.AddDays(CheckDueSoonDays)) continue;
+
+                var overdue = dueDate.Date < now.Date;
+                candidates.Add(new Candidate
+                {
+                    DedupeKey = $"ProjectPaymentCheckDueSoon:{check.Id}",
+                    Type = NotificationType.CheckDueSoon,
+                    Severity = overdue ? NotificationSeverity.Critical : NotificationSeverity.Warning,
+                    Title = overdue ? "شيك مشروع متأخر" : "شيك مشروع مستحق قريبًا",
+                    Message = $"شيك مشروع \"{check.Project.Name}\" بقيمة {check.Amount:N2} {(overdue ? "متأخر عن تاريخ" : "مستحق في")} {dueDate:yyyy-MM-dd}",
+                    LinkUrl = $"/projects/{check.ProjectId}"
                 });
             }
             return candidates;

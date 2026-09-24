@@ -34,6 +34,13 @@ namespace KMG.Api.Controllers
             return material == null ? NotFound() : Ok(material);
         }
 
+        [HttpGet("materials/{id}/price-batches")]
+        [AuthorizeAbility("عرض المخزن")]
+        public async Task<IActionResult> GetPriceBatches(int id)
+        {
+            return Ok(await _stockService.GetPriceBatchesAsync(id));
+        }
+
         [HttpPost("materials")]
         [AuthorizeAbility("إدارة المخزن")]
         public async Task<IActionResult> CreateMaterial([FromBody] CreateMaterialDTO model)

@@ -24,7 +24,8 @@ namespace KMG.Api.Helper
             "إدارة الرواتب",
             "عرض الخزنة",
             "عرض لوحة التحكم",
-            "إدارة تكامل AI"
+            "إدارة تكامل AI",
+            "إدارة الفواتير"
         };
 
         public static async Task SeedAsync(IServiceProvider services)

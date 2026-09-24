@@ -50,6 +50,8 @@ builder.Services.AddScoped<IPayrollService, PayrollService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAiContextService, AiContextService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<ICustodyService, CustodyService>();
 builder.Services.AddScoped<ApiKeyAuthFilter>();
 
 builder.Services.Configure<JWT>(builder.Configuration.GetSection("JWT"));

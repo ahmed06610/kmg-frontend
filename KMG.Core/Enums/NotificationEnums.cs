@@ -8,7 +8,9 @@ namespace KMG.Core.Enums
         SupplierPaymentDue = 4,
         PayrollMonthEnd = 5,
         MissionOpenTooLong = 6,
-        ProjectClosedWithBalance = 7
+        ProjectClosedWithBalance = 7,
+        InsuranceDueSoon = 8,
+        GuaranteeDueSoon = 9
     }
 
     public enum NotificationSeverity

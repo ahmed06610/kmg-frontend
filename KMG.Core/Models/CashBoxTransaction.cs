@@ -43,6 +43,9 @@ namespace KMG.Core.Models
         public int? MiscExpenseId { get; set; }
         public virtual MiscExpense? MiscExpense { get; set; }
 
+        public int? CustodyId { get; set; }
+        public virtual Custody? Custody { get; set; }
+
         public int CreatedByEmployeeId { get; set; }
         public virtual Employee CreatedByEmployee { get; set; } = null!;
     }

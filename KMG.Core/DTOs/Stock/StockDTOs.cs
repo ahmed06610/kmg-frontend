@@ -82,6 +82,8 @@ namespace KMG.Core.DTOs.Stock
         public DateTime MovementDate { get; set; }
         public string? Notes { get; set; }
         public string CreatedByEmployeeName { get; set; } = string.Empty;
+        public string? AttachmentUrl { get; set; }
+        public string? AttachmentFileName { get; set; }
     }
 
     public class CreatePurchaseDTO
@@ -91,14 +93,19 @@ namespace KMG.Core.DTOs.Stock
         public decimal UnitPrice { get; set; }
         public int SupplierId { get; set; }
         public string? Notes { get; set; }
+        public string? AttachmentUrl { get; set; }
+        public string? AttachmentFileName { get; set; }
     }
 
     public class CreateIssueDTO
     {
         public int MaterialId { get; set; }
         public decimal Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
         public int ProjectId { get; set; }
         public string? Notes { get; set; }
+        public string? AttachmentUrl { get; set; }
+        public string? AttachmentFileName { get; set; }
     }
 
     public class CreateReturnDTO
@@ -107,5 +114,12 @@ namespace KMG.Core.DTOs.Stock
         public decimal Quantity { get; set; }
         public int ProjectId { get; set; }
         public string? Notes { get; set; }
+    }
+
+    public class StockPriceBatchDTO
+    {
+        public decimal UnitPrice { get; set; }
+        public decimal AvailableQuantity { get; set; }
+        public DateTime FirstPurchaseDate { get; set; }
     }
 }

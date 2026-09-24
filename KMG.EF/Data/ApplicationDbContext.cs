@@ -42,10 +42,14 @@ namespace KMG.EF.Data
         public DbSet<CashBox> CashBoxes { get; set; } = null!;
         public DbSet<CashBoxTransaction> CashBoxTransactions { get; set; } = null!;
         public DbSet<MiscExpense> MiscExpenses { get; set; } = null!;
+        public DbSet<Custody> Custodies { get; set; } = null!;
 
         public DbSet<AiPromptConfig> AiPromptConfigs { get; set; } = null!;
         public DbSet<Notification> Notifications { get; set; } = null!;
         public DbSet<AiTenderResult> AiTenderResults { get; set; } = null!;
+
+        public DbSet<GeneratedInvoice> GeneratedInvoices { get; set; } = null!;
+        public DbSet<GeneratedInvoiceLineItem> GeneratedInvoiceLineItems { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -359,10 +363,29 @@ namespace KMG.EF.Data
                 .HasForeignKey(t => t.MiscExpenseId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<CashBoxTransaction>()
+                .HasOne(t => t.Custody)
+                .WithMany(c => c.CashBoxTransactions)
+                .HasForeignKey(t => t.CustodyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<MiscExpense>()
                 .HasOne(m => m.CreatedByEmployee)
                 .WithMany()
                 .HasForeignKey(m => m.CreatedByEmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ---------- Custody (عهدة جانبية) ----------
+            modelBuilder.Entity<Custody>()
+                .HasOne(c => c.Employee)
+                .WithMany()
+                .HasForeignKey(c => c.EmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Custody>()
+                .HasOne(c => c.Project)
+                .WithMany()
+                .HasForeignKey(c => c.ProjectId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<CashBoxTransaction>()
@@ -384,6 +407,29 @@ namespace KMG.EF.Data
             modelBuilder.Entity<AiTenderResult>()
                 .HasIndex(t => t.TenderId)
                 .IsUnique();
+
+            // ---------- Invoices ----------
+            modelBuilder.Entity<GeneratedInvoice>()
+                .HasIndex(i => i.InvoiceNumber)
+                .IsUnique();
+
+            modelBuilder.Entity<GeneratedInvoice>()
+                .HasOne(i => i.Project)
+                .WithMany()
+                .HasForeignKey(i => i.ProjectId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<GeneratedInvoice>()
+                .HasOne(i => i.CreatedByEmployee)
+                .WithMany()
+                .HasForeignKey(i => i.CreatedByEmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<GeneratedInvoiceLineItem>()
+                .HasOne(li => li.GeneratedInvoice)
+                .WithMany(i => i.LineItems)
+                .HasForeignKey(li => li.GeneratedInvoiceId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

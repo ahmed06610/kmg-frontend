@@ -41,10 +41,12 @@ namespace KMG.EF.Repositories
         public ICashBoxRepository CashBox { get; }
         public ICashBoxTransactionRepository CashBoxTransaction { get; }
         public IMiscExpenseRepository MiscExpense { get; }
+        public ICustodyRepository Custody { get; }
 
         public IAiPromptConfigRepository AiPromptConfig { get; }
         public INotificationRepository Notification { get; }
         public IAiTenderResultRepository AiTenderResult { get; }
+        public IGeneratedInvoiceRepository GeneratedInvoice { get; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -82,10 +84,12 @@ namespace KMG.EF.Repositories
             CashBox = new CashBoxRepository(context);
             CashBoxTransaction = new CashBoxTransactionRepository(context);
             MiscExpense = new MiscExpenseRepository(context);
+            Custody = new CustodyRepository(context);
 
             AiPromptConfig = new AiPromptConfigRepository(context);
             Notification = new NotificationRepository(context);
             AiTenderResult = new AiTenderResultRepository(context);
+            GeneratedInvoice = new GeneratedInvoiceRepository(context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()

@@ -14,9 +14,15 @@ namespace KMG.Core.Models
 
         public decimal ContractValue { get; set; }
 
-        // خاص بمشاريع المناقصات (تصنيع وتنفيذ)
-        public decimal? TenderInsuranceAmount { get; set; }
-        public decimal? TenderTaxAmount { get; set; }
+        // خاص بمشاريع المناقصات (تصنيع وتنفيذ) - نسب مش قيم مطلقة، بتتحسب على قيمة العقد
+        public decimal? TenderInsurancePercent { get; set; }
+        public decimal? TenderTaxPercent { get; set; }
+        public decimal? WorkGuaranteePercent { get; set; }
+
+        public DateTime? InsuranceDueDate { get; set; }
+        public bool InsuranceRecovered { get; set; }
+        public DateTime? WorkGuaranteeDueDate { get; set; }
+        public bool WorkGuaranteeRecovered { get; set; }
 
         // خاص بمشاريع التوريد
         public decimal? SupplyProfitMargin { get; set; }
@@ -57,7 +63,20 @@ namespace KMG.Core.Models
         public decimal TotalWriteOffs => WriteOffs.Sum(w => w.Amount);
 
         [NotMapped]
-        public decimal RemainingBalance => ContractValue - TotalCollected - TotalWriteOffs;
+        public decimal TenderInsuranceAmount => TenderInsurancePercent is > 0 ? ContractValue * TenderInsurancePercent.Value / 100m : 0;
+
+        [NotMapped]
+        public decimal TenderTaxAmount => TenderTaxPercent is > 0 ? ContractValue * TenderTaxPercent.Value / 100m : 0;
+
+        [NotMapped]
+        public decimal WorkGuaranteeAmount => WorkGuaranteePercent is > 0 ? ContractValue * WorkGuaranteePercent.Value / 100m : 0;
+
+        // الضريبة بتزود المبلغ المطلوب تحصيله فعليًا من العميل - مش رقم عرض بس
+        [NotMapped]
+        public decimal ContractValueWithTax => ContractValue + TenderTaxAmount;
+
+        [NotMapped]
+        public decimal RemainingBalance => ContractValueWithTax - TotalCollected - TotalWriteOffs;
 
         [NotMapped]
         public decimal NetProfit => ContractValue - (TotalMaterialsCost + TotalPettyExpenses + TotalLaborCost);

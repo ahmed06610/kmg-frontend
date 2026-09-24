@@ -16,6 +16,7 @@ namespace KMG.Core.Interfaces.Services
         Task<bool> DeleteCategoryAsync(int id);
 
         Task<List<StockMovementDTO>> GetMovementsAsync(int? materialId = null, int? projectId = null);
+        Task<List<StockPriceBatchDTO>> GetPriceBatchesAsync(int materialId);
 
         Task<StockMovementDTO> RecordPurchaseAsync(CreatePurchaseDTO model, int createdByEmployeeId);
         Task<StockMovementDTO> IssueToProjectAsync(CreateIssueDTO model, int createdByEmployeeId);

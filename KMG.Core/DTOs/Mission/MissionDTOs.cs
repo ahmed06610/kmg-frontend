@@ -60,5 +60,6 @@ namespace KMG.Core.DTOs.Mission
         public DateTime StartDate { get; set; }
         public decimal AdvanceAmount { get; set; }
         public string? Notes { get; set; }
+        public List<MissionWorkerInputDTO> Workers { get; set; } = new();
     }
 }

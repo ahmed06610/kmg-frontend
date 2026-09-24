@@ -9,7 +9,7 @@ namespace KMG.Core.Interfaces.Services
     {
         Task<CashBoxDetailsDTO> GetDetailsAsync(int recentCount = 50);
 
-        Task<PagedResultDTO<CashBoxTransactionDTO>> GetTransactionsAsync(CashBoxTransactionFilterDTO filter);
+        Task<CashBoxTransactionsResultDTO> GetTransactionsAsync(CashBoxTransactionFilterDTO filter);
 
         Task<MiscExpenseDTO> CreateMiscExpenseAsync(CreateMiscExpenseDTO model, int createdByEmployeeId);
         Task<MiscExpenseDTO> UpdateMiscExpenseAsync(UpdateMiscExpenseDTO model, int employeeId);
@@ -33,7 +33,8 @@ namespace KMG.Core.Interfaces.Services
             int? advanceId = null,
             int? projectPaymentId = null,
             int? supplierPaymentId = null,
-            int? miscExpenseId = null);
+            int? miscExpenseId = null,
+            int? custodyId = null);
 
         /// <summary>
         /// يلغي أثر كل حركات الخزنة اللي بتطابق الفلتر (بيطرح مبالغها من رصيد الخزنة) ويمسحها،

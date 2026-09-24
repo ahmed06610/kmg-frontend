@@ -312,6 +312,9 @@ namespace KMG.EF.Migrations
                     b.Property<int>("CreatedByEmployeeId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("CustodyId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -353,6 +356,8 @@ namespace KMG.EF.Migrations
                     b.HasIndex("CashBoxId");
 
                     b.HasIndex("CreatedByEmployeeId");
+
+                    b.HasIndex("CustodyId");
 
                     b.HasIndex("MiscExpenseId");
 
@@ -402,6 +407,54 @@ namespace KMG.EF.Migrations
                     b.ToTable("Clients");
                 });
 
+            modelBuilder.Entity("KMG.Core.Models.Custody", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AmountCash")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AmountCredit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("IssueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("SettledAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("SettledDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("Custodies");
+                });
+
             modelBuilder.Entity("KMG.Core.Models.Employee", b =>
                 {
                     b.Property<int>("Id")
@@ -447,6 +500,101 @@ namespace KMG.EF.Migrations
                     b.HasIndex("ManagerId");
 
                     b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("KMG.Core.Models.GeneratedInvoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByEmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CreatorDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("IssueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RecipientAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecipientName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecipientPhone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("ShowCreatorName")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("ShowSignature")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("TaxPercent")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByEmployeeId");
+
+                    b.HasIndex("InvoiceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("GeneratedInvoices");
+                });
+
+            modelBuilder.Entity("KMG.Core.Models.GeneratedInvoiceLineItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("GeneratedInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GeneratedInvoiceId");
+
+                    b.ToTable("GeneratedInvoiceLineItems");
                 });
 
             modelBuilder.Entity("KMG.Core.Models.Material", b =>
@@ -520,8 +668,17 @@ namespace KMG.EF.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("Amount")
+                    b.Property<decimal>("AmountCash")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AmountCredit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("AttachmentFileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AttachmentUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Category")
                         .HasColumnType("int");
@@ -762,6 +919,12 @@ namespace KMG.EF.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("InsuranceDueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("InsuranceRecovered")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -779,11 +942,20 @@ namespace KMG.EF.Migrations
                     b.Property<decimal?>("SupplyProfitMargin")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("TenderInsuranceAmount")
+                    b.Property<decimal?>("TenderInsurancePercent")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("TenderTaxAmount")
+                    b.Property<decimal?>("TenderTaxPercent")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("WorkGuaranteeDueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("WorkGuaranteePercent")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("WorkGuaranteeRecovered")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -874,6 +1046,9 @@ namespace KMG.EF.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("AttachmentFileName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("AttachmentUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -918,8 +1093,23 @@ namespace KMG.EF.Migrations
                     b.Property<decimal>("AmountCredit")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("AttachmentFileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AttachmentUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CheckDueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CheckStatus")
+                        .HasColumnType("int");
+
                     b.Property<int>("CreatedByEmployeeId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsCheck")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -1031,6 +1221,12 @@ namespace KMG.EF.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AttachmentFileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AttachmentUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("CreatedByEmployeeId")
                         .HasColumnType("int");
 
@@ -1116,6 +1312,12 @@ namespace KMG.EF.Migrations
 
                     b.Property<decimal>("AmountCredit")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("AttachmentFileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AttachmentUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("CheckDueDate")
                         .HasColumnType("datetime2");
@@ -1317,6 +1519,11 @@ namespace KMG.EF.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("KMG.Core.Models.Custody", "Custody")
+                        .WithMany("CashBoxTransactions")
+                        .HasForeignKey("CustodyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("KMG.Core.Models.MiscExpense", "MiscExpense")
                         .WithMany()
                         .HasForeignKey("MiscExpenseId")
@@ -1363,6 +1570,8 @@ namespace KMG.EF.Migrations
 
                     b.Navigation("CreatedByEmployee");
 
+                    b.Navigation("Custody");
+
                     b.Navigation("MiscExpense");
 
                     b.Navigation("Mission");
@@ -1380,6 +1589,24 @@ namespace KMG.EF.Migrations
                     b.Navigation("SupplierPayment");
                 });
 
+            modelBuilder.Entity("KMG.Core.Models.Custody", b =>
+                {
+                    b.HasOne("KMG.Core.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("KMG.Core.Models.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("KMG.Core.Models.Employee", b =>
                 {
                     b.HasOne("KMG.Core.Models.ApplicationUser", "ApplicationUser")
@@ -1395,6 +1622,35 @@ namespace KMG.EF.Migrations
                     b.Navigation("ApplicationUser");
 
                     b.Navigation("Manager");
+                });
+
+            modelBuilder.Entity("KMG.Core.Models.GeneratedInvoice", b =>
+                {
+                    b.HasOne("KMG.Core.Models.Employee", "CreatedByEmployee")
+                        .WithMany()
+                        .HasForeignKey("CreatedByEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("KMG.Core.Models.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByEmployee");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("KMG.Core.Models.GeneratedInvoiceLineItem", b =>
+                {
+                    b.HasOne("KMG.Core.Models.GeneratedInvoice", "GeneratedInvoice")
+                        .WithMany("LineItems")
+                        .HasForeignKey("GeneratedInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GeneratedInvoice");
                 });
 
             modelBuilder.Entity("KMG.Core.Models.Material", b =>
@@ -1763,6 +2019,11 @@ namespace KMG.EF.Migrations
                     b.Navigation("Projects");
                 });
 
+            modelBuilder.Entity("KMG.Core.Models.Custody", b =>
+                {
+                    b.Navigation("CashBoxTransactions");
+                });
+
             modelBuilder.Entity("KMG.Core.Models.Employee", b =>
                 {
                     b.Navigation("Advances");
@@ -1774,6 +2035,11 @@ namespace KMG.EF.Migrations
                     b.Navigation("PayrollAdjustments");
 
                     b.Navigation("PayrollPayouts");
+                });
+
+            modelBuilder.Entity("KMG.Core.Models.GeneratedInvoice", b =>
+                {
+                    b.Navigation("LineItems");
                 });
 
             modelBuilder.Entity("KMG.Core.Models.Material", b =>

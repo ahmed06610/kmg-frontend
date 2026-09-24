@@ -235,6 +235,8 @@ namespace KMG.Core.Services
                 SupplierId = model.SupplierId,
                 MovementDate = TimeHelper.NowInEgypt,
                 Notes = model.Notes,
+                AttachmentUrl = model.AttachmentUrl,
+                AttachmentFileName = model.AttachmentFileName,
                 CreatedByEmployeeId = createdByEmployeeId
             };
 
@@ -242,6 +244,25 @@ namespace KMG.Core.Services
             await _unitOfWork.CompleteAsync();
 
             return await LoadMovementDTO(movement.Id);
+        }
+
+        public async Task<List<StockPriceBatchDTO>> GetPriceBatchesAsync(int materialId)
+        {
+            var movements = await _unitOfWork.StockMovement.GetQueryable(m => m.MaterialId == materialId).ToListAsync();
+
+            return movements
+                .GroupBy(m => m.UnitPriceAtTime)
+                .Select(g => new StockPriceBatchDTO
+                {
+                    UnitPrice = g.Key,
+                    AvailableQuantity = g.Where(m => m.MovementType == MovementType.Purchase || m.MovementType == MovementType.OpeningBalance).Sum(m => m.Quantity)
+                        - g.Where(m => m.MovementType == MovementType.IssueToProject).Sum(m => m.Quantity)
+                        + g.Where(m => m.MovementType == MovementType.ReturnFromProject).Sum(m => m.Quantity),
+                    FirstPurchaseDate = g.Min(m => m.MovementDate)
+                })
+                .Where(b => b.AvailableQuantity > 0)
+                .OrderBy(b => b.FirstPurchaseDate)
+                .ToList();
         }
 
         public async Task<StockMovementDTO> IssueToProjectAsync(CreateIssueDTO model, int createdByEmployeeId)
@@ -252,6 +273,14 @@ namespace KMG.Core.Services
             if (material.Quantity < model.Quantity)
                 throw new Exception($"لا يوجد ما يكفي من الخامة \"{material.Name}\" في المخزن (المتاح: {material.Quantity} {material.Unit})");
 
+            // بدل ما نستخدم السعر "الحالي" للخامة، لازم نتأكد إن السعر المطلوب الصرف بيه ده فعلاً
+            // دفعة موجودة وكميتها كافية - عشان نسجل الصرف بالسعر التاريخي الصح لا بالأحدث بس
+            var batches = await GetPriceBatchesAsync(model.MaterialId);
+            var batch = batches.FirstOrDefault(b => b.UnitPrice == model.UnitPrice)
+                ?? throw new Exception($"لا توجد دفعة متاحة بسعر {model.UnitPrice} لهذه الخامة");
+            if (batch.AvailableQuantity < model.Quantity)
+                throw new Exception($"الكمية المتاحة بسعر {model.UnitPrice} أقل من المطلوب (المتاح بهذا السعر: {batch.AvailableQuantity})");
+
             material.Quantity -= model.Quantity;
             material.LastUpdated = TimeHelper.NowInEgypt;
             _unitOfWork.Material.Update(material);
@@ -261,10 +290,12 @@ namespace KMG.Core.Services
                 MaterialId = model.MaterialId,
                 MovementType = MovementType.IssueToProject,
                 Quantity = model.Quantity,
-                UnitPriceAtTime = material.UnitPrice,
+                UnitPriceAtTime = model.UnitPrice,
                 ProjectId = model.ProjectId,
                 MovementDate = TimeHelper.NowInEgypt,
                 Notes = model.Notes,
+                AttachmentUrl = model.AttachmentUrl,
+                AttachmentFileName = model.AttachmentFileName,
                 CreatedByEmployeeId = createdByEmployeeId
             };
 
@@ -354,7 +385,9 @@ namespace KMG.Core.Services
             SupplierName = m.Supplier?.Name,
             MovementDate = m.MovementDate,
             Notes = m.Notes,
-            CreatedByEmployeeName = m.CreatedByEmployee.Name
+            CreatedByEmployeeName = m.CreatedByEmployee.Name,
+            AttachmentUrl = m.AttachmentUrl,
+            AttachmentFileName = m.AttachmentFileName
         };
     }
 }

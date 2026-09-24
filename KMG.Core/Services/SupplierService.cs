@@ -154,6 +154,8 @@ namespace KMG.Core.Services
                     IsCheck = model.IsCheck,
                     CheckDueDate = model.IsCheck ? model.CheckDueDate : null,
                     CheckStatus = model.IsCheck ? Enums.CheckStatus.Pending : null,
+                    AttachmentUrl = model.AttachmentUrl,
+                    AttachmentFileName = model.AttachmentFileName,
                     CreatedByEmployeeId = createdByEmployeeId
                 };
 
@@ -225,6 +227,8 @@ namespace KMG.Core.Services
                 payment.IsCheck = model.IsCheck;
                 payment.CheckDueDate = model.IsCheck ? model.CheckDueDate : null;
                 payment.CheckStatus = model.IsCheck ? (payment.CheckStatus ?? Enums.CheckStatus.Pending) : null;
+                payment.AttachmentUrl = model.AttachmentUrl;
+                payment.AttachmentFileName = model.AttachmentFileName;
                 _unitOfWork.SupplierPayment.Update(payment);
 
                 var shouldPostToCashBox = !payment.IsCheck || payment.CheckStatus == Enums.CheckStatus.Cleared;
@@ -353,7 +357,9 @@ namespace KMG.Core.Services
             Notes = p.Notes,
             IsCheck = p.IsCheck,
             CheckDueDate = p.CheckDueDate,
-            CheckStatus = p.CheckStatus?.ToString()
+            CheckStatus = p.CheckStatus?.ToString(),
+            AttachmentUrl = p.AttachmentUrl,
+            AttachmentFileName = p.AttachmentFileName
         };
 
         private static SupplierListDTO MapList(Supplier s)

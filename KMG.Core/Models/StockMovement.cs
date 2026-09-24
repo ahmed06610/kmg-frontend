@@ -10,6 +10,8 @@ namespace KMG.Core.Models
         public decimal UnitPriceAtTime { get; set; }
         public DateTime MovementDate { get; set; }
         public string? Notes { get; set; }
+        public string? AttachmentUrl { get; set; }
+        public string? AttachmentFileName { get; set; }
 
         public int MaterialId { get; set; }
         public virtual Material Material { get; set; } = null!;

@@ -11,7 +11,12 @@ namespace KMG.Core.Enums
         StockPurchaseOut = 7,      // دفع نقدي وقت شراء خامة (اختياري لو الشراء كاش وقتها)
         AdvanceOut = 8,            // تسليم سلفة لموظف
         MissionSettlementOut = 9,  // سداد فارق عهدة (لو المصروف أكتر من العهدة)
-        MiscExpenseOut = 10        // مصروف نثري عام (مش مرتبط بمشروع معين)
+        MiscExpenseOut = 10,       // مصروف نثري عام (مش مرتبط بمشروع معين)
+        InsuranceRecoveredIn = 11, // استرداد تأمين مناقصة من الجهة المستفيدة
+        GuaranteeRecoveredIn = 12, // استرداد ضمان أعمال
+        CustodyOut = 13,           // صرف عهدة جانبية لموظف
+        CustodySettlementIn = 14,  // استرجاع فارق عهدة جانبية (لو المصروف أقل من العهدة)
+        CustodySettlementOut = 15  // سداد فارق عهدة جانبية (لو المصروف أكتر من العهدة)
     }
 
     public enum MiscExpenseCategory
@@ -19,5 +24,11 @@ namespace KMG.Core.Enums
         Administrative = 1, // إداري
         Operational = 2,    // تشغيلي
         Other = 3           // أخرى
+    }
+
+    public enum CustodyStatus
+    {
+        Active = 1,
+        Settled = 2
     }
 }
