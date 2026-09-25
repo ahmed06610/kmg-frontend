@@ -13,13 +13,22 @@ import { InventoryHealthPanel } from "@/components/dashboard/InventoryHealthPane
 import { CollectionsPayablesPanel } from "@/components/dashboard/CollectionsPayablesPanel";
 import { RecentTransactionsTable } from "@/components/dashboard/RecentTransactionsTable";
 import { ActivityTimeline } from "@/components/dashboard/ActivityTimeline";
+import { DashboardDateFilter } from "@/components/dashboard/DashboardDateFilter";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const from = typeof params.from === "string" && params.from ? params.from : undefined;
+  const to = typeof params.to === "string" && params.to ? params.to : undefined;
+
   const session = await getSession();
   const canViewAiTenders = session?.abilities.includes("إدارة تكامل AI") ?? false;
 
   const [dashboard, aiTenderResults] = await Promise.all([
-    getDashboard(),
+    getDashboard(from, to),
     canViewAiTenders ? getAiTenderResults() : Promise.resolve([]),
   ]);
 
@@ -49,6 +58,8 @@ export default async function DashboardPage() {
         />
       </div>
 
+      <DashboardDateFilter from={from} to={to} />
+
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-gutter">
         <KpiCard label="إجمالي قيمة المشاريع" value={dashboard.totalContractValue} changePercent={dashboard.totalContractValueChangePercent} />
@@ -63,7 +74,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
         <div className="lg:col-span-8 bg-surface-container-lowest rounded-xl elevation-1 shadow-[var(--shadow-soft)] border border-outline-variant p-stack-lg flex flex-col min-h-[400px]">
           <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
-            <h3 className="text-title-sm text-on-surface font-bold">الأداء المالي (آخر 6 أشهر)</h3>
+            <h3 className="text-title-sm text-on-surface font-bold">الأداء المالي {from || to ? "(الفترة المحددة)" : "(آخر 6 أشهر)"}</h3>
             <div className="flex items-center gap-4 text-sm">
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-primary" />

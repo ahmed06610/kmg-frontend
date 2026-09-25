@@ -7,6 +7,7 @@ export interface EmployeeListDTO {
   employeeType: number;
   wageType: number;
   wageAmount: number;
+  insuranceAmount: number;
   managerId: number | null;
   managerName: string | null;
   suspended: boolean;
@@ -21,6 +22,7 @@ export interface CreateWorkerDTO {
   employeeType: number;
   wageType: number;
   wageAmount: number;
+  insuranceAmount: number;
   managerId?: number | null;
 }
 
@@ -31,6 +33,7 @@ export interface UpdateWorkerDTO {
   employeeType: number;
   wageType: number;
   wageAmount: number;
+  insuranceAmount: number;
   managerId?: number | null;
   suspended: boolean;
 }

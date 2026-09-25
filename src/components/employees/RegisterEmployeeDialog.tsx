@@ -24,7 +24,18 @@ export function RegisterEmployeeDialog({ open, onClose, roles }: { open: boolean
     formState: { errors },
   } = useForm<RegisterEmployeeFormValues>({
     resolver: zodResolver(registerEmployeeSchema),
-    defaultValues: { userName: "", name: "", email: "", phone: "", password: "", roleId: "", employeeType: EmployeeType.Admin, wageType: WageType.Monthly, wageAmount: 0 },
+    defaultValues: {
+      userName: "",
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      roleId: "",
+      employeeType: EmployeeType.Admin,
+      wageType: WageType.Monthly,
+      wageAmount: 0,
+      insuranceAmount: 0,
+    },
   });
 
   const onSubmit = async (data: RegisterEmployeeFormValues) => {
@@ -98,6 +109,9 @@ export function RegisterEmployeeDialog({ open, onClose, roles }: { open: boolean
             <Input type="number" step="0.01" dir="ltr" {...register("wageAmount", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
+        <FieldGroup label="قيمة التأمين الشهري" error={errors.insuranceAmount?.message}>
+          <Input type="number" step="0.01" dir="ltr" {...register("insuranceAmount", { valueAsNumber: true })} />
+        </FieldGroup>
         {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
       </form>
     </Dialog>

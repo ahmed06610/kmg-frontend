@@ -45,6 +45,7 @@ export function EditEmployeeDialog({
       employeeType: EmployeeType.Admin,
       wageType: WageType.Monthly,
       wageAmount: 0,
+      insuranceAmount: 0,
       suspended: false,
     },
   });
@@ -61,6 +62,7 @@ export function EditEmployeeDialog({
         employeeType: employee.employeeType,
         wageType: employee.wageType,
         wageAmount: employee.wageAmount,
+        insuranceAmount: employee.insuranceAmount,
         suspended: employee.suspended,
       });
       setServerError(null);
@@ -145,6 +147,9 @@ export function EditEmployeeDialog({
             <Input type="number" step="0.01" dir="ltr" {...register("wageAmount", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
+        <FieldGroup label="قيمة التأمين الشهري" error={errors.insuranceAmount?.message}>
+          <Input type="number" step="0.01" dir="ltr" {...register("insuranceAmount", { valueAsNumber: true })} />
+        </FieldGroup>
         <label className="flex items-center gap-2 text-body-sm text-on-surface">
           <input type="checkbox" {...register("suspended")} />
           موظف موقوف

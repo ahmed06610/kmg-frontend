@@ -24,7 +24,7 @@ export function EmployeeEditDialog({ open, onClose, employee }: { open: boolean;
     formState: { errors },
   } = useForm<UpdateWorkerFormValues>({
     resolver: zodResolver(updateWorkerSchema),
-    defaultValues: { name: "", phone: "", employeeType: EmployeeType.Worker, wageType: WageType.Daily, wageAmount: 0, suspended: false },
+    defaultValues: { name: "", phone: "", employeeType: EmployeeType.Worker, wageType: WageType.Daily, wageAmount: 0, insuranceAmount: 0, suspended: false },
   });
 
   useEffect(() => {
@@ -35,6 +35,7 @@ export function EmployeeEditDialog({ open, onClose, employee }: { open: boolean;
         employeeType: employee.employeeType,
         wageType: employee.wageType,
         wageAmount: employee.wageAmount,
+        insuranceAmount: employee.insuranceAmount,
         suspended: employee.suspended,
       });
       setServerError(null);
@@ -93,9 +94,14 @@ export function EmployeeEditDialog({ open, onClose, employee }: { open: boolean;
             </Select>
           </FieldGroup>
         </div>
-        <FieldGroup label="قيمة الأجر" error={errors.wageAmount?.message}>
-          <Input type="number" step="0.01" dir="ltr" {...register("wageAmount", { valueAsNumber: true })} />
-        </FieldGroup>
+        <div className="grid grid-cols-2 gap-stack-md">
+          <FieldGroup label="قيمة الأجر" error={errors.wageAmount?.message}>
+            <Input type="number" step="0.01" dir="ltr" {...register("wageAmount", { valueAsNumber: true })} />
+          </FieldGroup>
+          <FieldGroup label="قيمة التأمين الشهري" error={errors.insuranceAmount?.message}>
+            <Input type="number" step="0.01" dir="ltr" {...register("insuranceAmount", { valueAsNumber: true })} />
+          </FieldGroup>
+        </div>
         <label className="flex items-center gap-2 text-body-sm text-on-surface">
           <input type="checkbox" {...register("suspended")} />
           موظف موقوف

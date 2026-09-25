@@ -37,6 +37,7 @@ export interface RegisterEmployeeDTO {
   employeeType: number;
   wageType: number;
   wageAmount: number;
+  insuranceAmount: number;
   managerId?: number | null;
   abilityIds?: number[] | null;
 }
@@ -54,5 +55,6 @@ export interface EditEmployeeDTO {
   employeeType: number;
   wageType: number;
   wageAmount: number;
+  insuranceAmount: number;
   abilityIds?: number[] | null;
 }

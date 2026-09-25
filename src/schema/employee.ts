@@ -6,6 +6,7 @@ export const createWorkerSchema = z.object({
   employeeType: z.number().min(1),
   wageType: z.number().min(1),
   wageAmount: z.number().min(0, "الأجر لا يمكن أن يكون سالبًا"),
+  insuranceAmount: z.number().min(0, "قيمة التأمين لا يمكن أن تكون سالبة"),
 });
 export type CreateWorkerFormValues = z.infer<typeof createWorkerSchema>;
 
@@ -19,6 +20,7 @@ export const registerEmployeeSchema = z.object({
   employeeType: z.number().min(1),
   wageType: z.number().min(1),
   wageAmount: z.number().min(0, "الأجر لا يمكن أن يكون سالبًا"),
+  insuranceAmount: z.number().min(0, "قيمة التأمين لا يمكن أن تكون سالبة"),
 });
 export type RegisterEmployeeFormValues = z.infer<typeof registerEmployeeSchema>;
 
@@ -28,6 +30,7 @@ export const updateWorkerSchema = z.object({
   employeeType: z.number().min(1),
   wageType: z.number().min(1),
   wageAmount: z.number().min(0, "الأجر لا يمكن أن يكون سالبًا"),
+  insuranceAmount: z.number().min(0, "قيمة التأمين لا يمكن أن تكون سالبة"),
   suspended: z.boolean(),
 });
 export type UpdateWorkerFormValues = z.infer<typeof updateWorkerSchema>;
@@ -42,6 +45,7 @@ export const editEmployeeSchema = z.object({
   employeeType: z.number().min(1),
   wageType: z.number().min(1),
   wageAmount: z.number().min(0, "الأجر لا يمكن أن يكون سالبًا"),
+  insuranceAmount: z.number().min(0, "قيمة التأمين لا يمكن أن تكون سالبة"),
   suspended: z.boolean(),
 });
 export type EditEmployeeFormValues = z.infer<typeof editEmployeeSchema>;
