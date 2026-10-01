@@ -12,6 +12,7 @@ import type {
   StockPriceBatchDTO,
   UpdateMaterialCategoryDTO,
   UpdateMaterialDTO,
+  UpdatePurchaseDTO,
 } from "@/types/stock";
 import type { ActionResult } from "./auth";
 
@@ -91,6 +92,19 @@ export async function recordPurchase(data: CreatePurchaseDTO): Promise<ActionRes
     revalidatePath("/stock");
     revalidatePath(`/stock/${data.materialId}`);
     revalidatePath("/suppliers");
+    return { success: true, data: movement };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function updatePurchase(data: UpdatePurchaseDTO): Promise<ActionResult<StockMovementDTO>> {
+  try {
+    const movement = await apiClient.put<StockMovementDTO>("/Stock/purchase", data);
+    revalidatePath("/stock");
+    revalidatePath(`/stock/${movement.materialId}`);
+    revalidatePath("/suppliers");
+    if (movement.supplierId) revalidatePath(`/suppliers/${movement.supplierId}`);
     return { success: true, data: movement };
   } catch (error) {
     return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };

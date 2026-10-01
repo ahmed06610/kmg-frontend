@@ -17,6 +17,7 @@ export const purchaseSchema = z.object({
   supplierId: z.number().min(1, "اختر مورد"),
   quantity: z.number().gt(0, "الكمية يجب أن تكون أكبر من صفر"),
   unitPrice: z.number().min(0, "السعر لا يمكن أن يكون سالبًا"),
+  transportCost: z.number().min(0, "قيمة النقل لا يمكن أن تكون سالبة"),
   notes: z.string().optional().or(z.literal("")),
 });
 export type PurchaseFormValues = z.infer<typeof purchaseSchema>;

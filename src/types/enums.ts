@@ -46,6 +46,7 @@ export const TransactionType = {
   CustodySettlementOut: 15,
   EmployeeInsuranceOut: 16,
   ManualAdjustment: 17,
+  TransportCostOut: 18,
 } as const;
 
 export const projectTypeLabels: Record<string, string> = {
@@ -99,6 +100,7 @@ export const transactionTypeLabels: Record<string, string> = {
   CustodySettlementOut: "سداد فارق عهدة جانبية",
   EmployeeInsuranceOut: "صرف تأمينات الموظفين",
   ManualAdjustment: "تعديل يدوي لرصيد الخزنة",
+  TransportCostOut: "مصروف نقل خامة",
 };
 
 export const miscExpenseCategoryLabels: Record<string, string> = {

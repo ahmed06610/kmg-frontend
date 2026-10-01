@@ -28,10 +28,15 @@ export interface SupplierPaymentDTO {
 
 export interface SupplierPurchaseDTO {
   id: number;
+  materialId: number;
   materialName: string;
   quantity: number;
   unitPriceAtTime: number;
+  transportCost: number;
   movementDate: string;
+  notes: string | null;
+  attachmentUrl: string | null;
+  attachmentFileName: string | null;
 }
 
 export interface SupplierDetailsDTO extends SupplierListDTO {

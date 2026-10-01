@@ -12,11 +12,14 @@ import { MultiSheetExportButton } from "@/components/ui/ExportButton";
 import { Icon } from "@/components/ui/Icon";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { PurchaseDialog } from "@/components/stock/PurchaseDialog";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
+import { formatMaterialLabel } from "@/lib/material-label";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useTableState } from "@/lib/useTableState";
 import { checkStatusLabels } from "@/types/enums";
-import type { SupplierDetailsDTO, SupplierPaymentDTO } from "@/types/supplier";
+import type { MaterialCategoryDTO, MaterialDTO, StockMovementDTO } from "@/types/stock";
+import type { SupplierDetailsDTO, SupplierPaymentDTO, SupplierPurchaseDTO } from "@/types/supplier";
 import { ResolveCheckDialog } from "./ResolveCheckDialog";
 import { SupplierFormDialog } from "./SupplierFormDialog";
 import { SupplierPaymentDialog } from "./SupplierPaymentDialog";
@@ -27,7 +30,39 @@ const checkStatusTone: Record<string, "warning" | "success" | "neutral"> = {
   Cancelled: "neutral",
 };
 
-export function SupplierDetailsView({ supplier, canManage }: { supplier: SupplierDetailsDTO; canManage: boolean }) {
+function toMovement(p: SupplierPurchaseDTO, supplierId: number, supplierName: string): StockMovementDTO {
+  return {
+    id: p.id,
+    movementType: "Purchase",
+    materialId: p.materialId,
+    materialName: p.materialName,
+    quantity: p.quantity,
+    unitPriceAtTime: p.unitPriceAtTime,
+    transportCost: p.transportCost,
+    projectId: null,
+    projectCode: null,
+    projectName: null,
+    supplierId,
+    supplierName,
+    movementDate: p.movementDate,
+    notes: p.notes,
+    createdByEmployeeName: "",
+    attachmentUrl: p.attachmentUrl,
+    attachmentFileName: p.attachmentFileName,
+  };
+}
+
+export function SupplierDetailsView({
+  supplier,
+  materials,
+  categories,
+  canManage,
+}: {
+  supplier: SupplierDetailsDTO;
+  materials: MaterialDTO[];
+  categories: MaterialCategoryDTO[];
+  canManage: boolean;
+}) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -35,6 +70,7 @@ export function SupplierDetailsView({ supplier, canManage }: { supplier: Supplie
   const [resolvingPayment, setResolvingPayment] = useState<SupplierPaymentDTO | null>(null);
   const [deletingPayment, setDeletingPayment] = useState<SupplierPaymentDTO | null>(null);
   const [deleteSupplierOpen, setDeleteSupplierOpen] = useState(false);
+  const [editingPurchase, setEditingPurchase] = useState<SupplierPurchaseDTO | null>(null);
 
   const purchasesTable = useTableState({
     rows: supplier.purchases,
@@ -66,12 +102,14 @@ export function SupplierDetailsView({ supplier, canManage }: { supplier: Supplie
                   { header: "الخامة", key: "materialName" },
                   { header: "الكمية", key: "quantity" },
                   { header: "سعر الوحدة", key: "unitPriceAtTime" },
+                  { header: "قيمة النقل", key: "transportCost" },
                   { header: "التاريخ", key: "date" },
                 ],
                 rows: supplier.purchases.map((p) => ({
                   materialName: p.materialName,
                   quantity: p.quantity,
                   unitPriceAtTime: p.unitPriceAtTime,
+                  transportCost: p.transportCost,
                   date: formatDate(p.movementDate),
                 })),
               },
@@ -151,18 +189,31 @@ export function SupplierDetailsView({ supplier, canManage }: { supplier: Supplie
                   <Th>الخامة</Th>
                   <Th>الكمية</Th>
                   <Th>سعر الوحدة</Th>
+                  <Th>قيمة النقل</Th>
                   <Th>التاريخ</Th>
+                  {canManage && <Th>إجراءات</Th>}
                 </tr>
               </THead>
               <TBody>
-                {purchasesTable.pageRows.map((p) => (
-                  <Tr key={p.id}>
-                    <Td>{p.materialName}</Td>
-                    <TdMono>{p.quantity}</TdMono>
-                    <TdMono>{formatCurrency(p.unitPriceAtTime)}</TdMono>
-                    <Td>{formatDate(p.movementDate)}</Td>
-                  </Tr>
-                ))}
+                {purchasesTable.pageRows.map((p) => {
+                  const material = materials.find((m) => m.id === p.materialId);
+                  return (
+                    <Tr key={p.id}>
+                      <Td>{material ? formatMaterialLabel(material, categories) : p.materialName}</Td>
+                      <TdMono>{p.quantity}</TdMono>
+                      <TdMono>{formatCurrency(p.unitPriceAtTime)}</TdMono>
+                      <TdMono>{p.transportCost > 0 ? formatCurrency(p.transportCost) : "-"}</TdMono>
+                      <Td>{formatDate(p.movementDate)}</Td>
+                      {canManage && (
+                        <Td>
+                          <button className="text-on-surface-variant hover:text-on-surface" title="تعديل خطأ" onClick={() => setEditingPurchase(p)}>
+                            <Icon name="edit" size={18} />
+                          </button>
+                        </Td>
+                      )}
+                    </Tr>
+                  );
+                })}
               </TBody>
             </Table>
             <div className="mt-stack-sm">
@@ -260,6 +311,14 @@ export function SupplierDetailsView({ supplier, canManage }: { supplier: Supplie
         payment={editingPayment ?? undefined}
       />
       <ResolveCheckDialog open={!!resolvingPayment} onClose={() => setResolvingPayment(null)} payment={resolvingPayment} />
+      <PurchaseDialog
+        open={!!editingPurchase}
+        onClose={() => setEditingPurchase(null)}
+        materials={materials}
+        suppliers={[supplier]}
+        categories={categories}
+        purchase={editingPurchase ? toMovement(editingPurchase, supplier.id, supplier.name) : undefined}
+      />
       <ConfirmDialog
         open={!!deletingPayment}
         onClose={() => setDeletingPayment(null)}

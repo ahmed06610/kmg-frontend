@@ -64,6 +64,7 @@ export interface StockMovementDTO {
   materialName: string;
   quantity: number;
   unitPriceAtTime: number;
+  transportCost: number;
   projectId: number | null;
   projectCode: string | null;
   projectName: string | null;
@@ -80,6 +81,18 @@ export interface CreatePurchaseDTO {
   materialId: number;
   quantity: number;
   unitPrice: number;
+  transportCost: number;
+  supplierId: number;
+  notes?: string | null;
+  attachmentUrl?: string | null;
+  attachmentFileName?: string | null;
+}
+
+export interface UpdatePurchaseDTO {
+  id: number;
+  quantity: number;
+  unitPrice: number;
+  transportCost: number;
   supplierId: number;
   notes?: string | null;
   attachmentUrl?: string | null;

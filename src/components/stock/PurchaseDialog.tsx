@@ -2,9 +2,9 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { recordPurchase } from "@/actions/stock";
+import { recordPurchase, updatePurchase } from "@/actions/stock";
 import { Button } from "@/components/ui/Button";
 import { Combobox } from "@/components/ui/Combobox";
 import { Dialog } from "@/components/ui/Dialog";
@@ -13,7 +13,7 @@ import { InvoiceAttachmentField, type InvoiceAttachmentValue } from "@/component
 import { formatMaterialLabel } from "@/lib/material-label";
 import { formatCurrency } from "@/lib/utils";
 import { purchaseSchema, type PurchaseFormValues } from "@/schema/stock";
-import type { MaterialCategoryDTO, MaterialDTO } from "@/types/stock";
+import type { MaterialCategoryDTO, MaterialDTO, StockMovementDTO } from "@/types/stock";
 import type { SupplierListDTO } from "@/types/supplier";
 
 export function PurchaseDialog({
@@ -23,6 +23,7 @@ export function PurchaseDialog({
   suppliers,
   categories,
   defaultMaterialId,
+  purchase,
 }: {
   open: boolean;
   onClose: () => void;
@@ -30,8 +31,11 @@ export function PurchaseDialog({
   suppliers: SupplierListDTO[];
   categories: MaterialCategoryDTO[];
   defaultMaterialId?: number;
+  /** لو موجودة، الدايلوج بيفتح في وضع "تعديل خطأ" على حركة شراء متسجلة بالفعل بدل إضافة شراء جديد */
+  purchase?: StockMovementDTO;
 }) {
   const router = useRouter();
+  const isEdit = !!purchase;
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [attachment, setAttachment] = useState<InvoiceAttachmentValue | null>(null);
@@ -46,8 +50,30 @@ export function PurchaseDialog({
     formState: { errors },
   } = useForm<PurchaseFormValues>({
     resolver: zodResolver(purchaseSchema),
-    defaultValues: { materialId: defaultMaterialId ?? 0, supplierId: 0, quantity: 0, unitPrice: 0, notes: "" },
+    defaultValues: { materialId: defaultMaterialId ?? 0, supplierId: 0, quantity: 0, unitPrice: 0, transportCost: 0, notes: "" },
   });
+
+  useEffect(() => {
+    if (!open) return;
+    if (purchase) {
+      reset({
+        materialId: purchase.materialId,
+        supplierId: purchase.supplierId ?? 0,
+        quantity: purchase.quantity,
+        unitPrice: purchase.unitPriceAtTime,
+        transportCost: purchase.transportCost,
+        notes: purchase.notes ?? "",
+      });
+      setAttachment(
+        purchase.attachmentUrl ? { attachmentUrl: purchase.attachmentUrl, attachmentFileName: purchase.attachmentFileName ?? purchase.attachmentUrl } : null,
+      );
+    } else {
+      reset({ materialId: defaultMaterialId ?? 0, supplierId: 0, quantity: 0, unitPrice: 0, transportCost: 0, notes: "" });
+      setAttachment(null);
+    }
+    setServerError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, purchase]);
 
   const selectedMaterialId = watch("materialId");
   const selectedMaterial = materials.find((m) => m.id === selectedMaterialId);
@@ -55,12 +81,13 @@ export function PurchaseDialog({
   const onSubmit = async (data: PurchaseFormValues) => {
     setLoading(true);
     setServerError(null);
-    const result = await recordPurchase({
+    const payload = {
       ...data,
       notes: data.notes || null,
       attachmentUrl: attachment?.attachmentUrl ?? null,
       attachmentFileName: attachment?.attachmentFileName ?? null,
-    });
+    };
+    const result = isEdit ? await updatePurchase({ id: purchase!.id, ...payload }) : await recordPurchase(payload);
     setLoading(false);
     if (!result.success) {
       setServerError(result.message ?? "حدث خطأ");
@@ -76,14 +103,14 @@ export function PurchaseDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title="تسجيل شراء خامة"
+      title={isEdit ? "تعديل خطأ في عملية شراء" : "تسجيل شراء خامة"}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
             إلغاء
           </Button>
           <Button type="submit" form="purchase-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "تسجيل الشراء"}
+            {loading ? "جاري الحفظ..." : isEdit ? "حفظ التعديل" : "تسجيل الشراء"}
           </Button>
         </>
       }
@@ -102,7 +129,7 @@ export function PurchaseDialog({
                   const material = materials.find((m) => m.id === id);
                   if (material) setValue("unitPrice", material.unitPrice);
                 }}
-                disabled={!!defaultMaterialId}
+                disabled={!!defaultMaterialId || isEdit}
                 placeholder="اختر خامة"
                 options={materials.map((m) => ({ value: String(m.id), label: formatMaterialLabel(m, categories), hint: `متاح: ${m.quantity}` }))}
               />
@@ -136,6 +163,9 @@ export function PurchaseDialog({
             <Input type="number" step="0.01" dir="ltr" {...register("unitPrice", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
+        <FieldGroup label="قيمة النقل (اختياري)" error={errors.transportCost?.message}>
+          <Input type="number" step="0.01" dir="ltr" {...register("transportCost", { valueAsNumber: true })} />
+        </FieldGroup>
         <FieldGroup label="ملاحظات" error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
