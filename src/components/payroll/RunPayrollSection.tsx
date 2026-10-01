@@ -79,6 +79,7 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
             { header: "حوافز", key: "bonus" },
             { header: "خصومات", key: "deductions" },
             { header: "قسط سلفة", key: "advanceInstallment" },
+            { header: "خصم تأمين", key: "insurance" },
             { header: "الصافي", key: "net" },
           ],
           rows: succeeded.map((p) => ({
@@ -88,6 +89,7 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
             bonus: p.bonusAmount,
             deductions: p.deductionsAmount,
             advanceInstallment: p.advanceInstallmentAmount,
+            insurance: p.insuranceAmount,
             net: p.netPaid,
           })),
         },
@@ -234,12 +236,13 @@ export function RunPayrollSection({ employees, history }: { employees: EmployeeL
 
         {preview && (
           <div className="mt-stack-lg flex flex-col gap-stack-md">
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-stack-sm text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-stack-sm text-center">
               <PreviewStat label="الأساسي" value={preview.baseAmount} />
               <PreviewStat label="مضاعفة المأمورية" value={preview.missionDoubleUpAmount} />
               <PreviewStat label="حوافز" value={preview.bonusAmount} tone="text-success" />
               <PreviewStat label="خصومات" value={-preview.deductionsAmount} tone="text-error" />
               <PreviewStat label="قسط سلفة" value={-preview.advanceInstallmentAmount} tone="text-error" />
+              <PreviewStat label="خصم تأمين" value={-preview.insuranceAmount} tone="text-error" />
             </div>
             <div className="flex items-center justify-between rounded-lg bg-surface-container-low px-stack-md py-stack-sm">
               <span className="text-body-sm text-on-surface-variant">صافي المستحق لـ {preview.employeeName}</span>

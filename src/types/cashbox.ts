@@ -80,3 +80,9 @@ export interface UpdateMiscExpenseDTO {
   attachmentUrl?: string | null;
   attachmentFileName?: string | null;
 }
+
+export interface AdjustCashBoxDTO {
+  newTotalCash: number;
+  newTotalCredit: number;
+  reason?: string | null;
+}

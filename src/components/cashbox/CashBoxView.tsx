@@ -19,6 +19,7 @@ import type { CashBoxTransactionDTO, CashBoxTransactionFilter, CashBoxTransactio
 import type { CustodyDTO } from "@/types/custody";
 import type { EmployeeListDTO } from "@/types/employee";
 import type { ProjectListDTO } from "@/types/project";
+import { AdjustCashBoxDialog } from "./AdjustCashBoxDialog";
 import { CustodyTab } from "./CustodyTab";
 import { MiscExpenseDialog } from "./MiscExpenseDialog";
 
@@ -37,6 +38,7 @@ export function CashBoxView({ totals, transactions, filter, custodies, employees
   const router = useRouter();
   const [search, setSearch] = useState(filter.search ?? "");
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
+  const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<CashBoxTransactionDTO | undefined>(undefined);
   const [deletingTransaction, setDeletingTransaction] = useState<CashBoxTransactionDTO | null>(null);
 
@@ -69,15 +71,21 @@ export function CashBoxView({ totals, transactions, filter, custodies, employees
           <p className="text-body-sm text-on-surface-variant">كل حركة مالية في النظام مربوطة تلقائيًا بمصدرها</p>
         </div>
         {canManage && tab === "transactions" && (
-          <Button
-            onClick={() => {
-              setEditingTransaction(undefined);
-              setExpenseDialogOpen(true);
-            }}
-          >
-            <Icon name="add" size={18} />
-            مصروف نثري
-          </Button>
+          <div className="flex items-center gap-stack-sm">
+            <Button variant="secondary" onClick={() => setAdjustDialogOpen(true)}>
+              <Icon name="tune" size={18} />
+              تعديل رصيد الخزنة
+            </Button>
+            <Button
+              onClick={() => {
+                setEditingTransaction(undefined);
+                setExpenseDialogOpen(true);
+              }}
+            >
+              <Icon name="add" size={18} />
+              مصروف نثري
+            </Button>
+          </div>
         )}
       </div>
 
@@ -283,6 +291,12 @@ export function CashBoxView({ totals, transactions, filter, custodies, employees
           setEditingTransaction(undefined);
         }}
         transaction={editingTransaction}
+      />
+      <AdjustCashBoxDialog
+        open={adjustDialogOpen}
+        onClose={() => setAdjustDialogOpen(false)}
+        currentCash={totals.totalCash}
+        currentCredit={totals.totalCredit}
       />
       <ConfirmDialog
         open={!!deletingTransaction}

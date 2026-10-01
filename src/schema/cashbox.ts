@@ -30,6 +30,13 @@ export const custodySchema = z
   });
 export type CustodyFormValues = z.infer<typeof custodySchema>;
 
+export const adjustCashBoxSchema = z.object({
+  newTotalCash: z.number(),
+  newTotalCredit: z.number(),
+  reason: z.string().optional().or(z.literal("")),
+});
+export type AdjustCashBoxFormValues = z.infer<typeof adjustCashBoxSchema>;
+
 export const settleCustodySchema = z.object({
   settledAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
   settledDate: z.string().min(1, "التاريخ مطلوب"),

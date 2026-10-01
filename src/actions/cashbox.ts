@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { apiClient, ApiError } from "@/lib/api-client";
-import type { CreateMiscExpenseDTO, MiscExpenseDTO, UpdateMiscExpenseDTO } from "@/types/cashbox";
+import type { AdjustCashBoxDTO, CashBoxDetailsDTO, CreateMiscExpenseDTO, MiscExpenseDTO, UpdateMiscExpenseDTO } from "@/types/cashbox";
 import type { ActionResult } from "./auth";
 
 export async function createMiscExpense(data: CreateMiscExpenseDTO): Promise<ActionResult<MiscExpenseDTO>> {
@@ -30,6 +30,16 @@ export async function deleteMiscExpense(id: number): Promise<ActionResult> {
     await apiClient.delete(`/CashBox/misc-expenses/${id}`);
     revalidatePath("/cashbox");
     return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function adjustCashBox(data: AdjustCashBoxDTO): Promise<ActionResult<CashBoxDetailsDTO>> {
+  try {
+    const details = await apiClient.put<CashBoxDetailsDTO>("/CashBox/adjust", data);
+    revalidatePath("/cashbox");
+    return { success: true, data: details };
   } catch (error) {
     return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
   }

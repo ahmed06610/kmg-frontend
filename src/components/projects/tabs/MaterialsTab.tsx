@@ -8,6 +8,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { IssueReturnDialog } from "@/components/stock/IssueReturnDialog";
+import { formatMaterialLabelWithPrice } from "@/lib/material-label";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useTableState } from "@/lib/useTableState";
 import { movementTypeLabels } from "@/types/enums";
@@ -79,16 +80,20 @@ export function MaterialsTab({
               </tr>
             </THead>
             <TBody>
-              {table.pageRows.map((m) => (
-                <Tr key={m.id}>
-                  <Td>{movementTypeLabels[m.movementType] ?? m.movementType}</Td>
-                  <Td>{m.materialName}</Td>
-                  <TdMono>{m.quantity}</TdMono>
-                  <TdMono>{formatCurrency(m.unitPriceAtTime)}</TdMono>
-                  <Td>{formatDate(m.movementDate)}</Td>
-                  <Td>{m.createdByEmployeeName}</Td>
-                </Tr>
-              ))}
+              {table.pageRows.map((m) => {
+                const material = materials.find((x) => x.id === m.materialId);
+                const label = material ? formatMaterialLabelWithPrice(material, categories, m.unitPriceAtTime) : m.materialName;
+                return (
+                  <Tr key={m.id}>
+                    <Td>{movementTypeLabels[m.movementType] ?? m.movementType}</Td>
+                    <Td>{label}</Td>
+                    <TdMono>{m.quantity}</TdMono>
+                    <TdMono>{formatCurrency(m.unitPriceAtTime)}</TdMono>
+                    <Td>{formatDate(m.movementDate)}</Td>
+                    <Td>{m.createdByEmployeeName}</Td>
+                  </Tr>
+                );
+              })}
             </TBody>
           </Table>
           <Pagination page={table.page} pageSize={table.pageSize} totalCount={table.totalCount} onPageChange={table.setPage} />

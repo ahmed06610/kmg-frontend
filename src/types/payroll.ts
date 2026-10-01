@@ -61,6 +61,7 @@ export interface PayrollPreviewDTO {
   deductionsAmount: number;
   bonusAmount: number;
   advanceInstallmentAmount: number;
+  insuranceAmount: number;
   netPaid: number;
 }
 
