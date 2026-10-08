@@ -9,6 +9,8 @@ export async function createCustody(data: CreateCustodyDTO): Promise<ActionResul
   try {
     const custody = await apiClient.post<CustodyDTO>("/Custody", data);
     revalidatePath("/cashbox");
+    // العهدة المربوطة بمشروع بتظهر في مصاريفه وصافي ربحه
+    revalidatePath("/(app)/projects/[id]", "page");
     return { success: true, data: custody };
   } catch (error) {
     return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
@@ -19,6 +21,8 @@ export async function updateCustody(data: UpdateCustodyDTO): Promise<ActionResul
   try {
     const custody = await apiClient.put<CustodyDTO>("/Custody", data);
     revalidatePath("/cashbox");
+    // العهدة المربوطة بمشروع بتظهر في مصاريفه وصافي ربحه
+    revalidatePath("/(app)/projects/[id]", "page");
     return { success: true, data: custody };
   } catch (error) {
     return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
@@ -29,6 +33,8 @@ export async function deleteCustody(id: number): Promise<ActionResult> {
   try {
     await apiClient.delete(`/Custody/${id}`);
     revalidatePath("/cashbox");
+    // العهدة المربوطة بمشروع بتظهر في مصاريفه وصافي ربحه
+    revalidatePath("/(app)/projects/[id]", "page");
     return { success: true };
   } catch (error) {
     return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
@@ -39,6 +45,8 @@ export async function settleCustody(data: SettleCustodyDTO): Promise<ActionResul
   try {
     const custody = await apiClient.post<CustodyDTO>("/Custody/settle", data);
     revalidatePath("/cashbox");
+    // العهدة المربوطة بمشروع بتظهر في مصاريفه وصافي ربحه
+    revalidatePath("/(app)/projects/[id]", "page");
     return { success: true, data: custody };
   } catch (error) {
     return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };

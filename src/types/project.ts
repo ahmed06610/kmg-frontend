@@ -1,4 +1,5 @@
 import type { StockMovementDTO } from "./stock";
+import type { CustodyDTO } from "./custody";
 import type { CheckStatus } from "./supplier";
 
 export interface ProjectListDTO {
@@ -77,7 +78,15 @@ export interface ProjectDetailsDTO extends ProjectListDTO {
   totalPettyExpenses: number;
   totalLaborCost: number;
   totalWriteOffs: number;
+  /** عهد المأموريات: بقيمتها كاملة لحد التسوية، وبعدها بالمصروف الفعلي (لحد قيمة العهدة) */
+  totalMissionCustodyCost: number;
+  /** العهد الجانبية المربوطة بالمشروع (من الخزنة أو من المشروع نفسه) */
+  totalSideCustodyCost: number;
+  totalCustodyCost: number;
+  /** خامات + نثرية + عمالة + عهد */
+  totalCost: number;
   payments: ProjectPaymentDTO[];
+  custodies: CustodyDTO[];
   expenses: ProjectExpenseDTO[];
   stockMovements: StockMovementDTO[];
   attachments: ProjectAttachmentDTO[];

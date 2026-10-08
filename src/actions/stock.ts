@@ -8,7 +8,12 @@ import type {
   CreateMaterialDTO,
   CreatePurchaseDTO,
   CreateReturnDTO,
+  CreateStockAdjustmentDTO,
+  MaterialDeleteImpactDTO,
+  MaterialDTO,
+  MergeMaterialsDTO,
   StockMovementDTO,
+  UpdateStockMovementDTO,
   StockPriceBatchDTO,
   UpdateMaterialCategoryDTO,
   UpdateMaterialDTO,
@@ -46,10 +51,64 @@ export async function updateMaterial(data: UpdateMaterialDTO): Promise<ActionRes
   }
 }
 
-export async function deleteMaterial(id: number): Promise<ActionResult> {
+/** تعديل/حذف حركة قديمة بيأثر على تكلفة المشاريع ومستحقات الموردين والخزنة، فلازم كل الصفحات تتحدث */
+function revalidateStockDependents() {
+  revalidatePath("/", "layout");
+}
+
+export async function getMaterialDeleteImpact(id: number): Promise<ActionResult<MaterialDeleteImpactDTO>> {
   try {
-    await apiClient.delete(`/Stock/materials/${id}`);
-    revalidatePath("/stock");
+    const impact = await apiClient.get<MaterialDeleteImpactDTO>(`/Stock/materials/${id}/delete-impact`);
+    return { success: true, data: impact };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function deleteMaterial(id: number, force = false): Promise<ActionResult> {
+  try {
+    await apiClient.delete(`/Stock/materials/${id}${force ? "?force=true" : ""}`);
+    revalidateStockDependents();
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function mergeMaterials(data: MergeMaterialsDTO): Promise<ActionResult<MaterialDTO>> {
+  try {
+    const material = await apiClient.post<MaterialDTO>("/Stock/materials/merge", data);
+    revalidateStockDependents();
+    return { success: true, data: material };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function createStockAdjustment(data: CreateStockAdjustmentDTO): Promise<ActionResult<StockMovementDTO>> {
+  try {
+    const movement = await apiClient.post<StockMovementDTO>("/Stock/adjustment", data);
+    revalidatePath("/stock", "layout");
+    return { success: true, data: movement };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function updateStockMovement(data: UpdateStockMovementDTO): Promise<ActionResult<StockMovementDTO>> {
+  try {
+    const movement = await apiClient.put<StockMovementDTO>("/Stock/movements", data);
+    revalidateStockDependents();
+    return { success: true, data: movement };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function deleteStockMovement(id: number): Promise<ActionResult> {
+  try {
+    await apiClient.delete(`/Stock/movements/${id}`);
+    revalidateStockDependents();
     return { success: true };
   } catch (error) {
     return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };

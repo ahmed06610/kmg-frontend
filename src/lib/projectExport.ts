@@ -28,6 +28,9 @@ export function buildProjectExportSheets(project: ProjectDetailsDTO, missions: M
       { label: "تكلفة الخامات", value: formatCurrency(project.totalMaterialsCost) },
       { label: "المصاريف النثرية", value: formatCurrency(project.totalPettyExpenses) },
       { label: "تكلفة العمالة", value: formatCurrency(project.totalLaborCost) },
+      { label: "عهد المأموريات", value: formatCurrency(project.totalMissionCustodyCost) },
+      { label: "العهد الجانبية", value: formatCurrency(project.totalSideCustodyCost) },
+      { label: "إجمالي التكلفة", value: formatCurrency(project.totalCost) },
       { label: "صافي الربح", value: formatCurrency(project.netProfit) },
       { label: "الوصف", value: project.description ?? "-" },
     ],
@@ -94,6 +97,7 @@ export function buildProjectExportSheets(project: ProjectDetailsDTO, missions: M
       { header: "النوع", key: "movementType" },
       { header: "الكمية", key: "quantity" },
       { header: "السعر وقت الحركة", key: "unitPriceAtTime" },
+      { header: "الإجمالي", key: "total" },
       { header: "التاريخ", key: "date" },
       { header: "ملاحظات", key: "notes" },
     ],
@@ -102,8 +106,29 @@ export function buildProjectExportSheets(project: ProjectDetailsDTO, missions: M
       movementType: movementTypeLabels[m.movementType] ?? m.movementType,
       quantity: m.quantity,
       unitPriceAtTime: m.unitPriceAtTime,
+      total: m.quantity * m.unitPriceAtTime,
       date: formatDate(m.movementDate),
       notes: m.notes ?? "-",
+    })),
+  });
+
+  sheets.push({
+    name: "العهد",
+    columns: [
+      { header: "الموظف", key: "employee" },
+      { header: "الوصف", key: "description" },
+      { header: "القيمة", key: "amount" },
+      { header: "المصروف الفعلي", key: "settledAmount" },
+      { header: "تاريخ الصرف", key: "date" },
+      { header: "الحالة", key: "status" },
+    ],
+    rows: project.custodies.map((c) => ({
+      employee: c.employeeName,
+      description: c.description,
+      amount: c.amount,
+      settledAmount: c.settledAmount ?? "-",
+      date: formatDate(c.issueDate),
+      status: c.status === "Settled" ? "متسواة" : "نشطة",
     })),
   });
 

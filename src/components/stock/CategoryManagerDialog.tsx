@@ -83,7 +83,9 @@ export function CategoryManagerDialog({ open, onClose, categories }: { open: boo
         open={!!deletingCategory}
         onClose={() => setDeletingCategory(null)}
         title="حذف النوع"
-        message={`هل أنت متأكد من حذف نوع "${deletingCategory?.name}"؟`}
+        message={`هل أنت متأكد من حذف نوع "${deletingCategory?.name}"؟${
+          deletingCategory?.materialsCount ? ` الأصناف التابعة له (${deletingCategory.materialsCount}) مش هتتمسح، هتتنقل لـ "بدون نوع".` : ""
+        }`}
         onConfirm={() => deleteMaterialCategory(deletingCategory!.id)}
         onConfirmed={() => router.refresh()}
       />
@@ -170,23 +172,32 @@ function CategoryFormDialog({ open, onClose, category }: { open: boolean; onClos
           </div>
 
           {fields.map((field, index) => {
-            const isLocked = existingKeys.has(field.key);
+            const isExisting = existingKeys.has(field.key);
             return (
               <div key={field.id} className="flex items-center gap-stack-sm">
-                <Input placeholder="المفتاح (بالإنجليزي)" dir="ltr" disabled={isLocked} className="w-32" {...register(`extraFieldDefinitions.${index}.key`)} />
+                <Input placeholder="المفتاح (بالإنجليزي)" dir="ltr" readOnly={isExisting} className={isExisting ? "w-32 opacity-60" : "w-32"} {...register(`extraFieldDefinitions.${index}.key`)} />
                 <Input placeholder="الاسم الظاهر" className="flex-1" {...register(`extraFieldDefinitions.${index}.label`)} />
                 <Select className="w-28" {...register(`extraFieldDefinitions.${index}.fieldType`)}>
                   <option value="text">نص</option>
                   <option value="number">رقم</option>
                 </Select>
-                {!isLocked && (
-                  <button type="button" onClick={() => remove(index)} className="text-error shrink-0" aria-label="حذف">
-                    <Icon name="delete" size={18} />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="text-error shrink-0"
+                  aria-label="حذف"
+                  title={isExisting ? "حذف الحقل - قيمته هتتمسح من كل الأصناف في النوع ده" : "حذف"}
+                >
+                  <Icon name="delete" size={18} />
+                </button>
               </div>
             );
           })}
+          {isEdit && existingKeys.size > 0 && (
+            <p className="text-xs text-on-surface-variant">
+              تقدر تغير الاسم الظاهر لأي حقل أو تحذفه. حذف حقل موجود بيمسح قيمته من كل الأصناف التابعة للنوع ده بعد الحفظ (المفتاح نفسه مش بيتغير).
+            </p>
+          )}
           {errors.extraFieldDefinitions && <p className="text-error text-xs">تأكد من صحة بيانات الحقول الإضافية</p>}
         </div>
 

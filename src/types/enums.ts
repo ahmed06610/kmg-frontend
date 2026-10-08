@@ -80,6 +80,7 @@ export const movementTypeLabels: Record<string, string> = {
   IssueToProject: "صرف لمشروع",
   ReturnFromProject: "مرتجع من مشروع",
   OpeningBalance: "رصيد افتتاحي",
+  Adjustment: "تسوية جرد",
 };
 
 export const transactionTypeLabels: Record<string, string> = {

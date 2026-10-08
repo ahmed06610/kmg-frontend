@@ -34,16 +34,20 @@ export function ProjectDetailsView({
   materials,
   categories,
   workers,
+  employees,
   clients,
   canManage,
+  canManageStock,
 }: {
   project: ProjectDetailsDTO;
   missions: MissionDetailsDTO[];
   materials: MaterialDTO[];
   categories: MaterialCategoryDTO[];
   workers: EmployeeListDTO[];
+  employees: EmployeeListDTO[];
   clients: ClientListDTO[];
   canManage: boolean;
+  canManageStock: boolean;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("overview");
@@ -88,7 +92,7 @@ export function ProjectDetailsView({
         items={[
           { key: "overview", label: "نظرة عامة" },
           { key: "materials", label: "الخامات", badge: project.stockMovements.length },
-          { key: "expenses", label: "المصاريف", badge: project.expenses.length },
+          { key: "expenses", label: "المصاريف والعهد", badge: project.expenses.length + project.custodies.length + missions.filter((m) => m.advanceAmount > 0).length },
           { key: "payments", label: "الدفعات", badge: project.payments.length },
           { key: "missions", label: "المأموريات", badge: missions.length },
           { key: "writeoffs", label: "خصم أعمال المشروع", badge: project.writeOffs.length },
@@ -98,18 +102,19 @@ export function ProjectDetailsView({
       />
 
       <div>
-        {tab === "overview" && <OverviewTab project={project} missions={missions} canManage={canManage} />}
+        {tab === "overview" && <OverviewTab project={project} missions={missions} materials={materials} categories={categories} canManage={canManage} />}
         {tab === "materials" && (
           <MaterialsTab
-            projectId={project.id}
+            project={project}
             movements={project.stockMovements}
             totalMaterialsCost={project.totalMaterialsCost}
             materials={materials}
             categories={categories}
             canManage={canManage}
+            canManageStock={canManageStock}
           />
         )}
-        {tab === "expenses" && <ExpensesTab projectId={project.id} expenses={project.expenses} canManage={canManage} />}
+        {tab === "expenses" && <ExpensesTab project={project} missions={missions} employees={employees} canManage={canManage} />}
         {tab === "payments" && (
           <PaymentsTab projectId={project.id} payments={project.payments} remainingBalance={project.remainingBalance} canManage={canManage} />
         )}

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { settleCustody } from "@/actions/custody";
 import { Button } from "@/components/ui/Button";
@@ -20,11 +20,20 @@ export function SettleCustodyDialog({ open, onClose, custody }: { open: boolean;
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<SettleCustodyFormValues>({
     resolver: zodResolver(settleCustodySchema),
     defaultValues: { settledAmount: custody?.amount ?? 0, settledDate: formatDate(new Date()), notes: "" },
   });
+
+  // الدايلوج بيتعمله mount مرة واحدة والعهدة لسه null، فلازم القيم الافتراضية تتحدث كل ما يتفتح على عهدة مختلفة
+  useEffect(() => {
+    if (open && custody) {
+      reset({ settledAmount: custody.amount, settledDate: formatDate(new Date()), notes: "" });
+      setServerError(null);
+    }
+  }, [open, custody, reset]);
 
   if (!custody) return null;
 

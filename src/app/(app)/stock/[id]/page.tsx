@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { MaterialDetailsView } from "@/components/stock/MaterialDetailsView";
-import { getMaterialById, getMaterialCategories, getMovements } from "@/lib/api/stock";
+import { getMaterialById, getMaterialCategories, getMaterials, getMovements } from "@/lib/api/stock";
 import { getSuppliers } from "@/lib/api/suppliers";
 import { getProjects } from "@/lib/api/projects";
 import { getSession } from "@/lib/session";
@@ -9,8 +9,9 @@ export default async function MaterialDetailsPage({ params }: { params: Promise<
   const { id } = await params;
   const materialId = Number(id);
 
-  const [material, movements, suppliers, projects, categories, session] = await Promise.all([
+  const [material, allMaterials, movements, suppliers, projects, categories, session] = await Promise.all([
     getMaterialById(materialId),
+    getMaterials(),
     getMovements({ materialId }),
     getSuppliers(),
     getProjects(),
@@ -23,6 +24,7 @@ export default async function MaterialDetailsPage({ params }: { params: Promise<
   return (
     <MaterialDetailsView
       material={material}
+      allMaterials={allMaterials}
       movements={movements}
       suppliers={suppliers}
       projects={projects}

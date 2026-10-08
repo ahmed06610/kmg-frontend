@@ -92,8 +92,9 @@ export function PaymentsTab({ projectId, payments, remainingBalance, canManage }
                     "نقدي"
                   )}
                 </Td>
-                <TdMono>{formatCurrency(p.amountCash)}</TdMono>
-                <TdMono>{formatCurrency(p.amountCredit)}</TdMono>
+                {/* الشيك بيتسجل في الخزنة على رصيد الكريديت لما يتصرف، فبيظهر في عمود الكريديت */}
+                <TdMono>{p.isCheck ? "-" : formatCurrency(p.amountCash)}</TdMono>
+                <TdMono>{formatCurrency(p.isCheck ? p.amount : p.amountCredit)}</TdMono>
                 <Td>{formatDate(p.paymentDate)}</Td>
                 <Td>{p.notes ?? "-"}</Td>
                 {canManage && (

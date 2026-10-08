@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -13,17 +13,23 @@ import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useTableState } from "@/lib/useTableState";
 import { movementTypeLabels } from "@/types/enums";
-import type { CategoryFieldDefinitionDTO, MaterialDTO, StockMovementDTO } from "@/types/stock";
+import type { CategoryFieldDefinitionDTO, MaterialCategoryDTO, MaterialDTO, StockMovementDTO } from "@/types/stock";
+import { MaterialFormDialog } from "./MaterialFormDialog";
+import { DeleteMaterialDialog } from "./MaterialToolsDialogs";
 
 interface Props {
   title: string;
   materials: MaterialDTO[];
   extraFieldDefinitions: CategoryFieldDefinitionDTO[];
   movements: StockMovementDTO[];
+  categories: MaterialCategoryDTO[];
+  canManage: boolean;
   onBack: () => void;
 }
 
-export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions, movements, onBack }: Props) {
+export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions, movements, categories, canManage, onBack }: Props) {
+  const [editingMaterial, setEditingMaterial] = useState<MaterialDTO | undefined>(undefined);
+  const [deletingMaterial, setDeletingMaterial] = useState<MaterialDTO | null>(null);
   const columnMatchers = useMemo(() => {
     const matchers: Record<string, (m: MaterialDTO, value: string) => boolean> = {
       name: (m, v) => m.name.toLowerCase().includes(v),
@@ -128,6 +134,7 @@ export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions
                 {allColumns.map((c) => (
                   <Th key={c.key}>{c.label}</Th>
                 ))}
+                {canManage && <Th>إجراءات</Th>}
               </tr>
               <tr>
                 {allColumns.map((c) => (
@@ -140,12 +147,13 @@ export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions
                     />
                   </th>
                 ))}
+                {canManage && <th />}
               </tr>
             </THead>
             <TBody>
               {table.pageRows.length === 0 ? (
                 <tr>
-                  <td colSpan={allColumns.length} className="p-stack-lg text-center text-body-sm text-on-surface-variant">
+                  <td colSpan={allColumns.length + (canManage ? 1 : 0)} className="p-stack-lg text-center text-body-sm text-on-surface-variant">
                     لا توجد نتائج مطابقة للفلاتر
                   </td>
                 </tr>
@@ -166,14 +174,40 @@ export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions
                     {extraFieldDefinitions.map((f) => (
                       <Td key={f.key}>{m.extraFieldValues[f.key] ?? "-"}</Td>
                     ))}
+                    {canManage && (
+                      <Td>
+                        <div className="flex items-center gap-1">
+                          <button className="text-on-surface-variant hover:text-on-surface" title="تعديل الاسم والبيانات" onClick={() => setEditingMaterial(m)}>
+                            <Icon name="edit" size={18} />
+                          </button>
+                          <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeletingMaterial(m)}>
+                            <Icon name="delete" size={18} />
+                          </button>
+                        </div>
+                      </Td>
+                    )}
                   </Tr>
                 ))
+              )}
+              {table.filteredRows.length > 0 && (
+                <tr className="bg-surface-container-low font-semibold">
+                  <td colSpan={4} className="p-stack-md text-body-sm text-on-surface">
+                    إجمالي قيمة المخزون {table.filteredRows.length !== materials.length && "(للنتائج المعروضة)"}
+                  </td>
+                  <td dir="ltr" className="p-stack-md text-mono-data text-primary text-right">
+                    {formatCurrency(table.filteredRows.reduce((sum, m) => sum + m.totalPrice, 0))}
+                  </td>
+                  <td colSpan={allColumns.length - 5 + (canManage ? 1 : 0)} />
+                </tr>
               )}
             </TBody>
           </Table>
           <Pagination page={table.page} pageSize={table.pageSize} totalCount={table.totalCount} onPageChange={table.setPage} />
         </>
       )}
+
+      <MaterialFormDialog open={!!editingMaterial} onClose={() => setEditingMaterial(undefined)} material={editingMaterial} categories={categories} />
+      <DeleteMaterialDialog open={!!deletingMaterial} onClose={() => setDeletingMaterial(null)} material={deletingMaterial} />
     </div>
   );
 }
