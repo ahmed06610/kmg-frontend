@@ -24,6 +24,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
 
   const workers = employees.filter((e) => !e.hasLoginAccount);
   const canManage = session?.abilities.includes("إدارة المشاريع") ?? false;
+  const canManageStock = session?.abilities.includes("إدارة المخزن") ?? false;
 
   return (
     <ProjectDetailsView
@@ -32,8 +33,10 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
       materials={materials}
       categories={categories}
       workers={workers}
+      employees={employees}
       clients={clients}
       canManage={canManage}
+      canManageStock={canManageStock}
     />
   );
 }

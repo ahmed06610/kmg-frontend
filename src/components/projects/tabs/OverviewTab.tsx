@@ -10,6 +10,8 @@ import { Icon } from "@/components/ui/Icon";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { ProjectDetailsDTO } from "@/types/project";
 import type { MissionListDTO } from "@/types/mission";
+import type { MaterialCategoryDTO, MaterialDTO } from "@/types/stock";
+import { ProjectMaterialsSummary } from "../ProjectMaterialsSummary";
 
 function RecoveryCard({
   title,
@@ -112,31 +114,23 @@ function CircularGauge({ percent }: { percent: number }) {
   );
 }
 
-interface MaterialUsage {
-  materialId: number;
-  name: string;
-  netIssued: number;
-}
-
-function aggregateMaterialUsage(project: ProjectDetailsDTO): MaterialUsage[] {
-  const byMaterial = new Map<number, MaterialUsage>();
-  for (const m of project.stockMovements) {
-    if (m.movementType !== "IssueToProject" && m.movementType !== "ReturnFromProject") continue;
-    const existing = byMaterial.get(m.materialId) ?? { materialId: m.materialId, name: m.materialName, netIssued: 0 };
-    existing.netIssued += m.movementType === "IssueToProject" ? m.quantity : -m.quantity;
-    byMaterial.set(m.materialId, existing);
-  }
-  return Array.from(byMaterial.values())
-    .filter((m) => m.netIssued > 0)
-    .sort((a, b) => b.netIssued - a.netIssued);
-}
-
-export function OverviewTab({ project, missions, canManage }: { project: ProjectDetailsDTO; missions: MissionListDTO[]; canManage: boolean }) {
-  const totalCost = project.totalMaterialsCost + project.totalPettyExpenses + project.totalLaborCost;
+export function OverviewTab({
+  project,
+  missions,
+  materials,
+  categories,
+  canManage,
+}: {
+  project: ProjectDetailsDTO;
+  missions: MissionListDTO[];
+  materials: MaterialDTO[];
+  categories: MaterialCategoryDTO[];
+  canManage: boolean;
+}) {
+  const totalCost = project.totalCost;
   const spendRatio = project.contractValue > 0 ? Math.round((totalCost / project.contractValue) * 100) : 0;
   const activeMission = missions.find((m) => m.status !== "Settled");
   const hasClientInfo = project.clientPhone || project.clientEmail || project.clientAddress;
-  const materialsUsage = aggregateMaterialUsage(project);
 
   return (
     <div className="flex flex-col gap-stack-lg">
@@ -231,25 +225,20 @@ export function OverviewTab({ project, missions, canManage }: { project: Project
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-gutter mt-4 pt-4 border-t border-outline-variant">
-              <div>
-                <p className="text-xs text-on-surface-variant mb-1">خامات</p>
-                <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-right">
-                  {formatCurrency(project.totalMaterialsCost)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-on-surface-variant mb-1">نثرية</p>
-                <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-right">
-                  {formatCurrency(project.totalPettyExpenses)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-on-surface-variant mb-1">عمالة</p>
-                <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-right">
-                  {formatCurrency(project.totalLaborCost)}
-                </p>
-              </div>
+            <div className="grid grid-cols-2 gap-gutter mt-4 pt-4 border-t border-outline-variant">
+              {[
+                { label: "خامات", value: project.totalMaterialsCost },
+                { label: "نثرية", value: project.totalPettyExpenses },
+                { label: "عمالة", value: project.totalLaborCost },
+                { label: "عهد (مأموريات + جانبية)", value: project.totalCustodyCost },
+              ].map((item) => (
+                <div key={item.label}>
+                  <p className="text-xs text-on-surface-variant mb-1">{item.label}</p>
+                  <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-right">
+                    {formatCurrency(item.value)}
+                  </p>
+                </div>
+              ))}
             </div>
           </Card>
 
@@ -288,32 +277,12 @@ export function OverviewTab({ project, missions, canManage }: { project: Project
         </div>
 
         <div className="lg:col-span-2 flex flex-col gap-gutter">
-          <Card className="overflow-hidden !p-0">
-            <div className="px-gutter py-stack-md border-b border-outline-variant flex items-center justify-between">
-              <p className="text-title-sm text-on-surface flex items-center gap-2">
-                <Icon name="inventory_2" size={18} className="text-primary" />
-                الخامات المصروفة على المشروع
-              </p>
-              <span className="text-xs text-on-surface-variant">{materialsUsage.length} صنف</span>
-            </div>
-            {materialsUsage.length === 0 ? (
-              <p className="text-body-sm text-on-surface-variant text-center py-stack-lg">لسه مفيش خامات اتصرفت على المشروع ده</p>
-            ) : (
-              <div className="divide-y divide-outline-variant">
-                {materialsUsage.map((m) => (
-                  <div key={m.materialId} className="flex items-center justify-between px-gutter py-stack-sm">
-                    <div className="flex items-center gap-2 text-body-sm text-on-surface">
-                      <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-                      {m.name}
-                    </div>
-                    <span dir="ltr" className="text-mono-data text-on-surface-variant text-sm">
-                      {m.netIssued}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+          <ProjectMaterialsSummary
+            movements={project.stockMovements}
+            materials={materials}
+            categories={categories}
+            totalMaterialsCost={project.totalMaterialsCost}
+          />
 
           {project.description && (
             <Card>
@@ -336,7 +305,7 @@ export function OverviewTab({ project, missions, canManage }: { project: Project
                 <div>
                   <p className="text-xs text-on-surface-variant mb-1">تاريخ البداية</p>
                   <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-right">
-                    {activeMission.startDate}
+                    {formatDate(activeMission.startDate)}
                   </p>
                 </div>
                 <div>

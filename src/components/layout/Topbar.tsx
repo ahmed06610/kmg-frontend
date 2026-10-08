@@ -1,3 +1,4 @@
+import { CurrentPageHelp } from "@/components/help/CurrentPageHelp";
 import { Icon } from "@/components/ui/Icon";
 import { MobileNav } from "./MobileNav";
 import { NotificationBell } from "./NotificationBell";
@@ -8,6 +9,7 @@ export function Topbar({ roleName, username, abilities }: { roleName: string; us
       <div className="flex items-center gap-2">
         <MobileNav abilities={abilities} />
         <NotificationBell />
+        <CurrentPageHelp />
         <div className="hidden sm:flex items-center gap-2 text-on-surface-variant">
           <Icon name="badge" size={18} />
           <span className="text-body-sm">{roleName}</span>

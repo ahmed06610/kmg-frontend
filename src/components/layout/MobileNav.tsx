@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { logout } from "@/actions/auth";
+import { HelpButton } from "@/components/help/HelpDrawer";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav-items";
@@ -59,19 +60,26 @@ export function MobileNav({ abilities }: { abilities: string[] }) {
               {items.map((item) => {
                 const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
                 return (
-                  <Link
+                  <div
                     key={item.href}
-                    href={item.href}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-stack-md py-2.5 text-body-sm transition-colors",
-                      active
-                        ? "bg-primary text-on-primary font-semibold"
-                        : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
+                      "group flex items-center rounded-lg transition-colors",
+                      active ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
                     )}
                   >
-                    <Icon name={item.icon} filled={active} />
-                    {item.label}
-                  </Link>
+                    <Link href={item.href} className={cn("flex-1 flex items-center gap-3 px-stack-md py-2.5 text-body-sm", active && "font-semibold")}>
+                      <Icon name={item.icon} filled={active} />
+                      {item.label}
+                    </Link>
+                    <HelpButton
+                      href={item.href}
+                      label={item.label}
+                      className={cn(
+                        "ml-1.5",
+                        active ? "text-on-primary/80 hover:bg-on-primary/15 hover:text-on-primary" : "text-on-surface-variant/60 hover:bg-surface-container-highest hover:text-primary",
+                      )}
+                    />
+                  </div>
                 );
               })}
             </nav>

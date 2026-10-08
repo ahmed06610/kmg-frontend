@@ -36,7 +36,7 @@ export function CustodyTab({
   return (
     <div className="flex flex-col gap-stack-md">
       <div className="flex items-center justify-between flex-wrap gap-stack-sm">
-        <p className="text-body-sm text-on-surface-variant">عهد جانبية بتتصرف لموظف مباشرة، مش مرتبطة بمأمورية معينة</p>
+        <p className="text-body-sm text-on-surface-variant">عهد بتتصرف لموظف مباشرة (مش عهدة مأمورية). العهدة المربوطة بمشروع بتظهر في مصاريفه وتقدر تسويها من هنا أو من صفحة المشروع.</p>
         {canManage && (
           <Button
             size="sm"

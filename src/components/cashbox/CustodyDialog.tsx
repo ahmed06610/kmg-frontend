@@ -21,12 +21,15 @@ export function CustodyDialog({
   employees,
   projects,
   custody,
+  fixedProjectId,
 }: {
   open: boolean;
   onClose: () => void;
   employees: EmployeeListDTO[];
   projects: ProjectListDTO[];
   custody?: CustodyDTO;
+  /** لما الدايلوج يتفتح من جوه صفحة مشروع: العهدة بتتربط بالمشروع ده تلقائيًا ومينفعش يتغير */
+  fixedProjectId?: number;
 }) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -52,12 +55,12 @@ export function CustodyDialog({
         amountCredit: custody?.amountCredit ?? 0,
         description: custody?.description ?? "",
         issueDate: custody ? custody.issueDate.slice(0, 10) : formatDate(new Date()),
-        projectId: custody?.projectId ?? undefined,
+        projectId: fixedProjectId ?? custody?.projectId ?? undefined,
         notes: custody?.notes ?? "",
       });
       setServerError(null);
     }
-  }, [open, custody, reset]);
+  }, [open, custody, fixedProjectId, reset]);
 
   const onSubmit = async (data: CustodyFormValues) => {
     setLoading(true);
@@ -127,12 +130,16 @@ export function CustodyDialog({
               <Combobox
                 value={field.value ? String(field.value) : ""}
                 onChange={(v) => field.onChange(v ? Number(v) : undefined)}
+                disabled={fixedProjectId != null}
                 placeholder="بدون ربط بمشروع"
                 options={projects.map((p) => ({ value: String(p.id), label: `${p.name} (${p.projectCode})` }))}
               />
             )}
           />
         </FieldGroup>
+        <p className="text-xs text-on-surface-variant -mt-2">
+          العهدة المربوطة بمشروع بتظهر في مصاريف المشروع وبتتحسب في صافي ربحه، ويمكن تسويتها من الخزنة أو من صفحة المشروع.
+        </p>
         <FieldGroup label="ملاحظات" error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>

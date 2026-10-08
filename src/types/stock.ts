@@ -116,6 +116,37 @@ export interface CreateReturnDTO {
   notes?: string | null;
 }
 
+/** تعديل حركة صرف/مرتجع/رصيد افتتاحي/تسوية جرد (الشراء ليه UpdatePurchaseDTO) */
+export interface UpdateStockMovementDTO {
+  id: number;
+  quantity: number;
+  unitPrice: number;
+  projectId?: number | null;
+  notes?: string | null;
+  movementDate?: string | null;
+}
+
+export interface CreateStockAdjustmentDTO {
+  materialId: number;
+  actualQuantity: number;
+  notes?: string | null;
+}
+
+export interface MergeMaterialsDTO {
+  sourceMaterialId: number;
+  targetMaterialId: number;
+}
+
+export interface MaterialDeleteImpactDTO {
+  movementsCount: number;
+  purchasesCount: number;
+  issuesCount: number;
+  returnsCount: number;
+  affectedProjects: string[];
+  affectedSuppliers: string[];
+  transportCostToReverse: number;
+}
+
 export interface StockPriceBatchDTO {
   unitPrice: number;
   availableQuantity: number;

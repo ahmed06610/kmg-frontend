@@ -103,6 +103,7 @@ export function SupplierDetailsView({
                   { header: "الكمية", key: "quantity" },
                   { header: "سعر الوحدة", key: "unitPriceAtTime" },
                   { header: "قيمة النقل", key: "transportCost" },
+                  { header: "الإجمالي بالنقل", key: "totalWithTransport" },
                   { header: "التاريخ", key: "date" },
                 ],
                 rows: supplier.purchases.map((p) => ({
@@ -110,6 +111,7 @@ export function SupplierDetailsView({
                   quantity: p.quantity,
                   unitPriceAtTime: p.unitPriceAtTime,
                   transportCost: p.transportCost,
+                  totalWithTransport: p.quantity * p.unitPriceAtTime + p.transportCost,
                   date: formatDate(p.movementDate),
                 })),
               },
@@ -190,6 +192,7 @@ export function SupplierDetailsView({
                   <Th>الكمية</Th>
                   <Th>سعر الوحدة</Th>
                   <Th>قيمة النقل</Th>
+                  <Th>الإجمالي بالنقل</Th>
                   <Th>التاريخ</Th>
                   {canManage && <Th>إجراءات</Th>}
                 </tr>
@@ -203,6 +206,8 @@ export function SupplierDetailsView({
                       <TdMono>{p.quantity}</TdMono>
                       <TdMono>{formatCurrency(p.unitPriceAtTime)}</TdMono>
                       <TdMono>{p.transportCost > 0 ? formatCurrency(p.transportCost) : "-"}</TdMono>
+                      <TdMono className="font-semibold">{formatCurrency(p.quantity * p.unitPriceAtTime + p.transportCost)}</TdMono>
+                      <TdMono className="font-semibold">{formatCurrency(p.quantity * p.unitPriceAtTime + p.transportCost)}</TdMono>
                       <Td>{formatDate(p.movementDate)}</Td>
                       {canManage && (
                         <Td>

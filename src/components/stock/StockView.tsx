@@ -181,6 +181,8 @@ export function StockView({
           materials={scopedMaterials}
           extraFieldDefinitions={extraFieldDefinitions}
           movements={movements}
+          categories={categories}
+          canManage={canManage}
           onBack={() => setView(null)}
         />
 

@@ -77,6 +77,9 @@ export function PurchaseDialog({
 
   const selectedMaterialId = watch("materialId");
   const selectedMaterial = materials.find((m) => m.id === selectedMaterialId);
+  const quantity = Number(watch("quantity")) || 0;
+  const transport = Number(watch("transportCost")) || 0;
+  const materialsTotal = quantity * (Number(watch("unitPrice")) || 0);
 
   const onSubmit = async (data: PurchaseFormValues) => {
     setLoading(true);
@@ -166,6 +169,31 @@ export function PurchaseDialog({
         <FieldGroup label="قيمة النقل (اختياري)" error={errors.transportCost?.message}>
           <Input type="number" step="0.01" dir="ltr" {...register("transportCost", { valueAsNumber: true })} />
         </FieldGroup>
+        {materialsTotal > 0 && (
+          <div className="rounded-lg border border-outline-variant bg-surface-container-low px-stack-md py-stack-sm text-body-sm flex flex-col gap-1">
+            <div className="flex justify-between">
+              <span className="text-on-surface-variant">الخامة</span>
+              <span dir="ltr" className="font-mono-data">{formatCurrency(materialsTotal)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-on-surface-variant">النقل</span>
+              <span dir="ltr" className="font-mono-data">{formatCurrency(transport)}</span>
+            </div>
+            <div className="flex justify-between font-semibold border-t border-outline-variant pt-1">
+              <span>المستحق للمورد عن العملية دي</span>
+              <span dir="ltr" className="font-mono-data">{formatCurrency(materialsTotal + transport)}</span>
+            </div>
+            {transport > 0 && quantity > 0 && (
+              <div className="flex justify-between text-xs text-on-surface-variant">
+                <span>تكلفة الوحدة بالنقل</span>
+                <span dir="ltr" className="font-mono-data">{formatCurrency((materialsTotal + transport) / quantity)}</span>
+              </div>
+            )}
+            <p className="text-xs text-on-surface-variant">
+              النقل بيتضاف على مستحق المورد ومش بيتخصم من الخزنة دلوقتي - بيتخصم مع دفعة المورد (كاش فورًا، أو الشيك لما يتصرف).
+            </p>
+          </div>
+        )}
         <FieldGroup label="ملاحظات" error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
