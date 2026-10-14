@@ -50,5 +50,6 @@ export const updatePayrollPayoutSchema = z.object({
   bonusAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
   advanceInstallmentAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
   insuranceAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+  misrInsuranceAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
 });
 export type UpdatePayrollPayoutFormValues = z.infer<typeof updatePayrollPayoutSchema>;

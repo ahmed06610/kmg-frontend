@@ -68,7 +68,12 @@ export interface PayrollPreviewDTO {
   bonusAmount: number;
   advanceInstallmentAmount: number;
   insuranceAmount: number;
+  misrInsuranceAmount: number;
   netPaid: number;
+  workshopDays: number;
+  missionDays: number;
+  hourlyDeductionAmount: number;
+  hourlyBonusAmount: number;
 }
 
 export interface RunPayrollDTO {
@@ -90,4 +95,5 @@ export interface UpdatePayrollPayoutDTO {
   bonusAmount: number;
   advanceInstallmentAmount: number;
   insuranceAmount: number;
+  misrInsuranceAmount: number;
 }
