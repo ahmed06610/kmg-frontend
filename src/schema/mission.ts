@@ -3,6 +3,7 @@ import { z } from "zod";
 export const missionWorkerInputSchema = z.object({
   employeeId: z.number().min(1, "اختر عامل"),
   daysCount: z.number().gt(0, "عدد الأيام يجب أن يكون أكبر من صفر"),
+  dailyRate: z.number().min(0, "الأجر اليومي لا يمكن أن يكون سالبًا"),
 });
 
 export const createMissionSchema = z.object({

@@ -40,10 +40,10 @@ export function MissionEditDialog({
     formState: { errors },
   } = useForm<UpdateMissionFormValues>({
     resolver: zodResolver(updateMissionSchema),
-    defaultValues: { foremanEmployeeId: 0, startDate: formatDate(new Date()), advanceAmount: 0, notes: "", workers: [{ employeeId: 0, daysCount: 1 }] },
+    defaultValues: { foremanEmployeeId: 0, startDate: formatDate(new Date()), advanceAmount: 0, notes: "", workers: [{ employeeId: 0, daysCount: 1, dailyRate: 0 }] },
   });
 
-  const { fields, append, remove } = useFieldArray({ control, name: "workers" });
+  const { fields, append, remove, update } = useFieldArray({ control, name: "workers" });
 
   useEffect(() => {
     if (open && mission) {
@@ -52,7 +52,10 @@ export function MissionEditDialog({
         startDate: mission.startDate.slice(0, 10),
         advanceAmount: mission.advanceAmount,
         notes: "",
-        workers: mission.workers.length > 0 ? mission.workers.map((w) => ({ employeeId: w.employeeId, daysCount: w.daysCount })) : [{ employeeId: 0, daysCount: 1 }],
+        workers:
+          mission.workers.length > 0
+            ? mission.workers.map((w) => ({ employeeId: w.employeeId, daysCount: w.daysCount, dailyRate: w.dailyRate }))
+            : [{ employeeId: 0, daysCount: 1, dailyRate: 0 }],
       });
       setServerError(null);
     }
@@ -124,7 +127,7 @@ export function MissionEditDialog({
             <span className="text-label-caps text-on-surface-variant">العمال المشاركين</span>
             <button
               type="button"
-              onClick={() => append({ employeeId: 0, daysCount: 1 })}
+              onClick={() => append({ employeeId: 0, daysCount: 1, dailyRate: 0 })}
               className="text-primary text-body-sm font-semibold flex items-center gap-1"
             >
               <Icon name="add" size={16} />
@@ -137,6 +140,7 @@ export function MissionEditDialog({
             <div className="flex items-center gap-stack-sm px-1">
               <span className="flex-1 text-xs text-on-surface-variant">العامل</span>
               <span className="w-28 text-xs text-on-surface-variant">عدد الأيام</span>
+              <span className="w-32 text-xs text-on-surface-variant">الأجر اليومي</span>
               <span className="w-[18px]" />
             </div>
           )}
@@ -147,10 +151,17 @@ export function MissionEditDialog({
                 <Controller
                   name={`workers.${index}.employeeId`}
                   control={control}
-                  render={({ field }) => (
+                  render={({ field: employeeField }) => (
                     <Combobox
-                      value={field.value ? String(field.value) : ""}
-                      onChange={(v) => field.onChange(Number(v))}
+                      value={employeeField.value ? String(employeeField.value) : ""}
+                      onChange={(v) => {
+                        const employeeId = Number(v);
+                        employeeField.onChange(employeeId);
+                        const selected = workers.find((w) => w.id === employeeId);
+                        if (selected) {
+                          update(index, { ...field, employeeId, dailyRate: selected.wageAmount * 2 });
+                        }
+                      }}
                       placeholder="اختر عامل"
                       options={workers.map((w) => ({ value: String(w.id), label: w.name }))}
                     />
@@ -163,6 +174,14 @@ export function MissionEditDialog({
                 placeholder="عدد الأيام"
                 className="w-28"
                 {...register(`workers.${index}.daysCount`, { valueAsNumber: true })}
+              />
+              <Input
+                type="number"
+                step="0.01"
+                dir="ltr"
+                placeholder="الأجر اليومي"
+                className="w-32"
+                {...register(`workers.${index}.dailyRate`, { valueAsNumber: true })}
               />
               <button type="button" onClick={() => remove(index)} className="text-error shrink-0" aria-label="حذف">
                 <Icon name="delete" size={18} />

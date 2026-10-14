@@ -185,9 +185,13 @@ export function OverviewTab({
 
       {project.totalWriteOffs > 0 && (
         <p className="text-xs text-on-surface-variant -mt-2">
-          (المتبقي أعلاه بعد خصم أعمال بقيمة{" "}
+          (المتبقي وصافي الربح أعلاه بعد خصم أعمال بقيمة{" "}
           <span dir="ltr" className="font-mono-data">
             {formatCurrency(project.totalWriteOffs)}
+          </span>{" "}
+          - قيمة العقد الفعلية بعد الخصم:{" "}
+          <span dir="ltr" className="font-mono-data">
+            {formatCurrency(project.effectiveContractValue)}
           </span>
           )
         </p>

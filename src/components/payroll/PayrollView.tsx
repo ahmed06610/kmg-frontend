@@ -47,7 +47,7 @@ export function PayrollView({
         ]}
       />
 
-      {tab === "run" && <RunPayrollSection employees={employees} history={history} />}
+      {tab === "run" && <RunPayrollSection employees={employees} history={history} canManage={canManage} />}
       {tab === "advances" && <AdvancesSection advances={advances} employees={employees} canManage={canManage} />}
       {tab === "adjustments" && <AdjustmentsSection adjustments={adjustments} employees={employees} canManage={canManage} />}
       {tab === "insurance" && <InsuranceSection summary={insuranceSummary} history={insuranceHistory} canManage={canManage} />}

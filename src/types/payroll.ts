@@ -75,3 +75,13 @@ export interface PayrollPayoutDTO extends PayrollPreviewDTO {
   id: number;
   paidDate: string;
 }
+
+export interface UpdatePayrollPayoutDTO {
+  id: number;
+  baseAmount: number;
+  missionDoubleUpAmount: number;
+  deductionsAmount: number;
+  bonusAmount: number;
+  advanceInstallmentAmount: number;
+  insuranceAmount: number;
+}

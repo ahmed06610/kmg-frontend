@@ -73,6 +73,7 @@ export interface ProjectDetailsDTO extends ProjectListDTO {
   workGuaranteeDueDate: string | null;
   workGuaranteeRecovered: boolean;
   contractValueWithTax: number;
+  effectiveContractValue: number;
   supplyProfitMargin: number | null;
   totalMaterialsCost: number;
   totalPettyExpenses: number;

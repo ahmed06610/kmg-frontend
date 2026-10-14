@@ -27,10 +27,10 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
     formState: { errors },
   } = useForm<CreateMissionFormValues>({
     resolver: zodResolver(createMissionSchema),
-    defaultValues: { foremanEmployeeId: 0, startDate: formatDate(new Date()), advanceAmount: 0, notes: "", workers: [{ employeeId: 0, daysCount: 1 }] },
+    defaultValues: { foremanEmployeeId: 0, startDate: formatDate(new Date()), advanceAmount: 0, notes: "", workers: [{ employeeId: 0, daysCount: 1, dailyRate: 0 }] },
   });
 
-  const { fields, append, remove } = useFieldArray({ control, name: "workers" });
+  const { fields, append, remove, update } = useFieldArray({ control, name: "workers" });
 
   const onSubmit = async (data: CreateMissionFormValues) => {
     setLoading(true);
@@ -97,7 +97,7 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
             <span className="text-label-caps text-on-surface-variant">العمال المشاركين</span>
             <button
               type="button"
-              onClick={() => append({ employeeId: 0, daysCount: 1 })}
+              onClick={() => append({ employeeId: 0, daysCount: 1, dailyRate: 0 })}
               className="text-primary text-body-sm font-semibold flex items-center gap-1"
             >
               <Icon name="add" size={16} />
@@ -110,6 +110,7 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
             <div className="flex items-center gap-stack-sm px-1">
               <span className="flex-1 text-xs text-on-surface-variant">العامل</span>
               <span className="w-28 text-xs text-on-surface-variant">عدد الأيام</span>
+              <span className="w-32 text-xs text-on-surface-variant">الأجر اليومي</span>
               <span className="w-[18px]" />
             </div>
           )}
@@ -120,10 +121,17 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
                 <Controller
                   name={`workers.${index}.employeeId`}
                   control={control}
-                  render={({ field }) => (
+                  render={({ field: employeeField }) => (
                     <Combobox
-                      value={field.value ? String(field.value) : ""}
-                      onChange={(v) => field.onChange(Number(v))}
+                      value={employeeField.value ? String(employeeField.value) : ""}
+                      onChange={(v) => {
+                        const employeeId = Number(v);
+                        employeeField.onChange(employeeId);
+                        const selected = workers.find((w) => w.id === employeeId);
+                        if (selected) {
+                          update(index, { ...field, employeeId, dailyRate: selected.wageAmount * 2 });
+                        }
+                      }}
                       placeholder="اختر عامل"
                       options={workers.map((w) => ({ value: String(w.id), label: w.name }))}
                     />
@@ -136,6 +144,14 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
                 placeholder="عدد الأيام"
                 className="w-28"
                 {...register(`workers.${index}.daysCount`, { valueAsNumber: true })}
+              />
+              <Input
+                type="number"
+                step="0.01"
+                dir="ltr"
+                placeholder="الأجر اليومي"
+                className="w-32"
+                {...register(`workers.${index}.dailyRate`, { valueAsNumber: true })}
               />
               <button type="button" onClick={() => remove(index)} className="text-error shrink-0" aria-label="حذف">
                 <Icon name="delete" size={18} />

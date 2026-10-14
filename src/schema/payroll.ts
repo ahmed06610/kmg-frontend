@@ -38,3 +38,13 @@ export const runPayrollSchema = z.object({
   periodEnd: z.string().min(1, "نهاية الفترة مطلوبة"),
 });
 export type RunPayrollFormValues = z.infer<typeof runPayrollSchema>;
+
+export const updatePayrollPayoutSchema = z.object({
+  baseAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+  missionDoubleUpAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+  deductionsAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+  bonusAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+  advanceInstallmentAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+  insuranceAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+});
+export type UpdatePayrollPayoutFormValues = z.infer<typeof updatePayrollPayoutSchema>;

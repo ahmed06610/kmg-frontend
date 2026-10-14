@@ -112,7 +112,7 @@ export function EmployeeDetailsView({
               <tr>
                 <Th>الفترة</Th>
                 <Th>الأساسي</Th>
-                <Th>مضاعفة المأمورية</Th>
+                <Th>أجر أيام المأمورية الإضافي</Th>
                 <Th>خصومات</Th>
                 <Th>حوافز</Th>
                 <Th>قسط سلفة</Th>
