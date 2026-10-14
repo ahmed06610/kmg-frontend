@@ -16,6 +16,7 @@ import { FieldGroup, Input } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { downloadWorkbook } from "@/lib/excel";
+import { downloadStyledWeeklyPayroll, type StyledPayrollWeek } from "@/lib/excelStyled";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { runPayrollSchema, type RunPayrollFormValues, updatePayrollPayoutSchema, type UpdatePayrollPayoutFormValues } from "@/schema/payroll";
 import type { EmployeeListDTO } from "@/types/employee";
@@ -47,6 +48,13 @@ function splitIntoWeeks(startStr: string, endStr: string): { start: string; end:
 function shortDate(dateStr: string): string {
   const d = new Date(dateStr);
   return `${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+const ARABIC_WEEKDAYS = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+
+function longDateLabel(dateStr: string): string {
+  const d = new Date(dateStr);
+  return `${ARABIC_WEEKDAYS[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
 }
 
 function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
@@ -195,27 +203,11 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
 
     const weeks = splitIntoWeeks(periodStart, periodEnd);
     const failed: { name: string; message: string }[] = [];
-    const sheets: { name: string; columns: { header: string; key: string }[]; rows: Record<string, string | number>[] }[] = [];
-
-    const columns = [
-      { header: "الاسم", key: "name" },
-      { header: "ورشة", key: "workshop" },
-      { header: "سفر", key: "travel" },
-      { header: "الإجمالي", key: "totalDays" },
-      { header: "الراتب", key: "rate" },
-      { header: "الإجمالي", key: "gross" },
-      { header: "سلف", key: "advanceBalance" },
-      { header: "خ/سلف", key: "advanceDeducted" },
-      { header: "صافي سلف", key: "netAfterAdvance" },
-      { header: "تأمين اجتماعي", key: "insurance" },
-      { header: "مصر للتأمين", key: "misrInsurance" },
-      { header: "خصم ساعات", key: "hourlyDeduction" },
-      { header: "اضافي ساعات", key: "hourlyBonus" },
-      { header: "صافي الراتب", key: "net" },
-    ];
+    const sheets: StyledPayrollWeek[] = [];
 
     for (const week of weeks) {
-      const rows: Record<string, string | number>[] = [];
+      const rows: StyledPayrollWeek["rows"] = [];
+      const periodLabel = `الاجور من ${longDateLabel(week.start)} حتى ${longDateLabel(week.end)}`;
       for (const employeeId of selected) {
         const employee = activeEmployees.find((e) => e.id === employeeId)!;
         const result = await previewPayroll({ employeeId, periodStart: week.start, periodEnd: week.end });
@@ -242,14 +234,14 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
           failed.push({ name: `${employee.name} (${week.start})`, message: result.message ?? "حدث خطأ" });
         }
       }
-      sheets.push({ name: `من ${shortDate(week.start)} حتى ${shortDate(week.end)}`, columns, rows });
+      sheets.push({ sheetName: `من ${shortDate(week.start)} حتى ${shortDate(week.end)}`, periodLabel, rows });
+    }
+
+    if (sheets.some((s) => s.rows.length > 0)) {
+      await downloadStyledWeeklyPayroll(`الرواتب_الاسبوعي_${periodStart}_${periodEnd}`, sheets);
     }
 
     setExportingWeekly(false);
-
-    if (sheets.some((s) => s.rows.length > 0)) {
-      downloadWorkbook(`الرواتب_الاسبوعي_${periodStart}_${periodEnd}`, sheets);
-    }
 
     if (failed.length > 0) {
       setError(`فشلت معاينة ${failed.length} سجل: ${failed.map((f) => `${f.name} (${f.message})`).join("، ")}`);
