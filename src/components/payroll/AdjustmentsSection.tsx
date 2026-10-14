@@ -19,9 +19,23 @@ import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useTableState } from "@/lib/useTableState";
 import { createAdjustmentSchema, updateAdjustmentSchema, type CreateAdjustmentFormValues, type UpdateAdjustmentFormValues } from "@/schema/payroll";
-import { AdjustmentType, adjustmentTypeLabels } from "@/types/enums";
+import { AdjustmentType, WageType, adjustmentTypeLabels } from "@/types/enums";
 import type { EmployeeListDTO } from "@/types/employee";
 import type { PayrollAdjustmentDTO } from "@/types/payroll";
+
+const WORK_HOURS_PER_DAY = 9;
+const HOURLY_PENALTY_FACTOR = 2;
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+// سعر الساعة التلقائي للعامل اليومي = (يوميته ÷ 9 ساعات) × 2 - نفس المضاعف اللي كان بيتطبق على المأموريات،
+// بيحول "نصيب الساعة من اليومية" لسعر خصم/حافز واقعي بدل ما يبقى رقم هزيل مالوش معنى
+function autoHourlyRate(employee: EmployeeListDTO | undefined): number | null {
+  if (!employee || employee.wageType !== WageType.Daily) return null;
+  return round2((employee.wageAmount / WORK_HOURS_PER_DAY) * HOURLY_PENALTY_FACTOR);
+}
 
 export function AdjustmentsSection({ adjustments, employees, canManage }: { adjustments: PayrollAdjustmentDTO[]; employees: EmployeeListDTO[]; canManage: boolean }) {
   const router = useRouter();
@@ -72,7 +86,14 @@ export function AdjustmentsSection({ adjustments, employees, canManage }: { adju
                 <Td>
                   <Badge tone={a.type === "Bonus" ? "success" : "error"}>{adjustmentTypeLabels[a.type] ?? a.type}</Badge>
                 </Td>
-                <TdMono>{formatCurrency(a.amount)}</TdMono>
+                <TdMono>
+                  {formatCurrency(a.amount)}
+                  {a.hours != null && a.hourlyRate != null && (
+                    <div className="text-xs text-on-surface-variant font-normal">
+                      ({a.hours} ساعة × {formatCurrency(a.hourlyRate)})
+                    </div>
+                  )}
+                </TdMono>
                 <Td>{a.reason}</Td>
                 <Td>{formatDate(a.date)}</Td>
                 <Td>{a.applied ? "نعم" : "لا"}</Td>
@@ -101,7 +122,7 @@ export function AdjustmentsSection({ adjustments, employees, canManage }: { adju
       )}
 
       <CreateAdjustmentDialog open={dialogOpen} onClose={() => setDialogOpen(false)} employees={employees} />
-      <EditAdjustmentDialog open={!!editingAdjustment} onClose={() => setEditingAdjustment(null)} adjustment={editingAdjustment} />
+      <EditAdjustmentDialog open={!!editingAdjustment} onClose={() => setEditingAdjustment(null)} adjustment={editingAdjustment} employees={employees} />
       <ConfirmDialog
         open={!!deletingAdjustment}
         onClose={() => setDeletingAdjustment(null)}
@@ -118,28 +139,48 @@ function CreateAdjustmentDialog({ open, onClose, employees }: { open: boolean; o
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [hourlyMode, setHourlyMode] = useState(false);
 
   const {
     register,
     control,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<CreateAdjustmentFormValues>({
     resolver: zodResolver(createAdjustmentSchema),
-    defaultValues: { employeeId: 0, type: 0, amount: 0, reason: "", date: new Date().toISOString().slice(0, 10) },
+    defaultValues: { employeeId: 0, type: 0, amount: 0, reason: "", date: new Date().toISOString().slice(0, 10), hours: 0, hourlyRate: 0 },
   });
+
+  const employeeId = watch("employeeId");
+  const hours = watch("hours") ?? 0;
+  const hourlyRate = watch("hourlyRate") ?? 0;
+  const selectedEmployee = employees.find((e) => e.id === employeeId);
+
+  useEffect(() => {
+    if (!hourlyMode) return;
+    const auto = autoHourlyRate(selectedEmployee);
+    if (auto != null) setValue("hourlyRate", auto);
+  }, [hourlyMode, employeeId, selectedEmployee, setValue]);
+
+  useEffect(() => {
+    if (!hourlyMode) return;
+    setValue("amount", round2(hours * hourlyRate), { shouldValidate: true });
+  }, [hourlyMode, hours, hourlyRate, setValue]);
 
   const onSubmit = async (data: CreateAdjustmentFormValues) => {
     setLoading(true);
     setServerError(null);
-    const result = await createAdjustment(data);
+    const result = await createAdjustment({ ...data, hours: hourlyMode ? data.hours : null, hourlyRate: hourlyMode ? data.hourlyRate : null });
     setLoading(false);
     if (!result.success) {
       setServerError(result.message ?? "حدث خطأ");
       return;
     }
     reset();
+    setHourlyMode(false);
     onClose();
     router.refresh();
   };
@@ -184,9 +225,34 @@ function CreateAdjustmentDialog({ open, onClose, employees }: { open: boolean; o
             </Select>
           </FieldGroup>
           <FieldGroup label="القيمة" error={errors.amount?.message}>
-            <Input type="number" step="0.01" dir="ltr" {...register("amount", { valueAsNumber: true })} />
+            <Input type="number" step="0.01" dir="ltr" disabled={hourlyMode} {...register("amount", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
+
+        <label className="flex items-center gap-2 text-body-sm text-on-surface-variant">
+          <input type="checkbox" checked={hourlyMode} onChange={(e) => setHourlyMode(e.target.checked)} />
+          احتساب القيمة بالساعة
+        </label>
+
+        {hourlyMode && (
+          <div className="grid grid-cols-2 gap-stack-md rounded-lg border border-outline-variant p-stack-sm">
+            <FieldGroup label="عدد الساعات">
+              <Input type="number" step="0.5" min={0} dir="ltr" {...register("hours", { valueAsNumber: true })} />
+            </FieldGroup>
+            <FieldGroup label="سعر الساعة">
+              <Input type="number" step="0.01" min={0} dir="ltr" {...register("hourlyRate", { valueAsNumber: true })} />
+            </FieldGroup>
+            <p className="col-span-2 text-xs text-on-surface-variant">
+              {selectedEmployee && selectedEmployee.wageType === WageType.Daily
+                ? "سعر الساعة اتحسب تلقائيًا من يومية العامل (اليومية ÷ 9 × 2) - تقدر تعدّله يدويًا لو حابب"
+                : "اختر موظف شهري أو إداري وحدد سعر الساعة بنفسك"}
+            </p>
+            <p className="col-span-2 text-body-sm text-on-surface">
+              القيمة المحسوبة: <span className="font-semibold">{formatCurrency(round2(hours * hourlyRate))}</span>
+            </p>
+          </div>
+        )}
+
         <FieldGroup label="السبب" error={errors.reason?.message}>
           <Input {...register("reason")} />
         </FieldGroup>
@@ -199,19 +265,32 @@ function CreateAdjustmentDialog({ open, onClose, employees }: { open: boolean; o
   );
 }
 
-function EditAdjustmentDialog({ open, onClose, adjustment }: { open: boolean; onClose: () => void; adjustment: PayrollAdjustmentDTO | null }) {
+function EditAdjustmentDialog({
+  open,
+  onClose,
+  adjustment,
+  employees,
+}: {
+  open: boolean;
+  onClose: () => void;
+  adjustment: PayrollAdjustmentDTO | null;
+  employees: EmployeeListDTO[];
+}) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [hourlyMode, setHourlyMode] = useState(false);
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<UpdateAdjustmentFormValues>({
     resolver: zodResolver(updateAdjustmentSchema),
-    defaultValues: { type: 0, amount: 0, reason: "", date: new Date().toISOString().slice(0, 10) },
+    defaultValues: { type: 0, amount: 0, reason: "", date: new Date().toISOString().slice(0, 10), hours: 0, hourlyRate: 0 },
   });
 
   useEffect(() => {
@@ -221,17 +300,34 @@ function EditAdjustmentDialog({ open, onClose, adjustment }: { open: boolean; on
         amount: adjustment.amount,
         reason: adjustment.reason,
         date: adjustment.date.slice(0, 10),
+        hours: adjustment.hours ?? 0,
+        hourlyRate: adjustment.hourlyRate ?? 0,
       });
+      setHourlyMode(adjustment.hours != null && adjustment.hourlyRate != null);
       setServerError(null);
     }
   }, [open, adjustment, reset]);
+
+  const hours = watch("hours") ?? 0;
+  const hourlyRate = watch("hourlyRate") ?? 0;
+  const selectedEmployee = adjustment ? employees.find((e) => e.id === adjustment.employeeId) : undefined;
+
+  useEffect(() => {
+    if (!hourlyMode) return;
+    setValue("amount", round2(hours * hourlyRate), { shouldValidate: true });
+  }, [hourlyMode, hours, hourlyRate, setValue]);
 
   if (!adjustment) return null;
 
   const onSubmit = async (data: UpdateAdjustmentFormValues) => {
     setLoading(true);
     setServerError(null);
-    const result = await updateAdjustment({ id: adjustment.id, ...data });
+    const result = await updateAdjustment({
+      id: adjustment.id,
+      ...data,
+      hours: hourlyMode ? data.hours : null,
+      hourlyRate: hourlyMode ? data.hourlyRate : null,
+    });
     setLoading(false);
     if (!result.success) {
       setServerError(result.message ?? "حدث خطأ");
@@ -267,9 +363,34 @@ function EditAdjustmentDialog({ open, onClose, adjustment }: { open: boolean; on
             </Select>
           </FieldGroup>
           <FieldGroup label="القيمة" error={errors.amount?.message}>
-            <Input type="number" step="0.01" dir="ltr" {...register("amount", { valueAsNumber: true })} />
+            <Input type="number" step="0.01" dir="ltr" disabled={hourlyMode} {...register("amount", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
+
+        <label className="flex items-center gap-2 text-body-sm text-on-surface-variant">
+          <input type="checkbox" checked={hourlyMode} onChange={(e) => setHourlyMode(e.target.checked)} />
+          احتساب القيمة بالساعة
+        </label>
+
+        {hourlyMode && (
+          <div className="grid grid-cols-2 gap-stack-md rounded-lg border border-outline-variant p-stack-sm">
+            <FieldGroup label="عدد الساعات">
+              <Input type="number" step="0.5" min={0} dir="ltr" {...register("hours", { valueAsNumber: true })} />
+            </FieldGroup>
+            <FieldGroup label="سعر الساعة">
+              <Input type="number" step="0.01" min={0} dir="ltr" {...register("hourlyRate", { valueAsNumber: true })} />
+            </FieldGroup>
+            <p className="col-span-2 text-xs text-on-surface-variant">
+              {selectedEmployee && selectedEmployee.wageType === WageType.Daily
+                ? "سعر الساعة اتحسب تلقائيًا من يومية العامل (اليومية ÷ 9 × 2) - تقدر تعدّله يدويًا لو حابب"
+                : "موظف شهري أو إداري - حدد سعر الساعة بنفسك"}
+            </p>
+            <p className="col-span-2 text-body-sm text-on-surface">
+              القيمة المحسوبة: <span className="font-semibold">{formatCurrency(round2(hours * hourlyRate))}</span>
+            </p>
+          </div>
+        )}
+
         <FieldGroup label="السبب" error={errors.reason?.message}>
           <Input {...register("reason")} />
         </FieldGroup>
