@@ -98,6 +98,7 @@ export function EmployeesView({
             { header: "نوع الأجر", key: "wageType" },
             { header: "قيمة الأجر", key: "wageAmount" },
             { header: "التأمين", key: "insuranceAmount" },
+            { header: "مصر للتأمين", key: "misrInsuranceAmount" },
             { header: "السلف المتبقية", key: "advances" },
             { header: "الحالة", key: "status" },
           ]}
@@ -107,6 +108,7 @@ export function EmployeesView({
             wageType: e.wageType === 1 ? wageTypeLabels.Monthly : wageTypeLabels.Daily,
             wageAmount: e.wageAmount,
             insuranceAmount: e.insuranceAmount,
+            misrInsuranceAmount: e.misrInsuranceAmount,
             advances: e.remainingAdvances,
             status: e.suspended ? "موقوف" : "نشط",
           }))}
@@ -125,6 +127,7 @@ export function EmployeesView({
                 <Th>نوع الأجر</Th>
                 <Th>قيمة الأجر</Th>
                 <Th>التأمين</Th>
+                <Th>مصر للتأمين</Th>
                 <Th>السلف المتبقية</Th>
                 <Th>المدير</Th>
                 <Th>حساب دخول</Th>
@@ -144,6 +147,7 @@ export function EmployeesView({
                   <Td>{e.wageType === 1 ? wageTypeLabels.Monthly : wageTypeLabels.Daily}</Td>
                   <TdMono>{formatCurrency(e.wageAmount)}</TdMono>
                   <TdMono>{e.insuranceAmount > 0 ? formatCurrency(e.insuranceAmount) : "-"}</TdMono>
+                  <TdMono>{e.misrInsuranceAmount > 0 ? formatCurrency(e.misrInsuranceAmount) : "-"}</TdMono>
                   <TdMono className={e.remainingAdvances > 0 ? "text-error font-semibold" : undefined}>
                     {e.remainingAdvances > 0 ? formatCurrency(e.remainingAdvances) : "-"}
                   </TdMono>

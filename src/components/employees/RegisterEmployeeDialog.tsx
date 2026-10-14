@@ -35,6 +35,7 @@ export function RegisterEmployeeDialog({ open, onClose, roles }: { open: boolean
       wageType: WageType.Monthly,
       wageAmount: 0,
       insuranceAmount: 0,
+      misrInsuranceAmount: 0,
     },
   });
 
@@ -111,6 +112,9 @@ export function RegisterEmployeeDialog({ open, onClose, roles }: { open: boolean
         </div>
         <FieldGroup label="قيمة التأمين الشهري" error={errors.insuranceAmount?.message}>
           <Input type="number" step="0.01" dir="ltr" {...register("insuranceAmount", { valueAsNumber: true })} />
+        </FieldGroup>
+        <FieldGroup label="قيمة مصر للتأمين الشهري" error={errors.misrInsuranceAmount?.message}>
+          <Input type="number" step="0.01" dir="ltr" {...register("misrInsuranceAmount", { valueAsNumber: true })} />
         </FieldGroup>
         {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
       </form>

@@ -24,7 +24,7 @@ export function EmployeeEditDialog({ open, onClose, employee }: { open: boolean;
     formState: { errors },
   } = useForm<UpdateWorkerFormValues>({
     resolver: zodResolver(updateWorkerSchema),
-    defaultValues: { name: "", phone: "", employeeType: EmployeeType.Worker, wageType: WageType.Daily, wageAmount: 0, insuranceAmount: 0, suspended: false },
+    defaultValues: { name: "", phone: "", employeeType: EmployeeType.Worker, wageType: WageType.Daily, wageAmount: 0, insuranceAmount: 0, misrInsuranceAmount: 0, suspended: false },
   });
 
   useEffect(() => {
@@ -36,6 +36,7 @@ export function EmployeeEditDialog({ open, onClose, employee }: { open: boolean;
         wageType: employee.wageType,
         wageAmount: employee.wageAmount,
         insuranceAmount: employee.insuranceAmount,
+        misrInsuranceAmount: employee.misrInsuranceAmount,
         suspended: employee.suspended,
       });
       setServerError(null);
@@ -100,6 +101,9 @@ export function EmployeeEditDialog({ open, onClose, employee }: { open: boolean;
           </FieldGroup>
           <FieldGroup label="قيمة التأمين الشهري" error={errors.insuranceAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("insuranceAmount", { valueAsNumber: true })} />
+          </FieldGroup>
+          <FieldGroup label="قيمة مصر للتأمين الشهري" error={errors.misrInsuranceAmount?.message}>
+            <Input type="number" step="0.01" dir="ltr" {...register("misrInsuranceAmount", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
         <label className="flex items-center gap-2 text-body-sm text-on-surface">

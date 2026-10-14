@@ -21,6 +21,34 @@ import { runPayrollSchema, type RunPayrollFormValues, updatePayrollPayoutSchema,
 import type { EmployeeListDTO } from "@/types/employee";
 import type { PayrollPayoutDTO, PayrollPreviewDTO } from "@/types/payroll";
 
+// الأسبوع المصري بيبدأ السبت وينتهي الجمعة - بنقسم الفترة المختارة لأسابيع زي الشيت اليدوي اللي المحاسب متعود عليه
+function splitIntoWeeks(startStr: string, endStr: string): { start: string; end: string }[] {
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  const weeks: { start: string; end: string }[] = [];
+  let cursor = new Date(start);
+
+  while (cursor <= end) {
+    const dayOfWeek = cursor.getDay(); // 0=أحد ... 6=سبت
+    const daysUntilFriday = (5 - dayOfWeek + 7) % 7;
+    const weekEnd = new Date(cursor);
+    weekEnd.setDate(cursor.getDate() + daysUntilFriday);
+    const actualEnd = weekEnd < end ? weekEnd : end;
+
+    weeks.push({ start: formatDate(cursor), end: formatDate(actualEnd) });
+
+    cursor = new Date(actualEnd);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return weeks;
+}
+
+function shortDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  return `${d.getMonth() + 1}-${d.getDate()}`;
+}
+
 function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
   const router = useRouter();
   const activeEmployees = employees.filter((e) => !e.suspended);
@@ -29,6 +57,7 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
   const [periodEnd, setPeriodEnd] = useState("");
   const [running, setRunning] = useState(false);
   const [previewing, setPreviewing] = useState(false);
+  const [exportingWeekly, setExportingWeekly] = useState(false);
   const [previews, setPreviews] = useState<PayrollPreviewDTO[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -122,6 +151,7 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
             { header: "خصومات", key: "deductions" },
             { header: "قسط سلفة", key: "advanceInstallment" },
             { header: "خصم تأمين", key: "insurance" },
+            { header: "خصم مصر للتأمين", key: "misrInsurance" },
             { header: "الصافي", key: "net" },
           ],
           rows: succeeded.map((p) => ({
@@ -132,6 +162,7 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
             deductions: p.deductionsAmount,
             advanceInstallment: p.advanceInstallmentAmount,
             insurance: p.insuranceAmount,
+            misrInsurance: p.misrInsuranceAmount,
             net: p.netPaid,
           })),
         },
@@ -145,6 +176,84 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
     setSelected(new Set());
     setPreviews(null);
     router.refresh();
+  }
+
+  // تصدير بالشكل الأسبوعي اللي المحاسب متعود عليه: شيت منفصل لكل أسبوع (سبت-جمعة)، عمود "ورشة" للأيام العادية
+  // وعمود "سفر" لأيام المأمورية، وباقي الأعمدة من بيانات الراتب الفعلية - بدون أي صرف فعلي، معاينة بس
+  async function handleExportWeekly() {
+    if (!periodStart || !periodEnd) {
+      setError("حدد بداية ونهاية الفترة أولًا");
+      return;
+    }
+    if (selected.size === 0) {
+      setError("اختر موظف واحد على الأقل");
+      return;
+    }
+
+    setExportingWeekly(true);
+    setError(null);
+
+    const weeks = splitIntoWeeks(periodStart, periodEnd);
+    const failed: { name: string; message: string }[] = [];
+    const sheets: { name: string; columns: { header: string; key: string }[]; rows: Record<string, string | number>[] }[] = [];
+
+    const columns = [
+      { header: "الاسم", key: "name" },
+      { header: "ورشة", key: "workshop" },
+      { header: "سفر", key: "travel" },
+      { header: "الإجمالي", key: "totalDays" },
+      { header: "الراتب", key: "rate" },
+      { header: "الإجمالي", key: "gross" },
+      { header: "سلف", key: "advanceBalance" },
+      { header: "خ/سلف", key: "advanceDeducted" },
+      { header: "صافي سلف", key: "netAfterAdvance" },
+      { header: "تأمين اجتماعي", key: "insurance" },
+      { header: "مصر للتأمين", key: "misrInsurance" },
+      { header: "خصم ساعات", key: "hourlyDeduction" },
+      { header: "اضافي ساعات", key: "hourlyBonus" },
+      { header: "صافي الراتب", key: "net" },
+    ];
+
+    for (const week of weeks) {
+      const rows: Record<string, string | number>[] = [];
+      for (const employeeId of selected) {
+        const employee = activeEmployees.find((e) => e.id === employeeId)!;
+        const result = await previewPayroll({ employeeId, periodStart: week.start, periodEnd: week.end });
+        if (result.success && result.data) {
+          const p = result.data;
+          const gross = p.baseAmount + p.missionDoubleUpAmount + p.bonusAmount;
+          rows.push({
+            name: p.employeeName,
+            workshop: p.workshopDays,
+            travel: p.missionDays,
+            totalDays: p.workshopDays + p.missionDays,
+            rate: employee.wageAmount,
+            gross,
+            advanceBalance: employee.remainingAdvances,
+            advanceDeducted: p.advanceInstallmentAmount,
+            netAfterAdvance: gross - p.advanceInstallmentAmount,
+            insurance: p.insuranceAmount,
+            misrInsurance: p.misrInsuranceAmount,
+            hourlyDeduction: p.hourlyDeductionAmount,
+            hourlyBonus: p.hourlyBonusAmount,
+            net: p.netPaid,
+          });
+        } else {
+          failed.push({ name: `${employee.name} (${week.start})`, message: result.message ?? "حدث خطأ" });
+        }
+      }
+      sheets.push({ name: `من ${shortDate(week.start)} حتى ${shortDate(week.end)}`, columns, rows });
+    }
+
+    setExportingWeekly(false);
+
+    if (sheets.some((s) => s.rows.length > 0)) {
+      downloadWorkbook(`الرواتب_الاسبوعي_${periodStart}_${periodEnd}`, sheets);
+    }
+
+    if (failed.length > 0) {
+      setError(`فشلت معاينة ${failed.length} سجل: ${failed.map((f) => `${f.name} (${f.message})`).join("، ")}`);
+    }
   }
 
   return (
@@ -188,12 +297,16 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
 
       {error && <div className="mt-stack-md rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{error}</div>}
 
-      <div className="mt-stack-md flex items-center gap-stack-sm">
+      <div className="mt-stack-md flex items-center gap-stack-sm flex-wrap">
         <Button variant="secondary" onClick={handlePreviewAll} disabled={previewing || running || selected.size === 0}>
           {previewing ? "جاري المعاينة..." : `معاينة قبل الصرف (${selected.size})`}
         </Button>
         <Button onClick={handleDisburse} disabled={running || previewing || selected.size === 0}>
           {running ? "جاري الصرف..." : `صرف رواتب المحددين (${selected.size})`}
+        </Button>
+        <Button variant="secondary" onClick={handleExportWeekly} disabled={exportingWeekly || running || selected.size === 0}>
+          <Icon name="download" size={18} />
+          {exportingWeekly ? "جاري التصدير..." : "تصدير الشكل الأسبوعي"}
         </Button>
       </div>
 
@@ -210,6 +323,7 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
                 <Th>خصومات</Th>
                 <Th>قسط سلفة</Th>
                 <Th>خصم تأمين</Th>
+                <Th>خصم مصر للتأمين</Th>
                 <Th>الصافي</Th>
               </tr>
             </THead>
@@ -223,6 +337,7 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
                   <TdMono>{formatCurrency(p.deductionsAmount)}</TdMono>
                   <TdMono>{formatCurrency(p.advanceInstallmentAmount)}</TdMono>
                   <TdMono>{formatCurrency(p.insuranceAmount)}</TdMono>
+                  <TdMono>{formatCurrency(p.misrInsuranceAmount)}</TdMono>
                   <TdMono className="font-semibold">{formatCurrency(p.netPaid)}</TdMono>
                 </Tr>
               ))}
@@ -326,13 +441,14 @@ export function RunPayrollSection({
 
         {preview && (
           <div className="mt-stack-lg flex flex-col gap-stack-md">
-            <div className="grid grid-cols-2 sm:grid-cols-6 gap-stack-sm text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-7 gap-stack-sm text-center">
               <PreviewStat label="الأساسي" value={preview.baseAmount} />
               <PreviewStat label="أجر أيام المأمورية الإضافي" value={preview.missionDoubleUpAmount} />
               <PreviewStat label="حوافز" value={preview.bonusAmount} tone="text-success" />
               <PreviewStat label="خصومات" value={-preview.deductionsAmount} tone="text-error" />
               <PreviewStat label="قسط سلفة" value={-preview.advanceInstallmentAmount} tone="text-error" />
               <PreviewStat label="خصم تأمين" value={-preview.insuranceAmount} tone="text-error" />
+              <PreviewStat label="خصم مصر للتأمين" value={-preview.misrInsuranceAmount} tone="text-error" />
             </div>
             <div className="flex items-center justify-between rounded-lg bg-surface-container-low px-stack-md py-stack-sm">
               <span className="text-body-sm text-on-surface-variant">صافي المستحق لـ {preview.employeeName}</span>
@@ -445,6 +561,7 @@ function EditPayrollPayoutDialog({ open, onClose, payout }: { open: boolean; onC
       bonusAmount: 0,
       advanceInstallmentAmount: 0,
       insuranceAmount: 0,
+      misrInsuranceAmount: 0,
     },
   });
 
@@ -457,6 +574,7 @@ function EditPayrollPayoutDialog({ open, onClose, payout }: { open: boolean; onC
         bonusAmount: payout.bonusAmount,
         advanceInstallmentAmount: payout.advanceInstallmentAmount,
         insuranceAmount: payout.insuranceAmount,
+        misrInsuranceAmount: payout.misrInsuranceAmount,
       });
       setServerError(null);
     }
@@ -512,6 +630,9 @@ function EditPayrollPayoutDialog({ open, onClose, payout }: { open: boolean; onC
           </FieldGroup>
           <FieldGroup label="خصم تأمين" error={errors.insuranceAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("insuranceAmount", { valueAsNumber: true })} />
+          </FieldGroup>
+          <FieldGroup label="خصم مصر للتأمين" error={errors.misrInsuranceAmount?.message}>
+            <Input type="number" step="0.01" dir="ltr" {...register("misrInsuranceAmount", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
         {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
