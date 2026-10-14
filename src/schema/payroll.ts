@@ -21,6 +21,8 @@ export const createAdjustmentSchema = z.object({
   amount: z.number().gt(0, "القيمة يجب أن تكون أكبر من صفر"),
   reason: z.string().min(2, "السبب مطلوب"),
   date: z.string().min(1, "التاريخ مطلوب"),
+  hours: z.number().min(0).optional(),
+  hourlyRate: z.number().min(0).optional(),
 });
 export type CreateAdjustmentFormValues = z.infer<typeof createAdjustmentSchema>;
 
@@ -29,6 +31,8 @@ export const updateAdjustmentSchema = z.object({
   amount: z.number().gt(0, "القيمة يجب أن تكون أكبر من صفر"),
   reason: z.string().min(2, "السبب مطلوب"),
   date: z.string().min(1, "التاريخ مطلوب"),
+  hours: z.number().min(0).optional(),
+  hourlyRate: z.number().min(0).optional(),
 });
 export type UpdateAdjustmentFormValues = z.infer<typeof updateAdjustmentSchema>;
 

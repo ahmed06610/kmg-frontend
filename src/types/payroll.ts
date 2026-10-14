@@ -33,6 +33,8 @@ export interface PayrollAdjustmentDTO {
   reason: string;
   date: string;
   applied: boolean;
+  hours: number | null;
+  hourlyRate: number | null;
 }
 
 export interface CreateAdjustmentDTO {
@@ -41,6 +43,8 @@ export interface CreateAdjustmentDTO {
   amount: number;
   reason: string;
   date: string;
+  hours?: number | null;
+  hourlyRate?: number | null;
 }
 
 export interface UpdateAdjustmentDTO {
@@ -49,6 +53,8 @@ export interface UpdateAdjustmentDTO {
   amount: number;
   reason: string;
   date: string;
+  hours?: number | null;
+  hourlyRate?: number | null;
 }
 
 export interface PayrollPreviewDTO {
