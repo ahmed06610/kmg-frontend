@@ -17,6 +17,7 @@ export interface MissionWorkerDTO {
   employeeId: number;
   employeeName: string;
   daysCount: number;
+  dailyRate: number;
 }
 
 export interface MissionDetailsDTO extends MissionListDTO {
@@ -27,6 +28,7 @@ export interface MissionDetailsDTO extends MissionListDTO {
 export interface MissionWorkerInputDTO {
   employeeId: number;
   daysCount: number;
+  dailyRate: number;
 }
 
 export interface CreateMissionDTO {

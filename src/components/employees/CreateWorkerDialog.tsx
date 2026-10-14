@@ -23,7 +23,7 @@ export function CreateWorkerDialog({ open, onClose }: { open: boolean; onClose: 
     formState: { errors },
   } = useForm<CreateWorkerFormValues>({
     resolver: zodResolver(createWorkerSchema),
-    defaultValues: { name: "", phone: "", employeeType: EmployeeType.Worker, wageType: WageType.Daily, wageAmount: 0, insuranceAmount: 0 },
+    defaultValues: { name: "", phone: "", employeeType: EmployeeType.Worker, wageType: WageType.Daily, wageAmount: 0, insuranceAmount: 0, misrInsuranceAmount: 0 },
   });
 
   const onSubmit = async (data: CreateWorkerFormValues) => {
@@ -83,6 +83,9 @@ export function CreateWorkerDialog({ open, onClose }: { open: boolean; onClose: 
           </FieldGroup>
           <FieldGroup label="قيمة التأمين الشهري" error={errors.insuranceAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("insuranceAmount", { valueAsNumber: true })} />
+          </FieldGroup>
+          <FieldGroup label="قيمة مصر للتأمين الشهري" error={errors.misrInsuranceAmount?.message}>
+            <Input type="number" step="0.01" dir="ltr" {...register("misrInsuranceAmount", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
         {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}

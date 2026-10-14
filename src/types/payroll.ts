@@ -33,6 +33,8 @@ export interface PayrollAdjustmentDTO {
   reason: string;
   date: string;
   applied: boolean;
+  hours: number | null;
+  hourlyRate: number | null;
 }
 
 export interface CreateAdjustmentDTO {
@@ -41,6 +43,8 @@ export interface CreateAdjustmentDTO {
   amount: number;
   reason: string;
   date: string;
+  hours?: number | null;
+  hourlyRate?: number | null;
 }
 
 export interface UpdateAdjustmentDTO {
@@ -49,6 +53,8 @@ export interface UpdateAdjustmentDTO {
   amount: number;
   reason: string;
   date: string;
+  hours?: number | null;
+  hourlyRate?: number | null;
 }
 
 export interface PayrollPreviewDTO {
@@ -62,7 +68,12 @@ export interface PayrollPreviewDTO {
   bonusAmount: number;
   advanceInstallmentAmount: number;
   insuranceAmount: number;
+  misrInsuranceAmount: number;
   netPaid: number;
+  workshopDays: number;
+  missionDays: number;
+  hourlyDeductionAmount: number;
+  hourlyBonusAmount: number;
 }
 
 export interface RunPayrollDTO {
@@ -74,4 +85,15 @@ export interface RunPayrollDTO {
 export interface PayrollPayoutDTO extends PayrollPreviewDTO {
   id: number;
   paidDate: string;
+}
+
+export interface UpdatePayrollPayoutDTO {
+  id: number;
+  baseAmount: number;
+  missionDoubleUpAmount: number;
+  deductionsAmount: number;
+  bonusAmount: number;
+  advanceInstallmentAmount: number;
+  insuranceAmount: number;
+  misrInsuranceAmount: number;
 }

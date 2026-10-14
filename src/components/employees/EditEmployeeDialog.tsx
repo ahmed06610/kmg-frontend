@@ -46,6 +46,7 @@ export function EditEmployeeDialog({
       wageType: WageType.Monthly,
       wageAmount: 0,
       insuranceAmount: 0,
+      misrInsuranceAmount: 0,
       suspended: false,
     },
   });
@@ -63,6 +64,7 @@ export function EditEmployeeDialog({
         wageType: employee.wageType,
         wageAmount: employee.wageAmount,
         insuranceAmount: employee.insuranceAmount,
+        misrInsuranceAmount: employee.misrInsuranceAmount,
         suspended: employee.suspended,
       });
       setServerError(null);
@@ -149,6 +151,9 @@ export function EditEmployeeDialog({
         </div>
         <FieldGroup label="قيمة التأمين الشهري" error={errors.insuranceAmount?.message}>
           <Input type="number" step="0.01" dir="ltr" {...register("insuranceAmount", { valueAsNumber: true })} />
+        </FieldGroup>
+        <FieldGroup label="قيمة مصر للتأمين الشهري" error={errors.misrInsuranceAmount?.message}>
+          <Input type="number" step="0.01" dir="ltr" {...register("misrInsuranceAmount", { valueAsNumber: true })} />
         </FieldGroup>
         <label className="flex items-center gap-2 text-body-sm text-on-surface">
           <input type="checkbox" {...register("suspended")} />

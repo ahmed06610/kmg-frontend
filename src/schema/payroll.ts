@@ -21,6 +21,8 @@ export const createAdjustmentSchema = z.object({
   amount: z.number().gt(0, "القيمة يجب أن تكون أكبر من صفر"),
   reason: z.string().min(2, "السبب مطلوب"),
   date: z.string().min(1, "التاريخ مطلوب"),
+  hours: z.number().min(0).optional(),
+  hourlyRate: z.number().min(0).optional(),
 });
 export type CreateAdjustmentFormValues = z.infer<typeof createAdjustmentSchema>;
 
@@ -29,6 +31,8 @@ export const updateAdjustmentSchema = z.object({
   amount: z.number().gt(0, "القيمة يجب أن تكون أكبر من صفر"),
   reason: z.string().min(2, "السبب مطلوب"),
   date: z.string().min(1, "التاريخ مطلوب"),
+  hours: z.number().min(0).optional(),
+  hourlyRate: z.number().min(0).optional(),
 });
 export type UpdateAdjustmentFormValues = z.infer<typeof updateAdjustmentSchema>;
 
@@ -38,3 +42,14 @@ export const runPayrollSchema = z.object({
   periodEnd: z.string().min(1, "نهاية الفترة مطلوبة"),
 });
 export type RunPayrollFormValues = z.infer<typeof runPayrollSchema>;
+
+export const updatePayrollPayoutSchema = z.object({
+  baseAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+  missionDoubleUpAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+  deductionsAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+  bonusAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+  advanceInstallmentAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+  insuranceAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+  misrInsuranceAmount: z.number().min(0, "لا يمكن أن تكون القيمة سالبة"),
+});
+export type UpdatePayrollPayoutFormValues = z.infer<typeof updatePayrollPayoutSchema>;

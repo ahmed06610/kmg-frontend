@@ -12,6 +12,7 @@ import type {
   RunPayrollDTO,
   UpdateAdjustmentDTO,
   UpdateAdvanceDTO,
+  UpdatePayrollPayoutDTO,
 } from "@/types/payroll";
 import type { ActionResult } from "./auth";
 
@@ -93,6 +94,28 @@ export async function runPayroll(data: RunPayrollDTO): Promise<ActionResult<Payr
     revalidatePath("/payroll");
     revalidatePath("/cashbox");
     return { success: true, data: payout };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function updatePayrollPayout(data: UpdatePayrollPayoutDTO): Promise<ActionResult<PayrollPayoutDTO>> {
+  try {
+    const payout = await apiClient.put<PayrollPayoutDTO>("/Payroll/payouts", data);
+    revalidatePath("/payroll");
+    revalidatePath("/cashbox");
+    return { success: true, data: payout };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
+  }
+}
+
+export async function deletePayrollPayout(id: number): Promise<ActionResult> {
+  try {
+    await apiClient.delete(`/Payroll/payouts/${id}`);
+    revalidatePath("/payroll");
+    revalidatePath("/cashbox");
+    return { success: true };
   } catch (error) {
     return { success: false, message: error instanceof ApiError ? error.message : "حدث خطأ" };
   }
