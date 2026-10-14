@@ -14,7 +14,7 @@ export interface ExcelSheet {
   rows: Record<string, string | number | null | undefined>[];
 }
 
-function sanitizeSheetName(name: string, used: Set<string>): string {
+export function sanitizeSheetName(name: string, used: Set<string>): string {
   const cleaned = name.replace(/[:\\/?*[\]]/g, " ").trim().slice(0, 31) || "Sheet";
   let candidate = cleaned;
   let i = 2;
