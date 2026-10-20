@@ -170,6 +170,8 @@ export function MissionEditDialog({
               </div>
               <Input
                 type="number"
+                step="0.25"
+                min={0}
                 dir="ltr"
                 placeholder="عدد الأيام"
                 className="w-28"

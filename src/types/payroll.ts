@@ -72,6 +72,8 @@ export interface PayrollPreviewDTO {
   netPaid: number;
   workshopDays: number;
   missionDays: number;
+  /** أيام الجمعة اللي اتشالت من يومية العامل اليومي (إجازة) - للعرض بس */
+  excludedFridays: number;
   hourlyDeductionAmount: number;
   hourlyBonusAmount: number;
 }

@@ -57,6 +57,52 @@ function longDateLabel(dateStr: string): string {
   return `${ARABIC_WEEKDAYS[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
 }
 
+// اختصارات لتحديد الفترة بسرعة: لو فيه تاريخ بداية متحدد، الكويك أكشن بيحرك تاريخ النهاية بس (بداية + المدة)
+// - لو مفيش بداية (الحقول فاضية) بيحسب الاتنين من النهارده للخلف (النهاردة - المدة لحد النهاردة)
+type QuickRangeOption = { label: string; kind: "days" | "month"; amount: number };
+
+const QUICK_RANGE_OPTIONS: QuickRangeOption[] = [
+  { label: "6 أيام", kind: "days", amount: 6 },
+  { label: "7 أيام", kind: "days", amount: 7 },
+  { label: "14 يوم", kind: "days", amount: 14 },
+  { label: "شهر", kind: "month", amount: 1 },
+];
+
+function shiftDate(dateStr: string, option: QuickRangeOption, direction: 1 | -1): string {
+  const d = new Date(dateStr);
+  if (option.kind === "month") d.setMonth(d.getMonth() + direction * option.amount);
+  else d.setDate(d.getDate() + direction * option.amount);
+  return formatDate(d);
+}
+
+function computeQuickRange(option: QuickRangeOption, currentStart: string): { start: string; end: string } {
+  if (currentStart) {
+    return { start: currentStart, end: shiftDate(currentStart, option, 1) };
+  }
+  const today = formatDate(new Date());
+  return { start: shiftDate(today, option, -1), end: today };
+}
+
+function QuickDateRangeActions({ periodStart, onChange }: { periodStart: string; onChange: (start: string, end: string) => void }) {
+  return (
+    <div className="flex items-center gap-1 flex-wrap">
+      {QUICK_RANGE_OPTIONS.map((opt) => (
+        <button
+          key={opt.label}
+          type="button"
+          onClick={() => {
+            const { start, end } = computeQuickRange(opt, periodStart);
+            onChange(start, end);
+          }}
+          className="px-2 py-1 rounded-md text-xs bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors"
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
   const router = useRouter();
   const activeEmployees = employees.filter((e) => !e.suspended);
@@ -251,13 +297,22 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
   return (
     <Card>
       <p className="text-title-sm text-on-surface mb-stack-md">صرف رواتب جماعي</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-stack-md mb-stack-md">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-stack-md mb-stack-sm">
         <FieldGroup label="بداية الفترة">
           <Input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} />
         </FieldGroup>
         <FieldGroup label="نهاية الفترة">
           <Input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} />
         </FieldGroup>
+      </div>
+      <div className="mb-stack-md">
+        <QuickDateRangeActions
+          periodStart={periodStart}
+          onChange={(start, end) => {
+            setPeriodStart(start);
+            setPeriodEnd(end);
+          }}
+        />
       </div>
 
       {activeEmployees.length === 0 ? (
@@ -309,6 +364,7 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
             <THead>
               <tr>
                 <Th>الموظف</Th>
+                <Th>أيام العمل</Th>
                 <Th>الأساسي</Th>
                 <Th>أجر أيام المأمورية الإضافي</Th>
                 <Th>حوافز</Th>
@@ -323,6 +379,10 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
               {previews.map((p) => (
                 <Tr key={p.employeeId}>
                   <Td>{p.employeeName}</Td>
+                  <TdMono>
+                    {p.workshopDays + p.missionDays}
+                    {p.excludedFridays > 0 && <div className="text-[11px] text-on-surface-variant font-sans">من غير {p.excludedFridays} جمعة</div>}
+                  </TdMono>
                   <TdMono>{formatCurrency(p.baseAmount)}</TdMono>
                   <TdMono>{formatCurrency(p.missionDoubleUpAmount)}</TdMono>
                   <TdMono>{formatCurrency(p.bonusAmount)}</TdMono>
@@ -363,11 +423,15 @@ export function RunPayrollSection({
     control,
     handleSubmit,
     getValues,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<RunPayrollFormValues>({
     resolver: zodResolver(runPayrollSchema),
     defaultValues: { employeeId: 0, periodStart: "", periodEnd: "" },
   });
+
+  const currentPeriodStart = watch("periodStart");
 
   const onPreview = handleSubmit(async (data) => {
     setPreviewLoading(true);
@@ -422,6 +486,13 @@ export function RunPayrollSection({
               <Input type="date" {...register("periodEnd")} />
             </FieldGroup>
           </div>
+          <QuickDateRangeActions
+            periodStart={currentPeriodStart}
+            onChange={(start, end) => {
+              setValue("periodStart", start, { shouldValidate: true });
+              setValue("periodEnd", end, { shouldValidate: true });
+            }}
+          />
           <div>
             <Button type="submit" variant="secondary" disabled={previewLoading}>
               {previewLoading ? "جاري الحساب..." : "معاينة المستحقات"}
@@ -442,6 +513,22 @@ export function RunPayrollSection({
               <PreviewStat label="خصم تأمين" value={-preview.insuranceAmount} tone="text-error" />
               <PreviewStat label="خصم مصر للتأمين" value={-preview.misrInsuranceAmount} tone="text-error" />
             </div>
+            {(preview.workshopDays > 0 || preview.missionDays > 0 || preview.excludedFridays > 0) && (
+              <p className="text-xs text-on-surface-variant">
+                أيام ورشة: <span dir="ltr" className="font-mono-data text-on-surface">{preview.workshopDays}</span>
+                {preview.missionDays > 0 && (
+                  <>
+                    {" "}· أيام مأمورية: <span dir="ltr" className="font-mono-data text-on-surface">{preview.missionDays}</span>
+                  </>
+                )}
+                {preview.excludedFridays > 0 && (
+                  <>
+                    {" "}· أيام جمعة مستبعدة (إجازة):{" "}
+                    <span dir="ltr" className="font-mono-data text-on-surface">{preview.excludedFridays}</span>
+                  </>
+                )}
+              </p>
+            )}
             <div className="flex items-center justify-between rounded-lg bg-surface-container-low px-stack-md py-stack-sm">
               <span className="text-body-sm text-on-surface-variant">صافي المستحق لـ {preview.employeeName}</span>
               <span dir="ltr" className="text-title-sm text-mono-data text-success font-bold">
