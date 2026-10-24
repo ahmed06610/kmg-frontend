@@ -5,6 +5,14 @@ import { getAiChatMessages } from "@/lib/api/aiChat";
 import type { AiChatPageDTO, SendAiChatMessageResultDTO } from "@/types/aiChat";
 import type { ActionResult } from "./auth";
 
+export async function loadLatestAiChatMessages(): Promise<ActionResult<AiChatPageDTO>> {
+  try {
+    return { success: true, data: await getAiChatMessages() };
+  } catch (error) {
+    return { success: false, message: error instanceof ApiError ? error.message : "تعذر تحميل المحادثة" };
+  }
+}
+
 /** بيجيب الدفعة اللي قبل الرسالة دي - بتتنادى لما المستخدم يسكرول لفوق */
 export async function loadOlderAiChatMessages(beforeId: number): Promise<ActionResult<AiChatPageDTO>> {
   try {

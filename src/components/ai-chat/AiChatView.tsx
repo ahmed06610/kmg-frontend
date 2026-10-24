@@ -7,6 +7,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/utils";
 import type { AiChatMessageDTO, AiChatPageDTO } from "@/types/aiChat";
+import { ChatMarkdown, markdownToPlainText, messageDirection } from "./ChatMarkdown";
 
 /** رسالة معروضة في الشاشة: يا إما متحفظة فعلًا، يا إما لسه بتتبعت (pending) أو فشلت (failed) */
 interface ChatItem extends AiChatMessageDTO {
@@ -15,14 +16,16 @@ interface ChatItem extends AiChatMessageDTO {
 }
 
 const SUGGESTIONS = [
-  "إيه أكتر مشروع متأخر في التحصيل؟",
-  "لخصلي حالة الخزنة النهارده",
+  "أنهي مشروع فاضل عليه أكبر مبلغ لسه متحصلش؟",
+  "لخصلي وضع الشركة والخزنة",
   "إيه الخامات اللي قربت تخلص؟",
-  "اقترحلي مناقصات مناسبة لينا الفترة دي",
+  "إيه آخر المناقصات المناسبة لينا؟",
 ];
 
 // المسافة من تحت اللي لو المستخدم جواها بنعتبره "متابع آخر رسالة" وبننزل معاه تلقائيًا
 const STICK_TO_BOTTOM_THRESHOLD = 120;
+
+const SLOW_REPLY_HINT_AFTER_MS = 8000;
 
 function dayLabel(iso: string) {
   const date = new Date(iso);
@@ -39,7 +42,14 @@ function timeLabel(iso: string) {
   return new Date(iso).toLocaleTimeString("ar-EG", { hour: "numeric", minute: "2-digit" });
 }
 
-export function AiChatView({ initialPage, username }: { initialPage: AiChatPageDTO; username: string }) {
+interface AiChatViewProps {
+  initialPage: AiChatPageDTO;
+  username: string;
+  variant?: "page" | "panel";
+  onClose?: () => void;
+}
+
+export function AiChatView({ initialPage, username, variant = "page", onClose }: AiChatViewProps) {
   const [messages, setMessages] = useState<ChatItem[]>(initialPage.items);
   const [hasMore, setHasMore] = useState(initialPage.hasMore);
   const [loadingOlder, setLoadingOlder] = useState(false);
@@ -54,6 +64,8 @@ export function AiChatView({ initialPage, username }: { initialPage: AiChatPageD
   // قبل ما نضيف دفعة أقدم فوق، بنحفظ ارتفاع المحتوى عشان نرجّع المستخدم لنفس المكان اللي كان واقف عنده
   const prependAnchorRef = useRef<{ scrollHeight: number; scrollTop: number } | null>(null);
   const shouldStickToBottomRef = useRef(true);
+  const revealMessageIdRef = useRef<number | null>(null);
+  const sendingRef = useRef(false);
   const tempIdRef = useRef(-1);
 
   const scrollToBottom = useCallback(() => {
@@ -71,9 +83,18 @@ export function AiChatView({ initialPage, username }: { initialPage: AiChatPageD
     const el = scrollRef.current;
     if (!el) return;
     const anchor = prependAnchorRef.current;
+    const revealId = revealMessageIdRef.current;
     if (anchor) {
       el.scrollTop = el.scrollHeight - anchor.scrollHeight + anchor.scrollTop;
       prependAnchorRef.current = null;
+    } else if (revealId !== null) {
+      revealMessageIdRef.current = null;
+      const reply = el.querySelector<HTMLElement>(`[data-message-id="${revealId}"]`);
+      if (reply && reply.offsetHeight > el.clientHeight - 48) {
+        el.scrollTop += reply.getBoundingClientRect().top - el.getBoundingClientRect().top - 16;
+      } else {
+        scrollToBottom();
+      }
     } else if (shouldStickToBottomRef.current) {
       // scroll فوري مش smooth: الـ smooth بيطلّع أحداث scroll في النص فبيفتكر إن المستخدم طلع لفوق ويبطّل يتابع
       scrollToBottom();
@@ -132,7 +153,8 @@ export function AiChatView({ initialPage, username }: { initialPage: AiChatPageD
 
   const send = async (text: string, retryOfId?: number) => {
     const content = text.trim();
-    if (!content || sending) return;
+    if (!content || sendingRef.current) return;
+    sendingRef.current = true;
 
     const tempId = retryOfId ?? tempIdRef.current--;
     const optimistic: ChatItem = { id: tempId, role: "user", content, createdAt: new Date().toISOString(), status: "pending" };
@@ -145,8 +167,15 @@ export function AiChatView({ initialPage, username }: { initialPage: AiChatPageD
     shouldStickToBottomRef.current = true;
     setSending(true);
 
-    const result = await sendAiChatMessage(content);
-    setSending(false);
+    let result: Awaited<ReturnType<typeof sendAiChatMessage>>;
+    try {
+      result = await sendAiChatMessage(content);
+    } catch {
+      result = { success: false, message: "تعذر الاتصال بالسيرفر - اتأكد من الإنترنت وجرّب تاني" };
+    } finally {
+      sendingRef.current = false;
+      setSending(false);
+    }
 
     if (!result.success || !result.data) {
       setMessages((current) =>
@@ -156,6 +185,7 @@ export function AiChatView({ initialPage, username }: { initialPage: AiChatPageD
     }
 
     const { userMessage, assistantMessage } = result.data;
+    revealMessageIdRef.current = assistantMessage.id;
     setMessages((current) => [...current.filter((m) => m.id !== tempId), userMessage, assistantMessage]);
     textareaRef.current?.focus();
   };
@@ -171,26 +201,45 @@ export function AiChatView({ initialPage, username }: { initialPage: AiChatPageD
   const removeFailed = (id: number) => setMessages((current) => current.filter((m) => m.id !== id));
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-8rem)] min-h-[480px] rounded-xl border border-outline-variant bg-surface-container-lowest overflow-hidden">
-      <header className="flex items-center justify-between gap-stack-sm px-stack-lg py-stack-md border-b border-outline-variant shrink-0">
-        <div className="flex items-center gap-3">
-          <span className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-on-primary">
+    <div
+      className={cn(
+        "flex flex-col bg-surface-container-lowest overflow-hidden",
+        variant === "page" ? "h-[calc(100dvh-8rem)] min-h-[480px] rounded-xl border border-outline-variant" : "h-full",
+      )}
+    >
+      <header className="flex items-center justify-between gap-stack-sm px-4 sm:px-stack-lg py-stack-md border-b border-outline-variant shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-on-primary shrink-0">
             <Icon name="smart_toy" size={22} />
           </span>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-title-sm text-on-surface">مساعد KMG الذكي</h1>
-            <p className="text-xs text-on-surface-variant">اسأل عن المشاريع والخزنة والمخزن والمناقصات - المحادثة محفوظة وتقدر ترجعلها في أي وقت</p>
+            <p className={cn("text-xs text-on-surface-variant", variant === "page" ? "hidden sm:block" : "hidden")}>
+              اسأل عن المشاريع والخزنة والمخزن والمناقصات - بيقرا البيانات المسموح لك بيها بس، والمحادثة محفوظة
+            </p>
           </div>
         </div>
-        {messages.length > 0 && (
-          <Button variant="secondary" size="sm" onClick={() => setClearOpen(true)} disabled={sending}>
-            <Icon name="delete_sweep" size={18} />
-            مسح المحادثة
-          </Button>
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {messages.length > 0 && (
+            <Button variant="secondary" size="sm" onClick={() => setClearOpen(true)} disabled={sending} aria-label="مسح المحادثة" title="مسح المحادثة">
+              <Icon name="delete_sweep" size={18} />
+              {variant === "page" && <span className="hidden sm:inline">مسح المحادثة</span>}
+            </Button>
+          )}
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="قفل المساعد"
+              className="flex items-center justify-center w-9 h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+            >
+              <Icon name="close" size={20} />
+            </button>
+          )}
+        </div>
       </header>
 
-      <div ref={scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto px-stack-lg py-stack-md">
+      <div ref={scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto px-3 sm:px-stack-lg py-stack-md">
         <div ref={topSentinelRef} />
         {hasMore && (
           <div className="flex justify-center py-2">
@@ -239,7 +288,7 @@ export function AiChatView({ initialPage, username }: { initialPage: AiChatPageD
             {messages.map((m, i) => {
               const showDay = i === 0 || dayLabel(messages[i - 1].createdAt) !== dayLabel(m.createdAt);
               return (
-                <div key={m.id} className="flex flex-col gap-3">
+                <div key={m.id} data-message-id={m.id} className="flex flex-col gap-3">
                   {showDay && (
                     <div className="flex items-center gap-3 text-[11px] text-on-surface-variant">
                       <span className="flex-1 h-px bg-outline-variant" />
@@ -251,18 +300,7 @@ export function AiChatView({ initialPage, username }: { initialPage: AiChatPageD
                 </div>
               );
             })}
-            {sending && (
-              <div className="flex items-end gap-2 justify-end">
-                <div className="rounded-2xl rounded-bl-sm bg-surface-container-high px-4 py-3 flex gap-1.5" aria-label="الـ AI بيكتب">
-                  {[0, 150, 300].map((delay) => (
-                    <span key={delay} className="w-2 h-2 rounded-full bg-on-surface-variant animate-bounce" style={{ animationDelay: `${delay}ms` }} />
-                  ))}
-                </div>
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/15 text-primary shrink-0">
-                  <Icon name="smart_toy" size={18} />
-                </span>
-              </div>
-            )}
+            {sending && <TypingIndicator />}
           </div>
         )}
       </div>
@@ -286,7 +324,7 @@ export function AiChatView({ initialPage, username }: { initialPage: AiChatPageD
             rows={1}
             dir="auto"
             maxLength={4000}
-            placeholder="اكتب رسالتك... (Enter للإرسال، Shift+Enter لسطر جديد)"
+            placeholder="اكتب سؤالك... (Shift+Enter لسطر جديد)"
             className="flex-1 resize-none bg-transparent outline-none text-body-sm text-on-surface py-1.5 max-h-[180px]"
           />
           <button
@@ -322,7 +360,7 @@ function MessageBubble({ message, onRetry, onRemove, disabled }: { message: Chat
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(message.content);
+      await navigator.clipboard.writeText(markdownToPlainText(message.content));
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -333,17 +371,19 @@ function MessageBubble({ message, onRetry, onRemove, disabled }: { message: Chat
   return (
     // RTL: رسايل المستخدم على اليمين (بداية السطر)، ورد الـ AI على الشمال (justify-end) وأيقونته برّه الفقاعة
     <div className={cn("group flex items-end gap-2", !isUser && "justify-end")}>
-      <div className={cn("flex flex-col max-w-[80%]", isUser ? "items-start" : "items-end")}>
+      <div className={cn("flex flex-col min-w-0", isUser ? "max-w-[85%] sm:max-w-[80%] items-start" : "max-w-[92%] sm:max-w-[85%] items-end")}>
         <div
-          dir="auto"
+          dir={messageDirection(message.content)}
           className={cn(
-            "rounded-2xl px-4 py-2.5 text-body-sm whitespace-pre-wrap break-words",
-            isUser ? "bg-primary text-on-primary rounded-br-sm" : "bg-surface-container-high text-on-surface rounded-bl-sm",
+            "rounded-2xl px-4 py-2.5 text-body-sm leading-relaxed max-w-full",
+            isUser
+              ? "bg-primary text-on-primary rounded-br-sm whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+              : "bg-surface-container-high text-on-surface rounded-bl-sm",
             message.status === "pending" && "opacity-70",
             message.status === "failed" && "ring-1 ring-error",
           )}
         >
-          {message.content}
+          {isUser ? message.content : <ChatMarkdown content={message.content} />}
         </div>
         <div className="flex items-center gap-2 mt-1 px-1 text-[11px] text-on-surface-variant">
           {message.status === "pending" && <span>جاري الإرسال...</span>}
@@ -373,9 +413,34 @@ function MessageBubble({ message, onRetry, onRemove, disabled }: { message: Chat
   );
 }
 
+function TypingIndicator() {
+  const [slow, setSlow] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), SLOW_REPLY_HINT_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="flex items-end gap-2 justify-end">
+      <div className="flex flex-col items-end gap-1">
+        <div className="rounded-2xl rounded-bl-sm bg-surface-container-high px-4 py-3 flex gap-1.5" role="status" aria-label="الـ AI بيكتب">
+          {[0, 150, 300].map((delay) => (
+            <span key={delay} className="w-2 h-2 rounded-full bg-on-surface-variant animate-bounce" style={{ animationDelay: `${delay}ms` }} />
+          ))}
+        </div>
+        {slow && <span className="px-1 text-[11px] text-on-surface-variant">الرد واخد وقت أطول من العادي، لسه شغال...</span>}
+      </div>
+      <span className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-primary/15 text-primary shrink-0">
+        <Icon name="smart_toy" size={18} />
+      </span>
+    </div>
+  );
+}
+
 function AssistantAvatar() {
   return (
-    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/15 text-primary shrink-0 mb-5">
+    <span className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-primary/15 text-primary shrink-0 mb-5">
       <Icon name="smart_toy" size={18} />
     </span>
   );

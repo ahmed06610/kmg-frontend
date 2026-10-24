@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { AiChatLauncher } from "@/components/ai-chat/AiChatLauncher";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { getSession } from "@/lib/session";
@@ -14,6 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Topbar roleName={session.roleName} username={session.username} abilities={session.abilities} />
         <main className="flex-1 p-container-margin">{children}</main>
       </div>
+      {session.abilities.includes("إدارة تكامل AI") && <AiChatLauncher username={session.username} />}
     </div>
   );
 }
