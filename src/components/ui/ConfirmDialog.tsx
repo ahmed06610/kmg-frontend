@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useState } from "react";
 import { Button } from "./Button";
 import { Dialog } from "./Dialog";
@@ -14,7 +15,9 @@ interface ConfirmDialogProps {
   onConfirmed?: () => void;
 }
 
-export function ConfirmDialog({ open, onClose, title, message, confirmLabel = "حذف", onConfirm, onConfirmed }: ConfirmDialogProps) {
+export function ConfirmDialog({ open, onClose, title, message, confirmLabel, onConfirm, onConfirmed }: ConfirmDialogProps) {
+  const t = useT();
+  confirmLabel ??= t("حذف");
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -24,7 +27,7 @@ export function ConfirmDialog({ open, onClose, title, message, confirmLabel = "�
     const result = await onConfirm();
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     onClose();
@@ -40,16 +43,15 @@ export function ConfirmDialog({ open, onClose, title, message, confirmLabel = "�
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button variant="danger" type="button" onClick={handleConfirm} disabled={loading}>
-            {loading ? "جاري الحذف..." : confirmLabel}
+            {loading ? t("جاري الحذف...") : confirmLabel}
           </Button>
         </>
       }
     >
       <p className="text-body-sm text-on-surface">{message}</p>
-      {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+      {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
     </Dialog>
   );
 }

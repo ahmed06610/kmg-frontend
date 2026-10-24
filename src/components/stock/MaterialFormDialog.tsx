@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export function MaterialFormDialog({ open, onClose, material, categories }: Props) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -78,7 +80,7 @@ export function MaterialFormDialog({ open, onClose, material, categories }: Prop
 
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     onClose();
@@ -89,47 +91,46 @@ export function MaterialFormDialog({ open, onClose, material, categories }: Prop
     <Dialog
       open={open}
       onClose={onClose}
-      title={isEdit ? "تعديل الخامة" : "خامة جديدة"}
+      title={isEdit ? t("تعديل الخامة") : t("خامة جديدة")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="material-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ"}
+            {loading ? t("جاري الحفظ...") : t("حفظ")}
           </Button>
         </>
       }
     >
       <form id="material-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="اسم الخامة" error={errors.name?.message}>
+        <FieldGroup label={t("اسم الخامة")} error={errors.name?.message}>
           <Input {...register("name")} />
         </FieldGroup>
-        <FieldGroup label="الوحدة (متر مربع، علبة، ...)" error={errors.unit?.message}>
+        <FieldGroup label={t("الوحدة (متر مربع، علبة، ...)")} error={errors.unit?.message}>
           <Input {...register("unit")} />
         </FieldGroup>
         <div className="grid grid-cols-2 gap-stack-md">
-          <FieldGroup label="سعر الوحدة" error={errors.unitPrice?.message}>
+          <FieldGroup label={t("سعر الوحدة")} error={errors.unitPrice?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("unitPrice", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="الحد الأدنى للتنبيه" error={errors.minimumThreshold?.message}>
+          <FieldGroup label={t("الحد الأدنى للتنبيه")} error={errors.minimumThreshold?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("minimumThreshold", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
         {!isEdit && (
-          <FieldGroup label="الرصيد الافتتاحي (اختياري)" error={errors.initialQuantity?.message}>
+          <FieldGroup label={t("الرصيد الافتتاحي (اختياري)")} error={errors.initialQuantity?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("initialQuantity", { valueAsNumber: true })} />
           </FieldGroup>
         )}
 
-        <FieldGroup label="النوع (اختياري)">
+        <FieldGroup label={t("النوع (اختياري)")}>
           <Combobox
             value={categoryId ? String(categoryId) : ""}
             onChange={(v) => {
               setCategoryId(v ? Number(v) : null);
               setExtraFieldValues({});
             }}
-            placeholder="بدون نوع"
+            placeholder={t("بدون نوع")}
             options={categories.map((c) => ({ value: String(c.id), label: c.name }))}
           />
         </FieldGroup>
@@ -148,7 +149,7 @@ export function MaterialFormDialog({ open, onClose, material, categories }: Prop
           </div>
         )}
 
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

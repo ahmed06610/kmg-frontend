@@ -111,6 +111,70 @@
   --shadow-elevated: 0px 10px 25px rgba(0, 0, 0, 0.45);
 }
 
+/* ---------- الوضع الفاتح ----------
+   القيم الافتراضية فوق (@theme) هي الوضع الغامق. الوضع الفاتح بيبدّل نفس المتغيرات، فكل الـ utilities
+   (bg-surface، text-on-surface...) بتتغير لوحدها من غير ما نلمس أي كومبوننت */
+html.light {
+  --color-surface: #f5f7fb;
+  --color-surface-dim: #e6eaf2;
+  --color-surface-bright: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f1f4f9;
+  --color-surface-container: #e9edf4;
+  --color-surface-container-high: #e1e6ef;
+  --color-surface-container-highest: #d6dce7;
+  --color-surface-variant: #dce2ec;
+  --color-on-surface: #111827;
+  --color-on-surface-variant: #556074;
+  --color-inverse-surface: #1e293b;
+  --color-inverse-on-surface: #f1f5f9;
+  --color-outline: #94a0b4;
+  --color-outline-variant: #d9dfe8;
+  --color-surface-tint: #2f64d6;
+
+  --color-primary: #2f64d6;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #dbe6ff;
+  --color-on-primary-container: #0b2a6b;
+  --color-inverse-primary: #9bb8ff;
+
+  --color-secondary: #4a5a75;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #e1e7f2;
+  --color-on-secondary-container: #1d2a40;
+
+  --color-tertiary: #5b6474;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #e3e6ec;
+  --color-on-tertiary-container: #20262f;
+
+  --color-error: #c62828;
+  --color-on-error: #ffffff;
+  --color-error-container: #fde4e3;
+  --color-on-error-container: #8b1a1a;
+
+  --color-success: #15803d;
+  --color-on-success: #ffffff;
+  --color-success-container: #dcfce7;
+  --color-on-success-container: #14532d;
+
+  --color-warning: #b45309;
+  --color-on-warning: #ffffff;
+  --color-warning-container: #fef3c7;
+  --color-on-warning-container: #78350f;
+
+  --color-info: #1d6fd8;
+  --color-on-info: #ffffff;
+  --color-info-container: #dbeafe;
+  --color-on-info-container: #1e3a8a;
+
+  --color-background: #f5f7fb;
+  --color-on-background: #111827;
+
+  --shadow-soft: 0px 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-elevated: 0px 10px 25px rgba(15, 23, 42, 0.14);
+}
+
 body {
   background: var(--color-background);
   color: var(--color-on-background);
@@ -188,6 +252,38 @@ body {
     animation: none;
     background-position: 50% 0;
   }
+}
+
+/* شاشات الموبايل: العناوين الكبيرة بتصغر شوية عشان متاخدش نص الشاشة */
+@media (max-width: 639px) {
+  :root {
+    --text-display-lg: 26px;
+    --text-display-lg--line-height: 32px;
+    --text-headline-md: 20px;
+    --text-headline-md--line-height: 28px;
+  }
+}
+
+/* محاذاة على بداية الصفحة (يمين في العربي، شمال في الإنجليزي) حتى لو العنصر نفسه dir="ltr" زي الأرقام */
+html[dir="rtl"] .text-page-start {
+  text-align: right;
+}
+html[dir="ltr"] .text-page-start {
+  text-align: left;
+}
+
+/* قايمة "المزيد" في الموبايل بتطلع من تحت */
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.sheet-up {
+  animation: sheet-up 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @keyframes dropdown-in {

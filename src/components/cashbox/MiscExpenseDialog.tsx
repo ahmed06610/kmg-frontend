@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function MiscExpenseDialog({ open, onClose, transaction }: Props) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -70,7 +72,7 @@ export function MiscExpenseDialog({ open, onClose, transaction }: Props) {
         : await createMiscExpense(payload);
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     reset();
@@ -82,43 +84,42 @@ export function MiscExpenseDialog({ open, onClose, transaction }: Props) {
     <Dialog
       open={open}
       onClose={onClose}
-      title={isEdit ? "تعديل مصروف نثري" : "مصروف نثري جديد"}
+      title={isEdit ? t("تعديل مصروف نثري") : t("مصروف نثري جديد")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="misc-expense-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ"}
+            {loading ? t("جاري الحفظ...") : t("حفظ")}
           </Button>
         </>
       }
     >
       <form id="misc-expense-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="نوع المصروف" error={errors.category?.message}>
+        <FieldGroup label={t("نوع المصروف")} error={errors.category?.message}>
           <Select {...register("category", { valueAsNumber: true })}>
-            <option value={0}>اختر النوع</option>
-            <option value={MiscExpenseCategory.Administrative}>إداري</option>
-            <option value={MiscExpenseCategory.Operational}>تشغيلي</option>
-            <option value={MiscExpenseCategory.Other}>أخرى</option>
+            <option value={0}>{t("اختر النوع")}</option>
+            <option value={MiscExpenseCategory.Administrative}>{t("إداري")}</option>
+            <option value={MiscExpenseCategory.Operational}>{t("تشغيلي")}</option>
+            <option value={MiscExpenseCategory.Other}>{t("أخرى")}</option>
           </Select>
         </FieldGroup>
         <div className="grid grid-cols-2 gap-stack-md">
-          <FieldGroup label="القيمة كاش" error={errors.amountCash?.message}>
+          <FieldGroup label={t("القيمة كاش")} error={errors.amountCash?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("amountCash", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="القيمة كريديت" error={errors.amountCredit?.message}>
+          <FieldGroup label={t("القيمة كريديت")} error={errors.amountCredit?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("amountCredit", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
-        <FieldGroup label="ملاحظات" error={errors.notes?.message}>
+        <FieldGroup label={t("ملاحظات")} error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
-        <FieldGroup label="التاريخ" error={errors.expenseDate?.message}>
+        <FieldGroup label={t("التاريخ")} error={errors.expenseDate?.message}>
           <Input type="date" {...register("expenseDate")} />
         </FieldGroup>
         <InvoiceAttachmentField folder="cashbox" value={attachment} onChange={setAttachment} />
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

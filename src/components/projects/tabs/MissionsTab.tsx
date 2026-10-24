@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { deleteMission } from "@/actions/missions";
@@ -31,6 +32,7 @@ export function MissionsTab({
   workers: EmployeeListDTO[];
   canManage: boolean;
 }) {
+  const t = useT();
   const router = useRouter();
   const [createOpen, setCreateOpen] = useState(false);
   const [settleMission, setSettleMission] = useState<MissionDetailsDTO | null>(null);
@@ -46,31 +48,30 @@ export function MissionsTab({
   return (
     <div className="flex flex-col gap-stack-md">
       <div className="flex items-center justify-between gap-stack-sm flex-wrap">
-        {missions.length > 0 && <SearchInput value={table.search} onChange={table.setSearch} placeholder="بحث برئيس العمال..." />}
+        {missions.length > 0 && <SearchInput value={table.search} onChange={table.setSearch} placeholder={t("بحث برئيس العمال...")} />}
         {canManage && (
           <Button size="sm" onClick={() => setCreateOpen(true)}>
             <Icon name="add" size={18} />
-            مأمورية جديدة
-          </Button>
+            {t("مأمورية جديدة")}</Button>
         )}
       </div>
 
       {missions.length === 0 ? (
-        <EmptyState icon="engineering" title="لا توجد مأموريات لهذا المشروع بعد" />
+        <EmptyState icon="engineering" title={t("لا توجد مأموريات لهذا المشروع بعد")} />
       ) : table.totalCount === 0 ? (
-        <EmptyState icon="search_off" title="لا توجد نتائج مطابقة" />
+        <EmptyState icon="search_off" title={t("لا توجد نتائج مطابقة")} />
       ) : (
         <>
         <Table>
           <THead>
             <tr>
-              <Th>رئيس العمال</Th>
-              <Th>البداية</Th>
-              <Th>النهاية</Th>
-              <Th>العهدة</Th>
-              <Th>المصروف الفعلي</Th>
-              <Th>الحالة</Th>
-              <Th>إجراءات</Th>
+              <Th>{t("رئيس العمال")}</Th>
+              <Th>{t("البداية")}</Th>
+              <Th>{t("النهاية")}</Th>
+              <Th>{t("العهدة")}</Th>
+              <Th>{t("المصروف الفعلي")}</Th>
+              <Th>{t("الحالة")}</Th>
+              <Th>{t("إجراءات")}</Th>
             </tr>
           </THead>
           <TBody>
@@ -82,22 +83,21 @@ export function MissionsTab({
                 <TdMono>{formatCurrency(m.advanceAmount)}</TdMono>
                 <TdMono>{m.status === "Settled" ? formatCurrency(m.actualSpent) : "-"}</TdMono>
                 <Td>
-                  <Badge tone={missionStatusTone(m.status)}>{m.status === "Settled" ? "متسواة" : "مفتوحة"}</Badge>
+                  <Badge tone={missionStatusTone(m.status)}>{m.status === "Settled" ? t("متسواة") : t("مفتوحة")}</Badge>
                 </Td>
                 <Td>
                   <div className="flex items-center gap-2">
                     {canManage && m.status !== "Settled" && (
                       <>
                         <button onClick={() => setSettleMission(m)} className="text-primary text-body-sm font-semibold hover:underline">
-                          تسوية العهدة
-                        </button>
-                        <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingMission(m)}>
+                          {t("تسوية العهدة")}</button>
+                        <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل")} onClick={() => setEditingMission(m)}>
                           <Icon name="edit" size={18} />
                         </button>
                       </>
                     )}
                     {canManage && (
-                      <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeletingMission(m)}>
+                      <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => setDeletingMission(m)}>
                         <Icon name="delete" size={18} />
                       </button>
                     )}
@@ -119,8 +119,8 @@ export function MissionsTab({
       <ConfirmDialog
         open={!!deletingMission}
         onClose={() => setDeletingMission(null)}
-        title="حذف المأمورية"
-        message="هل أنت متأكد من حذف هذه المأمورية؟ سيتم إلغاء أي أثر لها في الخزنة."
+        title={t("حذف المأمورية")}
+        message={t("هل أنت متأكد من حذف هذه المأمورية؟ سيتم إلغاء أي أثر لها في الخزنة.")}
         onConfirm={() => deleteMission(deletingMission!.id, projectId)}
         onConfirmed={() => router.refresh()}
       />

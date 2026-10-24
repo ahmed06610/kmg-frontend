@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -30,6 +31,7 @@ const checkStatusTone: Record<string, "warning" | "success" | "neutral"> = {
 };
 
 export function PaymentsTab({ projectId, payments, remainingBalance, canManage }: { projectId: number; payments: ProjectPaymentDTO[]; remainingBalance: number; canManage: boolean }) {
+  const t = useT();
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<ProjectPaymentDTO | null>(null);
@@ -46,34 +48,33 @@ export function PaymentsTab({ projectId, payments, remainingBalance, canManage }
     <div className="flex flex-col gap-stack-md">
       <div className="flex items-center justify-between flex-wrap gap-stack-sm">
         <p className="text-body-sm text-on-surface-variant">
-          المتبقي حاليًا: <span dir="ltr" className="font-mono-data text-on-surface font-semibold">{formatCurrency(remainingBalance)}</span>
+          {t("المتبقي حاليًا: ")}<span dir="ltr" className="font-mono-data text-on-surface font-semibold">{formatCurrency(remainingBalance)}</span>
         </p>
         {canManage && remainingBalance > 0 && (
           <Button size="sm" onClick={() => setDialogOpen(true)}>
             <Icon name="add" size={18} />
-            تسجيل دفعة
-          </Button>
+            {t("تسجيل دفعة")}</Button>
         )}
       </div>
 
-      {payments.length > 0 && <SearchInput value={table.search} onChange={table.setSearch} placeholder="بحث بالملاحظات أو المبلغ..." />}
+      {payments.length > 0 && <SearchInput value={table.search} onChange={table.setSearch} placeholder={t("بحث بالملاحظات أو المبلغ...")} />}
 
       {payments.length === 0 ? (
-        <EmptyState icon="payments" title="لا توجد دفعات مسجلة بعد" />
+        <EmptyState icon="payments" title={t("لا توجد دفعات مسجلة بعد")} />
       ) : table.totalCount === 0 ? (
-        <EmptyState icon="search_off" title="لا توجد نتائج مطابقة" />
+        <EmptyState icon="search_off" title={t("لا توجد نتائج مطابقة")} />
       ) : (
         <>
         <Table>
           <THead>
             <tr>
-              <Th>المبلغ</Th>
-              <Th>الطريقة</Th>
-              <Th>كاش</Th>
-              <Th>كريديت</Th>
-              <Th>التاريخ</Th>
-              <Th>ملاحظات</Th>
-              {canManage && <Th>إجراءات</Th>}
+              <Th>{t("المبلغ")}</Th>
+              <Th>{t("الطريقة")}</Th>
+              <Th>{t("كاش")}</Th>
+              <Th>{t("كريديت")}</Th>
+              <Th>{t("التاريخ")}</Th>
+              <Th>{t("ملاحظات")}</Th>
+              {canManage && <Th>{t("إجراءات")}</Th>}
             </tr>
           </THead>
           <TBody>
@@ -83,13 +84,13 @@ export function PaymentsTab({ projectId, payments, remainingBalance, canManage }
                 <Td>
                   {p.isCheck ? (
                     <div className="flex items-center gap-1.5">
-                      <span>شيك{p.checkDueDate ? ` (${formatDate(p.checkDueDate)})` : ""}</span>
+                      <span>{t("شيك")}{p.checkDueDate ? ` (${formatDate(p.checkDueDate)})` : ""}</span>
                       {p.checkStatus && (
-                        <Badge tone={checkStatusTone[p.checkStatus] ?? "neutral"}>{checkStatusLabels[p.checkStatus] ?? p.checkStatus}</Badge>
+                        <Badge tone={checkStatusTone[p.checkStatus] ?? "neutral"}>{t(checkStatusLabels[p.checkStatus] ?? p.checkStatus)}</Badge>
                       )}
                     </div>
                   ) : (
-                    "نقدي"
+                    t("نقدي")
                   )}
                 </Td>
                 {/* الشيك بيتسجل في الخزنة على رصيد الكريديت لما يتصرف، فبيظهر في عمود الكريديت */}
@@ -101,14 +102,14 @@ export function PaymentsTab({ projectId, payments, remainingBalance, canManage }
                   <Td>
                     <div className="flex items-center gap-1">
                       {p.isCheck && p.checkStatus === "Pending" && (
-                        <button className="text-warning hover:opacity-80" title="تسوية الشيك" onClick={() => setResolvingPayment(p)}>
+                        <button className="text-warning hover:opacity-80" title={t("تسوية الشيك")} onClick={() => setResolvingPayment(p)}>
                           <Icon name="fact_check" size={18} />
                         </button>
                       )}
-                      <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingPayment(p)}>
+                      <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل")} onClick={() => setEditingPayment(p)}>
                         <Icon name="edit" size={18} />
                       </button>
-                      <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeletingPayment(p)}>
+                      <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => setDeletingPayment(p)}>
                         <Icon name="delete" size={18} />
                       </button>
                     </div>
@@ -133,8 +134,8 @@ export function PaymentsTab({ projectId, payments, remainingBalance, canManage }
       <ConfirmDialog
         open={!!deletingPayment}
         onClose={() => setDeletingPayment(null)}
-        title="حذف الدفعة"
-        message="هل أنت متأكد من حذف هذه الدفعة؟ سيتم إلغاء أثرها في الخزنة."
+        title={t("حذف الدفعة")}
+        message={t("هل أنت متأكد من حذف هذه الدفعة؟ سيتم إلغاء أثرها في الخزنة.")}
         onConfirm={() => deleteProjectPayment(deletingPayment!.id, projectId)}
         onConfirmed={() => router.refresh()}
       />
@@ -156,6 +157,7 @@ function PaymentDialog({
   remainingBalance: number;
   payment?: ProjectPaymentDTO;
 }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -210,7 +212,7 @@ function PaymentDialog({
       : await recordProjectPayment({ projectId, ...payload });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     reset();
@@ -222,56 +224,54 @@ function PaymentDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={isEdit ? "تعديل دفعة من العميل" : "تسجيل دفعة من العميل"}
+      title={isEdit ? t("تعديل دفعة من العميل") : t("تسجيل دفعة من العميل")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="project-payment-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ"}
+            {loading ? t("جاري الحفظ...") : t("حفظ")}
           </Button>
         </>
       }
     >
       <p className="text-body-sm text-on-surface-variant">
-        المتبقي: <span dir="ltr" className="font-mono-data text-on-surface">{remainingBalance.toFixed(2)}</span>
+        {t("المتبقي: ")}<span dir="ltr" className="font-mono-data text-on-surface">{remainingBalance.toFixed(2)}</span>
       </p>
       <form id="project-payment-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
         <label className="flex items-center gap-2 text-body-sm text-on-surface">
           <input type="checkbox" {...register("isCheck")} />
-          دفعة بشيك
-        </label>
+          {t("دفعة بشيك")}</label>
 
         {isCheck ? (
-          <FieldGroup label="قيمة الشيك" error={errors.amountCash?.message}>
+          <FieldGroup label={t("قيمة الشيك")} error={errors.amountCash?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("amountCash", { valueAsNumber: true })} />
           </FieldGroup>
         ) : (
           <div className="grid grid-cols-2 gap-stack-md">
-            <FieldGroup label="المبلغ كاش" error={errors.amountCash?.message}>
+            <FieldGroup label={t("المبلغ كاش")} error={errors.amountCash?.message}>
               <Input type="number" step="0.01" dir="ltr" {...register("amountCash", { valueAsNumber: true })} />
             </FieldGroup>
-            <FieldGroup label="المبلغ كريديت" error={errors.amountCredit?.message}>
+            <FieldGroup label={t("المبلغ كريديت")} error={errors.amountCredit?.message}>
               <Input type="number" step="0.01" dir="ltr" {...register("amountCredit", { valueAsNumber: true })} />
             </FieldGroup>
           </div>
         )}
 
         {isCheck && (
-          <FieldGroup label="تاريخ استحقاق الشيك" error={errors.checkDueDate?.message}>
+          <FieldGroup label={t("تاريخ استحقاق الشيك")} error={errors.checkDueDate?.message}>
             <Input type="date" {...register("checkDueDate")} />
           </FieldGroup>
         )}
 
-        <FieldGroup label="تاريخ الدفعة" error={errors.paymentDate?.message}>
+        <FieldGroup label={t("تاريخ الدفعة")} error={errors.paymentDate?.message}>
           <Input type="date" {...register("paymentDate")} />
         </FieldGroup>
-        <FieldGroup label="ملاحظات" error={errors.notes?.message}>
+        <FieldGroup label={t("ملاحظات")} error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
         <InvoiceAttachmentField folder="projects" value={attachment} onChange={setAttachment} />
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

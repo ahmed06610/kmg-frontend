@@ -1,3 +1,6 @@
+"use client";
+
+import { useT } from "@/lib/i18n/client";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { Table, TBody, Td, TdMono, Th, THead, Tr } from "@/components/ui/Table";
@@ -17,6 +20,7 @@ export function ProjectMaterialsSummary({
   categories: MaterialCategoryDTO[];
   totalMaterialsCost: number;
 }) {
+  const t = useT();
   const lines = aggregateProjectMaterials(movements, materials, categories);
 
   return (
@@ -24,20 +28,19 @@ export function ProjectMaterialsSummary({
       <div className="px-gutter py-stack-md border-b border-outline-variant flex items-center justify-between">
         <p className="text-title-sm text-on-surface flex items-center gap-2">
           <Icon name="inventory_2" size={18} className="text-primary" />
-          الخامات المصروفة على المشروع
-        </p>
-        <span className="text-xs text-on-surface-variant">{lines.length} صنف</span>
+          {t("الخامات المصروفة على المشروع")}</p>
+        <span className="text-xs text-on-surface-variant">{t("{0} صنف", [lines.length])}</span>
       </div>
       {lines.length === 0 ? (
-        <p className="text-body-sm text-on-surface-variant text-center py-stack-lg">لسه مفيش خامات اتصرفت على المشروع ده</p>
+        <p className="text-body-sm text-on-surface-variant text-center py-stack-lg">{t("لسه مفيش خامات اتصرفت على المشروع ده")}</p>
       ) : (
         <Table>
           <THead>
             <tr>
-              <Th>الخامة</Th>
-              <Th>الكمية الصافية</Th>
-              <Th>سعر الوحدة</Th>
-              <Th>الإجمالي</Th>
+              <Th>{t("الخامة")}</Th>
+              <Th>{t("الكمية الصافية")}</Th>
+              <Th>{t("سعر الوحدة")}</Th>
+              <Th>{t("الإجمالي")}</Th>
             </tr>
           </THead>
           <TBody>
@@ -53,9 +56,8 @@ export function ProjectMaterialsSummary({
             ))}
             <tr className="bg-surface-container-low font-semibold">
               <td colSpan={3} className="p-stack-md text-body-sm text-on-surface">
-                إجمالي تكلفة الخامات
-              </td>
-              <td dir="ltr" className="p-stack-md text-mono-data text-primary text-right">
+                {t("إجمالي تكلفة الخامات")}</td>
+              <td dir="ltr" className="p-stack-md text-mono-data text-primary text-page-start">
                 {formatCurrency(totalMaterialsCost)}
               </td>
             </tr>

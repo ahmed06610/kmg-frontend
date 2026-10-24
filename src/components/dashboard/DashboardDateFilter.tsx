@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
@@ -7,6 +8,7 @@ import { FieldGroup, Input } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
 
 export function DashboardDateFilter({ from, to }: { from?: string; to?: string }) {
+  const t = useT();
   const router = useRouter();
   const [fromDate, setFromDate] = useState(from ?? "");
   const [toDate, setToDate] = useState(to ?? "");
@@ -26,20 +28,18 @@ export function DashboardDateFilter({ from, to }: { from?: string; to?: string }
 
   return (
     <div className="flex items-end gap-stack-sm flex-wrap bg-surface-container-lowest rounded-xl border border-outline-variant p-stack-md">
-      <FieldGroup label="من تاريخ">
+      <FieldGroup label={t("من تاريخ")}>
         <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
       </FieldGroup>
-      <FieldGroup label="إلى تاريخ">
+      <FieldGroup label={t("إلى تاريخ")}>
         <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
       </FieldGroup>
       <Button size="sm" onClick={apply}>
         <Icon name="filter_alt" size={18} />
-        تطبيق
-      </Button>
+        {t("تطبيق")}</Button>
       {(from || to) && (
         <Button size="sm" variant="secondary" onClick={clear}>
-          مسح الفلتر
-        </Button>
+          {t("مسح الفلتر")}</Button>
       )}
     </div>
   );

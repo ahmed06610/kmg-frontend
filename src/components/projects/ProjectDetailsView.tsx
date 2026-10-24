@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { deleteProject } from "@/actions/projects";
@@ -49,6 +50,7 @@ export function ProjectDetailsView({
   canManage: boolean;
   canManageStock: boolean;
 }) {
+  const t = useT();
   const router = useRouter();
   const [tab, setTab] = useState("overview");
   const [editOpen, setEditOpen] = useState(false);
@@ -56,30 +58,28 @@ export function ProjectDetailsView({
 
   return (
     <div className="flex flex-col gap-stack-lg">
-      <Breadcrumb items={[{ label: "المشاريع", href: "/projects" }, { label: project.name }]} />
+      <Breadcrumb items={[{ label: t("المشاريع"), href: "/projects" }, { label: project.name }]} />
 
       <div className="flex items-start justify-between flex-wrap gap-stack-sm">
         <div>
           <h1 className="text-headline-md text-on-surface">{project.name}</h1>
           <p className="text-body-sm text-on-surface-variant">
-            {project.projectCode} · {project.clientName} · {projectTypeLabels[project.projectType] ?? project.projectType} ·{" "}
+            {project.projectCode} · {project.clientName} · {t(projectTypeLabels[project.projectType] ?? project.projectType)} ·{" "}
             <span dir="ltr" className="font-mono-data">
               {formatCurrency(project.contractValue)}
             </span>
           </p>
         </div>
-        <div className="flex items-center gap-stack-sm">
+        <div className="flex flex-wrap items-center gap-stack-sm">
           <MultiSheetExportButton filename={project.name} sheets={buildProjectExportSheets(project, missions)} />
           {canManage && (
             <>
               <Button variant="secondary" onClick={() => setEditOpen(true)}>
                 <Icon name="edit" size={18} />
-                تعديل
-              </Button>
-              <Button variant="danger" disabled={!project.canDelete} title={project.canDelete ? undefined : "لازم تحذف كل بيانات المشروع (دفعات/مصاريف/مأموريات/مخزون/مرفقات) الأول"} onClick={() => setDeleteOpen(true)}>
+                {t("تعديل")}</Button>
+              <Button variant="danger" disabled={!project.canDelete} title={project.canDelete ? undefined : t("لازم تحذف كل بيانات المشروع (دفعات/مصاريف/مأموريات/مخزون/مرفقات) الأول")} onClick={() => setDeleteOpen(true)}>
                 <Icon name="delete" size={18} />
-                حذف
-              </Button>
+                {t("حذف")}</Button>
             </>
           )}
           {canManage && <ProjectStatusSelect projectId={project.id} currentStatus={project.status} />}
@@ -90,14 +90,14 @@ export function ProjectDetailsView({
         active={tab}
         onChange={setTab}
         items={[
-          { key: "overview", label: "نظرة عامة" },
-          { key: "materials", label: "الخامات", badge: project.stockMovements.length },
-          { key: "expenses", label: "المصاريف والعهد", badge: project.expenses.length + project.custodies.length + missions.filter((m) => m.advanceAmount > 0).length },
-          { key: "payments", label: "الدفعات", badge: project.payments.length },
-          { key: "missions", label: "المأموريات", badge: missions.length },
-          { key: "writeoffs", label: "خصم أعمال المشروع", badge: project.writeOffs.length },
-          { key: "attachments", label: "المرفقات", badge: project.attachments.length },
-          { key: "audit", label: "سجل التدقيق" },
+          { key: "overview", label: t("نظرة عامة") },
+          { key: "materials", label: t("الخامات"), badge: project.stockMovements.length },
+          { key: "expenses", label: t("المصاريف والعهد"), badge: project.expenses.length + project.custodies.length + missions.filter((m) => m.advanceAmount > 0).length },
+          { key: "payments", label: t("الدفعات"), badge: project.payments.length },
+          { key: "missions", label: t("المأموريات"), badge: missions.length },
+          { key: "writeoffs", label: t("خصم أعمال المشروع"), badge: project.writeOffs.length },
+          { key: "attachments", label: t("المرفقات"), badge: project.attachments.length },
+          { key: "audit", label: t("سجل التدقيق") },
         ]}
       />
 
@@ -130,8 +130,8 @@ export function ProjectDetailsView({
       <ConfirmDialog
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
-        title="حذف المشروع"
-        message={`هل أنت متأكد من حذف مشروع "${project.name}" نهائيًا؟`}
+        title={t("حذف المشروع")}
+        message={t("هل أنت متأكد من حذف مشروع \"{0}\" نهائيًا؟", [project.name])}
         onConfirm={() => deleteProject(project.id)}
         onConfirmed={() => router.push("/projects")}
       />

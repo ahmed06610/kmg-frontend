@@ -1,5 +1,7 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
+import type { TFunction } from "@/lib/i18n/translate";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { deleteCustody } from "@/actions/custody";
@@ -49,14 +51,14 @@ const kindMeta: Record<RowKind, { label: string; icon: string }> = {
   custody: { label: "عهدة جانبية", icon: "wallet" },
 };
 
-function buildRows(project: ProjectDetailsDTO, missions: MissionDetailsDTO[]): CostRow[] {
+function buildRows(project: ProjectDetailsDTO, missions: MissionDetailsDTO[], t: TFunction): CostRow[] {
   const rows: CostRow[] = [];
 
   for (const e of project.expenses) {
     rows.push({
       key: `e-${e.id}`,
       kind: "expense",
-      title: expenseCategoryLabels[e.category] ?? e.category,
+      title: t(expenseCategoryLabels[e.category] ?? e.category),
       details: e.description ?? "-",
       amount: e.amount,
       date: e.expenseDate,
@@ -72,12 +74,12 @@ function buildRows(project: ProjectDetailsDTO, missions: MissionDetailsDTO[]): C
     rows.push({
       key: `m-${m.id}`,
       kind: "mission",
-      title: "عهدة مأمورية",
-      details: `رئيس العمال: ${m.foremanName}`,
+      title: t("عهدة مأمورية"),
+      details: t("رئيس العمال: {0}", [m.foremanName]),
       amount: settled ? Math.min(m.actualSpent, m.advanceAmount) : m.advanceAmount,
-      amountHint: settled ? `العهدة ${formatCurrency(m.advanceAmount)} · المصروف ${formatCurrency(m.actualSpent)}` : "محسوبة بالكامل لحد التسوية",
+      amountHint: settled ? t("العهدة {0} · المصروف {1}", [formatCurrency(m.advanceAmount), formatCurrency(m.actualSpent)]) : t("محسوبة بالكامل لحد التسوية"),
       date: m.startDate,
-      status: settled ? { label: "متسواة", tone: "success" } : { label: "مفتوحة", tone: "warning" },
+      status: settled ? { label: t("متسواة"), tone: "success" } : { label: t("مفتوحة"), tone: "warning" },
       mission: m,
     });
   }
@@ -87,12 +89,12 @@ function buildRows(project: ProjectDetailsDTO, missions: MissionDetailsDTO[]): C
     rows.push({
       key: `c-${c.id}`,
       kind: "custody",
-      title: "عهدة جانبية",
+      title: t("عهدة جانبية"),
       details: `${c.employeeName} — ${c.description}`,
       amount: settled ? (c.settledAmount ?? c.amount) : c.amount,
-      amountHint: settled ? `العهدة ${formatCurrency(c.amount)} · المصروف ${formatCurrency(c.settledAmount ?? c.amount)}` : "محسوبة بالكامل لحد التسوية",
+      amountHint: settled ? t("العهدة {0} · المصروف {1}", [formatCurrency(c.amount), formatCurrency(c.settledAmount ?? c.amount)]) : t("محسوبة بالكامل لحد التسوية"),
       date: c.issueDate,
-      status: settled ? { label: "متسواة", tone: "success" } : { label: "نشطة", tone: "warning" },
+      status: settled ? { label: t("متسواة"), tone: "success" } : { label: t("نشطة"), tone: "warning" },
       custody: c,
     });
   }
@@ -106,7 +108,7 @@ function SummaryCard({ label, value, icon, active, onClick }: { label: string; v
       type="button"
       onClick={onClick}
       className={cn(
-        "text-right bg-surface-container-lowest border rounded-lg p-stack-md shadow-soft transition-colors",
+        "text-start bg-surface-container-lowest border rounded-lg p-stack-md shadow-soft transition-colors",
         active ? "border-primary ring-1 ring-primary" : "border-outline-variant hover:border-primary/50",
       )}
     >
@@ -114,7 +116,7 @@ function SummaryCard({ label, value, icon, active, onClick }: { label: string; v
         <span className="text-xs font-semibold text-on-surface-variant">{label}</span>
         <Icon name={icon} size={16} className="text-on-surface-variant" />
       </div>
-      <p dir="ltr" className="text-title-sm text-mono-data text-on-surface text-right">
+      <p dir="ltr" className="text-title-sm text-mono-data text-on-surface text-page-start">
         {formatCurrency(value)}
       </p>
     </button>
@@ -132,6 +134,7 @@ export function ExpensesTab({
   employees: EmployeeListDTO[];
   canManage: boolean;
 }) {
+  const t = useT();
   const router = useRouter();
   const projectId = project.id;
   const [kindFilter, setKindFilter] = useState<RowKind | "all">("all");
@@ -144,7 +147,7 @@ export function ExpensesTab({
   const [deletingCustody, setDeletingCustody] = useState<CustodyDTO | null>(null);
   const [settlingMission, setSettlingMission] = useState<MissionDetailsDTO | null>(null);
 
-  const allRows = useMemo(() => buildRows(project, missions), [project, missions]);
+  const allRows = useMemo(() => buildRows(project, missions, t), [project, missions, t]);
   const rows = kindFilter === "all" ? allRows : allRows.filter((r) => r.kind === kindFilter);
   const grandTotal = project.totalPettyExpenses + project.totalCustodyCost;
   const filteredTotal = rows.reduce((sum, r) => sum + r.amount, 0);
@@ -162,20 +165,19 @@ export function ExpensesTab({
   return (
     <div className="flex flex-col gap-stack-md">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-gutter">
-        <SummaryCard label="مصاريف نثرية" value={project.totalPettyExpenses} icon="receipt_long" active={kindFilter === "expense"} onClick={() => toggle("expense")} />
-        <SummaryCard label="عهد المأموريات" value={project.totalMissionCustodyCost} icon="engineering" active={kindFilter === "mission"} onClick={() => toggle("mission")} />
-        <SummaryCard label="عهد جانبية" value={project.totalSideCustodyCost} icon="wallet" active={kindFilter === "custody"} onClick={() => toggle("custody")} />
-        <SummaryCard label="إجمالي المصاريف" value={grandTotal} icon="functions" active={kindFilter === "all"} onClick={() => setKindFilter("all")} />
+        <SummaryCard label={t("مصاريف نثرية")} value={project.totalPettyExpenses} icon="receipt_long" active={kindFilter === "expense"} onClick={() => toggle("expense")} />
+        <SummaryCard label={t("عهد المأموريات")} value={project.totalMissionCustodyCost} icon="engineering" active={kindFilter === "mission"} onClick={() => toggle("mission")} />
+        <SummaryCard label={t("عهد جانبية")} value={project.totalSideCustodyCost} icon="wallet" active={kindFilter === "custody"} onClick={() => toggle("custody")} />
+        <SummaryCard label={t("إجمالي المصاريف")} value={grandTotal} icon="functions" active={kindFilter === "all"} onClick={() => setKindFilter("all")} />
       </div>
 
       <div className="flex items-center justify-between flex-wrap gap-stack-sm">
         <div className="flex items-center gap-stack-sm flex-wrap">
-          {allRows.length > 0 && <SearchInput value={table.search} onChange={table.setSearch} placeholder="بحث بالوصف أو التصنيف أو الموظف..." />}
+          {allRows.length > 0 && <SearchInput value={table.search} onChange={table.setSearch} placeholder={t("بحث بالوصف أو التصنيف أو الموظف...")} />}
           {kindFilter !== "all" && (
             <button type="button" onClick={() => setKindFilter("all")} className="text-xs text-primary font-semibold flex items-center gap-1">
               <Icon name="filter_alt_off" size={16} />
-              عرض الكل
-            </button>
+              {t("عرض الكل")}</button>
           )}
         </div>
         {canManage && (
@@ -189,32 +191,30 @@ export function ExpensesTab({
               }}
             >
               <Icon name="wallet" size={18} />
-              صرف عهدة
-            </Button>
+              {t("صرف عهدة")}</Button>
             <Button size="sm" onClick={() => setExpenseOpen(true)}>
               <Icon name="add" size={18} />
-              مصروف جديد
-            </Button>
+              {t("مصروف جديد")}</Button>
           </div>
         )}
       </div>
 
       {allRows.length === 0 ? (
-        <EmptyState icon="receipt_long" title="لا توجد مصاريف أو عهد مسجلة على المشروع بعد" />
+        <EmptyState icon="receipt_long" title={t("لا توجد مصاريف أو عهد مسجلة على المشروع بعد")} />
       ) : table.totalCount === 0 ? (
-        <EmptyState icon="search_off" title="لا توجد نتائج مطابقة" />
+        <EmptyState icon="search_off" title={t("لا توجد نتائج مطابقة")} />
       ) : (
         <>
           <Table>
             <THead>
               <tr>
-                <Th>النوع</Th>
-                <Th>البيان</Th>
-                <Th>التفاصيل</Th>
-                <Th>القيمة على المشروع</Th>
-                <Th>الحالة</Th>
-                <Th>التاريخ</Th>
-                {canManage && <Th>إجراءات</Th>}
+                <Th>{t("النوع")}</Th>
+                <Th>{t("البيان")}</Th>
+                <Th>{t("التفاصيل")}</Th>
+                <Th>{t("القيمة على المشروع")}</Th>
+                <Th>{t("الحالة")}</Th>
+                <Th>{t("التاريخ")}</Th>
+                {canManage && <Th>{t("إجراءات")}</Th>}
               </tr>
             </THead>
             <TBody>
@@ -223,7 +223,7 @@ export function ExpensesTab({
                   <Td>
                     <span className="flex items-center gap-1.5 text-on-surface-variant whitespace-nowrap">
                       <Icon name={kindMeta[r.kind].icon} size={16} />
-                      {kindMeta[r.kind].label}
+                      {t(kindMeta[r.kind].label)}
                     </span>
                   </Td>
                   <Td>{r.title}</Td>
@@ -254,9 +254,9 @@ export function ExpensesTab({
               ))}
               <tr className="bg-surface-container-low font-semibold">
                 <td colSpan={3} className="px-gutter py-stack-sm text-body-sm text-on-surface">
-                  {kindFilter === "all" ? "الإجمالي" : `إجمالي ${kindMeta[kindFilter].label}`}
+                  {kindFilter === "all" ? t("الإجمالي") : t("إجمالي {0}", [t(kindMeta[kindFilter].label)])}
                 </td>
-                <td dir="ltr" className="px-gutter py-stack-sm text-mono-data text-on-surface text-right">
+                <td dir="ltr" className="px-gutter py-stack-sm text-mono-data text-on-surface text-page-start">
                   {formatCurrency(filteredTotal)}
                 </td>
                 <td colSpan={canManage ? 3 : 2} />
@@ -268,17 +268,15 @@ export function ExpensesTab({
       )}
 
       <p className="text-xs text-on-surface-variant">
-        العهدة (مأمورية أو جانبية) بتتحسب على المشروع بقيمتها كاملة من وقت صرفها، ولما تتسوى بتتحسب بالمصروف الفعلي. أي زيادة في مصروف
-        المأمورية عن العهدة بتظهر كمصروف نثري منفصل باسم &quot;فرق تسوية عهدة&quot;.
-      </p>
+        {t("العهدة (مأمورية أو جانبية) بتتحسب على المشروع بقيمتها كاملة من وقت صرفها، ولما تتسوى بتتحسب بالمصروف الفعلي. أي زيادة في مصروف المأمورية عن العهدة بتظهر كمصروف نثري منفصل باسم \"فرق تسوية عهدة\".")}</p>
 
       <RecordExpenseDialog open={expenseOpen} onClose={() => setExpenseOpen(false)} projectId={projectId} />
       <EditExpenseDialog open={!!editingExpense} onClose={() => setEditingExpense(null)} projectId={projectId} expense={editingExpense} />
       <ConfirmDialog
         open={!!deletingExpense}
         onClose={() => setDeletingExpense(null)}
-        title="حذف المصروف"
-        message="هل أنت متأكد من حذف هذا المصروف؟ سيتم إلغاء أثره في الخزنة لو كان مخصومًا منها."
+        title={t("حذف المصروف")}
+        message={t("هل أنت متأكد من حذف هذا المصروف؟ سيتم إلغاء أثره في الخزنة لو كان مخصومًا منها.")}
         onConfirm={() => deleteProjectExpense(deletingExpense!.id, projectId)}
         onConfirmed={() => router.refresh()}
       />
@@ -298,8 +296,8 @@ export function ExpensesTab({
       <ConfirmDialog
         open={!!deletingCustody}
         onClose={() => setDeletingCustody(null)}
-        title="حذف العهدة"
-        message="هل أنت متأكد من حذف هذه العهدة؟ سيتم إلغاء أثرها في الخزنة (الصرف وأي فرق تسوية) وهتتشال من مصاريف المشروع."
+        title={t("حذف العهدة")}
+        message={t("هل أنت متأكد من حذف هذه العهدة؟ سيتم إلغاء أثرها في الخزنة (الصرف وأي فرق تسوية) وهتتشال من مصاريف المشروع.")}
         onConfirm={() => deleteCustody(deletingCustody!.id)}
         onConfirmed={() => router.refresh()}
       />
@@ -325,14 +323,15 @@ function RowActions({
   onEditCustody: (c: CustodyDTO) => void;
   onDeleteCustody: (c: CustodyDTO) => void;
 }) {
+  const t = useT();
   if (row.expense) {
     const e = row.expense;
     return (
       <div className="flex items-center gap-1">
-        <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => onEditExpense(e)}>
+        <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل")} onClick={() => onEditExpense(e)}>
           <Icon name="edit" size={18} />
         </button>
-        <button className="text-error hover:opacity-80" title="حذف" onClick={() => onDeleteExpense(e)}>
+        <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => onDeleteExpense(e)}>
           <Icon name="delete" size={18} />
         </button>
       </div>
@@ -343,10 +342,9 @@ function RowActions({
     const m = row.mission;
     return m.status !== "Settled" ? (
       <button onClick={() => onSettleMission(m)} className="text-primary text-body-sm font-semibold hover:underline">
-        تسوية
-      </button>
+        {t("تسوية")}</button>
     ) : (
-      <span className="text-xs text-on-surface-variant">من تابة المأموريات</span>
+      <span className="text-xs text-on-surface-variant">{t("من تابة المأموريات")}</span>
     );
   }
 
@@ -356,13 +354,12 @@ function RowActions({
       <div className="flex items-center gap-2">
         {c.status === "Active" && (
           <button onClick={() => onSettleCustody(c)} className="text-primary text-body-sm font-semibold hover:underline">
-            تسوية
-          </button>
+            {t("تسوية")}</button>
         )}
-        <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => onEditCustody(c)}>
+        <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل")} onClick={() => onEditCustody(c)}>
           <Icon name="edit" size={18} />
         </button>
-        <button className="text-error hover:opacity-80" title="حذف" onClick={() => onDeleteCustody(c)}>
+        <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => onDeleteCustody(c)}>
           <Icon name="delete" size={18} />
         </button>
       </div>

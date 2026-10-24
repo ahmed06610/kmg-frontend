@@ -1,5 +1,7 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
+import { tr } from "@/lib/i18n/global";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { dismissNotification, getNotifications, markAllNotificationsRead, markNotificationRead } from "@/actions/notifications";
@@ -10,23 +12,24 @@ import type { NotificationDTO } from "@/types/notification";
 const POLL_INTERVAL_MS = 60_000;
 
 const severityStyles: Record<NotificationDTO["severity"], string> = {
-  Critical: "border-r-error",
-  Warning: "border-r-amber-500",
-  Info: "border-r-primary",
+  Critical: "border-s-error",
+  Warning: "border-s-amber-500",
+  Info: "border-s-primary",
 };
 
 function relativeTime(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diffMs / 60_000);
-  if (minutes < 1) return "الآن";
-  if (minutes < 60) return `منذ ${minutes} د`;
+  if (minutes < 1) return tr("الآن");
+  if (minutes < 60) return tr("منذ {0} د", [minutes]);
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `منذ ${hours} س`;
+  if (hours < 24) return tr("منذ {0} س", [hours]);
   const days = Math.floor(hours / 24);
-  return `منذ ${days} يوم`;
+  return tr("منذ {0} يوم", [days]);
 }
 
 export function NotificationBell() {
+  const t = useT();
   const router = useRouter();
   const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
   const [open, setOpen] = useState(false);
@@ -80,29 +83,28 @@ export function NotificationBell() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="relative flex items-center justify-center w-10 h-10 rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
-        aria-label="التنبيهات"
+        aria-label={t("التنبيهات")}
       >
         <Icon name="notifications" />
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 left-1.5 min-w-[16px] h-4 px-1 rounded-full bg-error text-on-error text-[10px] leading-4 font-bold flex items-center justify-center">
+          <span className="absolute top-1.5 end-1.5 min-w-[16px] h-4 px-1 rounded-full bg-error text-on-error text-[10px] leading-4 font-bold flex items-center justify-center">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="dropdown-in absolute right-0 top-12 w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto rounded-xl border border-outline-variant bg-surface-container-lowest shadow-[var(--shadow-soft)] z-30">
+        <div className="dropdown-in absolute start-0 top-12 w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto rounded-xl border border-outline-variant bg-surface-container-lowest shadow-[var(--shadow-soft)] z-30">
           <div className="flex items-center justify-between px-stack-md py-stack-sm border-b border-outline-variant sticky top-0 bg-surface-container-lowest">
-            <span className="text-title-sm text-on-surface">التنبيهات</span>
+            <span className="text-title-sm text-on-surface">{t("التنبيهات")}</span>
             {unreadCount > 0 && (
               <button type="button" onClick={handleMarkAllRead} className="text-xs text-primary hover:underline">
-                تعليم الكل كمقروء
-              </button>
+                {t("تعليم الكل كمقروء")}</button>
             )}
           </div>
 
           {notifications.length === 0 ? (
-            <div className="px-stack-md py-stack-lg text-center text-body-sm text-on-surface-variant">لا توجد تنبيهات حاليًا</div>
+            <div className="px-stack-md py-stack-lg text-center text-body-sm text-on-surface-variant">{t("لا توجد تنبيهات حاليًا")}</div>
           ) : (
             <ul>
               {notifications.map((n) => (
@@ -110,7 +112,7 @@ export function NotificationBell() {
                   key={n.id}
                   onClick={() => handleItemClick(n)}
                   className={cn(
-                    "flex items-start gap-2 border-r-4 px-stack-md py-stack-sm cursor-pointer hover:bg-surface-container-high transition-colors",
+                    "flex items-start gap-2 border-s-4 px-stack-md py-stack-sm cursor-pointer hover:bg-surface-container-high transition-colors",
                     severityStyles[n.severity],
                     !n.isRead && "bg-surface-container-low",
                   )}
@@ -127,7 +129,7 @@ export function NotificationBell() {
                     type="button"
                     onClick={(e) => handleDismiss(e, n.id)}
                     className="shrink-0 text-on-surface-variant hover:text-on-surface p-0.5"
-                    aria-label="إخفاء"
+                    aria-label={t("إخفاء")}
                   >
                     <Icon name="close" size={16} />
                   </button>

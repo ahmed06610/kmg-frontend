@@ -1,9 +1,11 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "@/components/ui/Icon";
-import { HELP_CONTENT, type HelpSection, type PageHelp } from "@/lib/help-content";
+import { getHelpContent, type HelpSection, type PageHelp } from "@/lib/help-content";
+import { useLocale } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils";
 
 function matches(text: string, term: string) {
@@ -22,7 +24,7 @@ function sectionMatches(section: HelpSection, term: string) {
 function SectionCard({ section, index, open, onToggle }: { section: HelpSection; index: number; open: boolean; onToggle: () => void }) {
   return (
     <div id={`help-section-${index}`} className="rounded-lg border border-outline-variant bg-surface-container-lowest overflow-hidden">
-      <button type="button" onClick={onToggle} className="w-full flex items-center justify-between gap-2 px-stack-md py-stack-sm text-right hover:bg-surface-container-low">
+      <button type="button" onClick={onToggle} className="w-full flex items-center justify-between gap-2 px-stack-md py-stack-sm text-start hover:bg-surface-container-low">
         <span className="flex items-center gap-2 text-body-sm font-semibold text-on-surface">
           <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary shrink-0">
             <Icon name={section.icon} size={16} />
@@ -61,21 +63,23 @@ function SectionCard({ section, index, open, onToggle }: { section: HelpSection;
 function FaqItem({ q, a, open, onToggle }: { q: string; a: string; open: boolean; onToggle: () => void }) {
   return (
     <div className="border-b border-outline-variant last:border-b-0">
-      <button type="button" onClick={onToggle} className="w-full flex items-start justify-between gap-2 py-stack-sm text-right">
+      <button type="button" onClick={onToggle} className="w-full flex items-start justify-between gap-2 py-stack-sm text-start">
         <span className="flex items-start gap-2 text-body-sm font-semibold text-on-surface">
           <Icon name="help" size={16} className="text-primary shrink-0 mt-0.5" />
           {q}
         </span>
         <Icon name={open ? "remove" : "add"} size={18} className="text-on-surface-variant shrink-0" />
       </button>
-      {open && <p className="pb-stack-sm pr-6 text-body-sm text-on-surface-variant">{a}</p>}
+      {open && <p className="pb-stack-sm ps-6 text-body-sm text-on-surface-variant">{a}</p>}
     </div>
   );
 }
 
 /** لوحة جانبية بتعرض شرح تفصيلي لصفحة معينة: أقسام "إزاي تعمل كذا" خطوة بخطوة + أسئلة شائعة + بحث جوه الشرح */
 export function HelpDrawer({ href, open, onClose }: { href: string | null; open: boolean; onClose: () => void }) {
-  const help: PageHelp | undefined = href ? HELP_CONTENT[href] : undefined;
+  const t = useT();
+  const locale = useLocale();
+  const help: PageHelp | undefined = href ? getHelpContent(locale)[href] : undefined;
   const [search, setSearch] = useState("");
   const [openSections, setOpenSections] = useState<Set<number>>(new Set([0]));
   const [openFaqs, setOpenFaqs] = useState<Set<number>>(new Set());
@@ -127,8 +131,8 @@ export function HelpDrawer({ href, open, onClose }: { href: string | null; open:
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label={`شرح صفحة ${help.title}`}
-        className="dropdown-in fixed left-0 top-0 h-full w-[460px] max-w-[95vw] flex flex-col bg-surface border-r border-outline-variant shadow-2xl"
+        aria-label={t("شرح صفحة {0}", [help.title])}
+        className="dropdown-in fixed end-0 top-0 h-full w-[460px] max-w-[95vw] flex flex-col bg-surface border-s border-outline-variant shadow-2xl"
       >
         <header className="px-stack-lg pt-stack-lg pb-stack-md border-b border-outline-variant bg-surface-container-lowest shrink-0">
           <div className="flex items-start justify-between gap-2">
@@ -137,22 +141,22 @@ export function HelpDrawer({ href, open, onClose }: { href: string | null; open:
                 <Icon name={help.icon} size={22} />
               </span>
               <div>
-                <p className="text-xs text-on-surface-variant">دليل الاستخدام</p>
-                <h2 className="text-title-sm text-on-surface">شرح صفحة {help.title}</h2>
+                <p className="text-xs text-on-surface-variant">{t("دليل الاستخدام")}</p>
+                <h2 className="text-title-sm text-on-surface">{t("شرح صفحة ")}{help.title}</h2>
               </div>
             </div>
-            <button type="button" onClick={onClose} className="text-on-surface-variant hover:text-on-surface" aria-label="إغلاق">
+            <button type="button" onClick={onClose} className="text-on-surface-variant hover:text-on-surface" aria-label={t("إغلاق")}>
               <Icon name="close" />
             </button>
           </div>
           <p className="text-body-sm text-on-surface-variant mt-stack-sm">{help.summary}</p>
           <div className="relative mt-stack-md">
-            <Icon name="search" size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+            <Icon name="search" size={18} className="absolute start-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="ابحث في الشرح... (مثلًا: تعديل، حذف، شيك)"
-              className="w-full rounded-lg bg-surface-container-low border border-outline-variant pr-9 pl-3 py-2 text-body-sm outline-none focus:border-primary"
+              placeholder={t("ابحث في الشرح... (مثلًا: تعديل، حذف، شيك)")}
+              className="w-full rounded-lg bg-surface-container-low border border-outline-variant ps-9 pe-3 py-2 text-body-sm outline-none focus:border-primary"
             />
           </div>
         </header>
@@ -178,7 +182,7 @@ export function HelpDrawer({ href, open, onClose }: { href: string | null; open:
 
           {visibleSections.length > 0 && (
             <div className="flex flex-col gap-stack-sm">
-              <p className="text-label-caps text-on-surface-variant">إزاي تعمل...</p>
+              <p className="text-label-caps text-on-surface-variant">{t("إزاي تعمل...")}</p>
               {visibleSections.map(({ s, i }) => (
                 <SectionCard key={i} section={s} index={i} open={isSectionOpen(i)} onToggle={() => toggle(openSections, setOpenSections, i)} />
               ))}
@@ -187,7 +191,7 @@ export function HelpDrawer({ href, open, onClose }: { href: string | null; open:
 
           {visibleFaqs.length > 0 && (
             <div className="flex flex-col">
-              <p className="text-label-caps text-on-surface-variant mb-1">أسئلة شائعة</p>
+              <p className="text-label-caps text-on-surface-variant mb-1">{t("أسئلة شائعة")}</p>
               <div className="rounded-lg border border-outline-variant bg-surface-container-lowest px-stack-md">
                 {visibleFaqs.map(({ f, i }) => (
                   <FaqItem key={i} q={f.q} a={f.a} open={isFaqOpen(i)} onToggle={() => toggle(openFaqs, setOpenFaqs, i)} />
@@ -197,7 +201,7 @@ export function HelpDrawer({ href, open, onClose }: { href: string | null; open:
           )}
 
           {term && visibleSections.length === 0 && visibleFaqs.length === 0 && (
-            <p className="text-body-sm text-on-surface-variant text-center py-stack-lg">مفيش نتائج لـ &quot;{search}&quot; في شرح الصفحة دي</p>
+            <p className="text-body-sm text-on-surface-variant text-center py-stack-lg">{t("مفيش نتائج لـ \"")}{search}{t("\" في شرح الصفحة دي")}</p>
           )}
         </div>
       </aside>
@@ -208,8 +212,9 @@ export function HelpDrawer({ href, open, onClose }: { href: string | null; open:
 
 /** زرار صغير "؟" بيفتح شرح صفحة معينة - بيتحط جنب كل عنصر في السايد بار */
 export function HelpButton({ href, label, className }: { href: string; label: string; className?: string }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
-  if (!HELP_CONTENT[href]) return null;
+  if (!getHelpContent("ar")[href]) return null;
 
   return (
     <>
@@ -220,8 +225,8 @@ export function HelpButton({ href, label, className }: { href: string; label: st
           e.stopPropagation();
           setOpen(true);
         }}
-        title={`شرح صفحة ${label}`}
-        aria-label={`شرح صفحة ${label}`}
+        title={t("شرح صفحة {0}", [label])}
+        aria-label={t("شرح صفحة {0}", [label])}
         className={cn("flex items-center justify-center w-7 h-7 rounded-full shrink-0 transition-colors", className)}
       >
         <Icon name="help" size={18} />

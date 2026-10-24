@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { deleteCustody } from "@/actions/custody";
@@ -27,6 +28,7 @@ export function CustodyTab({
   projects: ProjectListDTO[];
   canManage: boolean;
 }) {
+  const t = useT();
   const router = useRouter();
   const [createOpen, setCreateOpen] = useState(false);
   const [editingCustody, setEditingCustody] = useState<CustodyDTO | undefined>(undefined);
@@ -36,7 +38,7 @@ export function CustodyTab({
   return (
     <div className="flex flex-col gap-stack-md">
       <div className="flex items-center justify-between flex-wrap gap-stack-sm">
-        <p className="text-body-sm text-on-surface-variant">عهد بتتصرف لموظف مباشرة (مش عهدة مأمورية). العهدة المربوطة بمشروع بتظهر في مصاريفه وتقدر تسويها من هنا أو من صفحة المشروع.</p>
+        <p className="text-body-sm text-on-surface-variant">{t("عهد بتتصرف لموظف مباشرة (مش عهدة مأمورية). العهدة المربوطة بمشروع بتظهر في مصاريفه وتقدر تسويها من هنا أو من صفحة المشروع.")}</p>
         {canManage && (
           <Button
             size="sm"
@@ -46,25 +48,24 @@ export function CustodyTab({
             }}
           >
             <Icon name="add" size={18} />
-            عهدة جديدة
-          </Button>
+            {t("عهدة جديدة")}</Button>
         )}
       </div>
 
       {custodies.length === 0 ? (
-        <EmptyState icon="wallet" title="لا توجد عهد جانبية مسجلة بعد" />
+        <EmptyState icon="wallet" title={t("لا توجد عهد جانبية مسجلة بعد")} />
       ) : (
         <Table>
           <THead>
             <tr>
-              <Th>الموظف</Th>
-              <Th>الوصف</Th>
-              <Th>القيمة</Th>
-              <Th>كاش / كريديت</Th>
-              <Th>المشروع</Th>
-              <Th>تاريخ الصرف</Th>
-              <Th>الحالة</Th>
-              {canManage && <Th>إجراءات</Th>}
+              <Th>{t("الموظف")}</Th>
+              <Th>{t("الوصف")}</Th>
+              <Th>{t("القيمة")}</Th>
+              <Th>{t("كاش / كريديت")}</Th>
+              <Th>{t("المشروع")}</Th>
+              <Th>{t("تاريخ الصرف")}</Th>
+              <Th>{t("الحالة")}</Th>
+              {canManage && <Th>{t("إجراءات")}</Th>}
             </tr>
           </THead>
           <TBody>
@@ -79,19 +80,18 @@ export function CustodyTab({
                 <Td>{c.projectName ?? "-"}</Td>
                 <Td>{formatDate(c.issueDate)}</Td>
                 <Td>
-                  <Badge tone={c.status === "Settled" ? "success" : "warning"}>{c.status === "Settled" ? "متسواة" : "نشطة"}</Badge>
+                  <Badge tone={c.status === "Settled" ? "success" : "warning"}>{c.status === "Settled" ? t("متسواة") : t("نشطة")}</Badge>
                 </Td>
                 {canManage && (
                   <Td>
                     <div className="flex items-center gap-2">
                       {c.status === "Active" && (
                         <button onClick={() => setSettlingCustody(c)} className="text-primary text-body-sm font-semibold hover:underline">
-                          تسوية
-                        </button>
+                          {t("تسوية")}</button>
                       )}
                       <button
                         className="text-on-surface-variant hover:text-on-surface"
-                        title="تعديل"
+                        title={t("تعديل")}
                         onClick={() => {
                           setEditingCustody(c);
                           setCreateOpen(true);
@@ -99,7 +99,7 @@ export function CustodyTab({
                       >
                         <Icon name="edit" size={18} />
                       </button>
-                      <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeletingCustody(c)}>
+                      <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => setDeletingCustody(c)}>
                         <Icon name="delete" size={18} />
                       </button>
                     </div>
@@ -125,8 +125,8 @@ export function CustodyTab({
       <ConfirmDialog
         open={!!deletingCustody}
         onClose={() => setDeletingCustody(null)}
-        title="حذف العهدة الجانبية"
-        message="هل أنت متأكد من حذف هذه العهدة؟ سيتم إلغاء أثرها في الخزنة."
+        title={t("حذف العهدة الجانبية")}
+        message={t("هل أنت متأكد من حذف هذه العهدة؟ سيتم إلغاء أثرها في الخزنة.")}
         onConfirm={() => deleteCustody(deletingCustody!.id)}
         onConfirmed={() => router.refresh()}
       />

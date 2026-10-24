@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Icon } from "./Icon";
@@ -25,11 +26,14 @@ export function Combobox({
   options,
   value,
   onChange,
-  placeholder = "اختر...",
-  emptyText = "لا توجد نتائج",
+  placeholder,
+  emptyText,
   error,
   disabled,
 }: ComboboxProps) {
+  const t = useT();
+  placeholder ??= t("اختر...");
+  emptyText ??= t("لا توجد نتائج");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState(0);
@@ -94,7 +98,7 @@ export function Combobox({
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "w-full flex items-center justify-between gap-2 rounded bg-surface-container-lowest border p-stack-md text-body-sm text-right outline-none transition-all",
+          "w-full flex items-center justify-between gap-2 rounded bg-surface-container-lowest border p-stack-md text-body-sm text-start outline-none transition-all",
           "focus:border-primary focus:ring-2 focus:ring-primary/20",
           error ? "border-error" : "border-outline-variant",
           disabled && "opacity-50 cursor-not-allowed",
@@ -115,7 +119,7 @@ export function Combobox({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder="بحث..."
+              placeholder={t("بحث...")}
               className="w-full bg-transparent outline-none text-body-sm"
             />
           </div>
@@ -131,7 +135,7 @@ export function Combobox({
                   onMouseEnter={() => setHighlight(i)}
                   onClick={() => selectOption(option)}
                   className={cn(
-                    "w-full flex items-center justify-between gap-2 px-stack-md py-2 text-body-sm text-right transition-colors",
+                    "w-full flex items-center justify-between gap-2 px-stack-md py-2 text-body-sm text-start transition-colors",
                     option.disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer",
                     i === highlight && !option.disabled ? "bg-secondary-container text-on-secondary-container" : "text-on-surface",
                     option.value === value && "font-semibold",

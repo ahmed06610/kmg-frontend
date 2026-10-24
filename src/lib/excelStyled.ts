@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
 import { sanitizeSheetName } from "./excel";
+import { getGlobalLocale, tr } from "./i18n/global";
 
 // ألوان معبّرة بنفس منطق Excel القياسي (Good/Bad/Neutral): خصومات بالأحمر، حوافز/إضافي بالأخضر،
 // صافي بالأصفر، اسم الموظف بلون مميز، وباقي الأعمدة بألوان محايدة حسب الفئة - زي الشيت اليدوي اللي المحاسب متعود عليه
@@ -78,7 +79,7 @@ export async function downloadStyledWeeklyPayroll(filename: string, weeks: Style
 
   for (const week of weeks) {
     const sheet = workbook.addWorksheet(sanitizeSheetName(week.sheetName, usedNames), {
-      views: [{ rightToLeft: true }],
+      views: [{ rightToLeft: getGlobalLocale() === "ar" }],
     });
     sheet.columns = COLUMNS.map((c) => ({ width: c.width }));
 
@@ -97,7 +98,7 @@ export async function downloadStyledWeeklyPayroll(filename: string, weeks: Style
       COLUMNS.forEach((col, i) => {
         const cell = headerRow.getCell(i + 1);
         const palette = PALETTE[col.category];
-        cell.value = col.header;
+        cell.value = tr(col.header);
         cell.font = { bold: true, color: { argb: palette.headerFont } };
         cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.headerFill } };
         cell.alignment = { horizontal: "center", vertical: "middle" };

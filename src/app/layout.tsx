@@ -1,5 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans_Arabic, JetBrains_Mono } from "next/font/google";
+import { I18nProvider } from "@/lib/i18n/client";
+import { getT } from "@/lib/i18n/server";
+import { getPreferences } from "@/lib/preferences";
+import { directionOf } from "@/lib/preferences-shared";
 import "./globals.css";
 
 const ibmPlexArabic = IBM_Plex_Sans_Arabic({
@@ -14,18 +18,34 @@ const jetBrainsMono = JetBrains_Mono({
   weight: ["400", "500"],
 });
 
-export const metadata: Metadata = {
-  title: "KMG - نظام إدارة الأعمال الداخلي",
-  description: "نظام إدارة المشاريع والمخزون والموارد البشرية والخزينة لشركة KMG",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("KMG - نظام إدارة الأعمال الداخلي"),
+    description: t("نظام إدارة المشاريع والمخزون والموارد البشرية والخزينة لشركة KMG"),
+  };
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export async function generateViewport(): Promise<Viewport> {
+  const { theme } = await getPreferences();
+  return {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+    themeColor: theme === "light" ? "#f5f7fb" : "#0b0f18",
+  };
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // الثيم واللغة بيتقروا من الكوكيز على السيرفر، فالصفحة بتترسم صح من أول طلب من غير وميض
+  const { theme, locale } = await getPreferences();
+
   return (
     <html
-      dir="rtl"
-      lang="ar"
-      className={`${ibmPlexArabic.variable} ${jetBrainsMono.variable} h-full antialiased dark`}
-      style={{ colorScheme: "dark" }}
+      dir={directionOf(locale)}
+      lang={locale}
+      className={`${ibmPlexArabic.variable} ${jetBrainsMono.variable} h-full antialiased ${theme}`}
+      style={{ colorScheme: theme }}
     >
       <head>
         <link
@@ -33,7 +53,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full bg-background text-on-background">{children}</body>
+      <body className="min-h-full bg-background text-on-background">
+        <I18nProvider locale={locale}>{children}</I18nProvider>
+      </body>
     </html>
   );
 }

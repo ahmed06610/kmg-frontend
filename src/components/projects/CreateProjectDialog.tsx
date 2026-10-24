@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -14,6 +15,7 @@ import { ProjectType } from "@/types/enums";
 import type { ClientListDTO } from "@/types/client";
 
 export function CreateProjectDialog({ open, onClose, clients }: { open: boolean; onClose: () => void; clients: ClientListDTO[] }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -53,7 +55,7 @@ export function CreateProjectDialog({ open, onClose, clients }: { open: boolean;
     const result = await createProjectAndRedirect(payload);
     setLoading(false);
     if (result && !result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     onClose();
@@ -64,33 +66,32 @@ export function CreateProjectDialog({ open, onClose, clients }: { open: boolean;
     <Dialog
       open={open}
       onClose={onClose}
-      title="مشروع جديد"
+      title={t("مشروع جديد")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="create-project-form" disabled={loading}>
-            {loading ? "جاري الإنشاء..." : "إنشاء المشروع"}
+            {loading ? t("جاري الإنشاء...") : t("إنشاء المشروع")}
           </Button>
         </>
       }
     >
       <form id="create-project-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="اسم المشروع" error={errors.name?.message}>
+        <FieldGroup label={t("اسم المشروع")} error={errors.name?.message}>
           <Input {...register("name")} />
         </FieldGroup>
 
-        <FieldGroup label="نوع المشروع" error={errors.projectType?.message}>
+        <FieldGroup label={t("نوع المشروع")} error={errors.projectType?.message}>
           <Select {...register("projectType", { valueAsNumber: true })}>
-            <option value={0}>اختر نوع المشروع</option>
-            <option value={ProjectType.ManufactureExecution}>تصنيع وتنفيذ (مناقصة)</option>
-            <option value={ProjectType.Subcontracting}>مقاولات من الباطن</option>
-            <option value={ProjectType.Supply}>توريد</option>
+            <option value={0}>{t("اختر نوع المشروع")}</option>
+            <option value={ProjectType.ManufactureExecution}>{t("تصنيع وتنفيذ (مناقصة)")}</option>
+            <option value={ProjectType.Subcontracting}>{t("مقاولات من الباطن")}</option>
+            <option value={ProjectType.Supply}>{t("توريد")}</option>
           </Select>
         </FieldGroup>
 
-        <FieldGroup label="العميل" error={errors.clientId?.message}>
+        <FieldGroup label={t("العميل")} error={errors.clientId?.message}>
           <Controller
             name="clientId"
             control={control}
@@ -98,39 +99,39 @@ export function CreateProjectDialog({ open, onClose, clients }: { open: boolean;
               <Combobox
                 value={field.value ? String(field.value) : ""}
                 onChange={(v) => field.onChange(Number(v))}
-                placeholder="اختر العميل"
+                placeholder={t("اختر العميل")}
                 options={clients.map((c) => ({ value: String(c.id), label: c.name }))}
               />
             )}
           />
         </FieldGroup>
 
-        <FieldGroup label="قيمة العقد" error={errors.contractValue?.message}>
+        <FieldGroup label={t("قيمة العقد")} error={errors.contractValue?.message}>
           <Input type="number" step="0.01" dir="ltr" {...register("contractValue", { valueAsNumber: true })} />
         </FieldGroup>
 
-        <FieldGroup label="وصف المشروع" error={errors.description?.message}>
+        <FieldGroup label={t("وصف المشروع")} error={errors.description?.message}>
           <Textarea rows={2} {...register("description")} />
         </FieldGroup>
 
         {projectType === ProjectType.ManufactureExecution && (
           <>
             <div className="grid grid-cols-2 gap-stack-md">
-              <FieldGroup label="نسبة تأمين المناقصة %" error={errors.tenderInsurancePercent?.message}>
+              <FieldGroup label={t("نسبة تأمين المناقصة %")} error={errors.tenderInsurancePercent?.message}>
                 <Input type="number" step="0.01" dir="ltr" {...register("tenderInsurancePercent", { valueAsNumber: true })} />
               </FieldGroup>
-              <FieldGroup label="تاريخ استحقاق استرداد التأمين" error={errors.insuranceDueDate?.message}>
+              <FieldGroup label={t("تاريخ استحقاق استرداد التأمين")} error={errors.insuranceDueDate?.message}>
                 <Input type="date" {...register("insuranceDueDate")} />
               </FieldGroup>
             </div>
-            <FieldGroup label="نسبة ضريبة المناقصة %" error={errors.tenderTaxPercent?.message}>
+            <FieldGroup label={t("نسبة ضريبة المناقصة %")} error={errors.tenderTaxPercent?.message}>
               <Input type="number" step="0.01" dir="ltr" {...register("tenderTaxPercent", { valueAsNumber: true })} />
             </FieldGroup>
             <div className="grid grid-cols-2 gap-stack-md">
-              <FieldGroup label="نسبة ضمان الأعمال %" error={errors.workGuaranteePercent?.message}>
+              <FieldGroup label={t("نسبة ضمان الأعمال %")} error={errors.workGuaranteePercent?.message}>
                 <Input type="number" step="0.01" dir="ltr" {...register("workGuaranteePercent", { valueAsNumber: true })} />
               </FieldGroup>
-              <FieldGroup label="تاريخ استحقاق استرداد الضمان" error={errors.workGuaranteeDueDate?.message}>
+              <FieldGroup label={t("تاريخ استحقاق استرداد الضمان")} error={errors.workGuaranteeDueDate?.message}>
                 <Input type="date" {...register("workGuaranteeDueDate")} />
               </FieldGroup>
             </div>
@@ -138,12 +139,12 @@ export function CreateProjectDialog({ open, onClose, clients }: { open: boolean;
         )}
 
         {projectType === ProjectType.Supply && (
-          <FieldGroup label="هامش الربح (%)" error={errors.supplyProfitMargin?.message}>
+          <FieldGroup label={t("هامش الربح (%)")} error={errors.supplyProfitMargin?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("supplyProfitMargin", { valueAsNumber: true })} />
           </FieldGroup>
         )}
 
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
@@ -28,6 +29,7 @@ interface Props {
 }
 
 export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions, movements, categories, canManage, onBack }: Props) {
+  const t = useT();
   const [editingMaterial, setEditingMaterial] = useState<MaterialDTO | undefined>(undefined);
   const [deletingMaterial, setDeletingMaterial] = useState<MaterialDTO | null>(null);
   const columnMatchers = useMemo(() => {
@@ -38,7 +40,7 @@ export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions
       unitPrice: (m, v) => String(m.unitPrice).includes(v),
       totalPrice: (m, v) => String(m.totalPrice).includes(v),
       minimumThreshold: (m, v) => String(m.minimumThreshold).includes(v),
-      status: (m, v) => (m.isLowStock ? "نقص مخزون" : "متاح").includes(v),
+      status: (m, v) => (m.isLowStock ? t("نقص مخزون") : t("متاح")).includes(v),
     };
     for (const f of extraFieldDefinitions) {
       matchers[f.key] = (m, v) => (m.extraFieldValues[f.key] ?? "").toLowerCase().includes(v);
@@ -57,13 +59,13 @@ export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions
   const scopedMovements = useMemo(() => movements.filter((mv) => materialIds.has(mv.materialId)), [movements, materialIds]);
 
   const baseColumns: { key: string; label: string }[] = [
-    { key: "name", label: "الخامة" },
-    { key: "unit", label: "الوحدة" },
-    { key: "quantity", label: "الكمية المتاحة" },
-    { key: "unitPrice", label: "سعر الوحدة" },
-    { key: "totalPrice", label: "الإجمالي" },
-    { key: "minimumThreshold", label: "الحد الأدنى" },
-    { key: "status", label: "الحالة" },
+    { key: "name", label: t("الخامة") },
+    { key: "unit", label: t("الوحدة") },
+    { key: "quantity", label: t("الكمية المتاحة") },
+    { key: "unitPrice", label: t("سعر الوحدة") },
+    { key: "totalPrice", label: t("الإجمالي") },
+    { key: "minimumThreshold", label: t("الحد الأدنى") },
+    { key: "status", label: t("الحالة") },
   ];
   const allColumns = [...baseColumns, ...extraFieldDefinitions.map((f) => ({ key: f.key, label: f.label }))];
 
@@ -79,24 +81,24 @@ export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions
           unitPrice: m.unitPrice,
           totalPrice: m.totalPrice,
           minimumThreshold: m.minimumThreshold,
-          status: m.isLowStock ? "نقص مخزون" : "متاح",
+          status: m.isLowStock ? t("نقص مخزون") : t("متاح"),
           ...Object.fromEntries(extraFieldDefinitions.map((f) => [f.key, m.extraFieldValues[f.key] ?? ""])),
         })),
       },
       {
-        name: `${title} - حركات`,
+        name: t("{0} - حركات", [title]),
         columns: [
-          { header: "الخامة", key: "materialName" },
-          { header: "النوع", key: "movementType" },
-          { header: "الكمية", key: "quantity" },
-          { header: "السعر وقت الحركة", key: "unitPriceAtTime" },
-          { header: "المصدر", key: "source" },
-          { header: "التاريخ", key: "date" },
-          { header: "المستخدم", key: "user" },
+          { header: t("الخامة"), key: "materialName" },
+          { header: t("النوع"), key: "movementType" },
+          { header: t("الكمية"), key: "quantity" },
+          { header: t("السعر وقت الحركة"), key: "unitPriceAtTime" },
+          { header: t("المصدر"), key: "source" },
+          { header: t("التاريخ"), key: "date" },
+          { header: t("المستخدم"), key: "user" },
         ],
         rows: scopedMovements.map((mv) => ({
           materialName: mv.materialName,
-          movementType: movementTypeLabels[mv.movementType] ?? mv.movementType,
+          movementType: t(movementTypeLabels[mv.movementType] ?? mv.movementType),
           quantity: mv.quantity,
           unitPriceAtTime: mv.unitPriceAtTime,
           source: mv.projectName ?? mv.supplierName ?? "-",
@@ -110,22 +112,21 @@ export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions
   return (
     <div className="flex flex-col gap-stack-md">
       <div className="flex items-center justify-between flex-wrap gap-stack-sm">
-        <div className="flex items-center gap-stack-sm">
+        <div className="flex flex-wrap items-center gap-stack-sm">
           <Button variant="secondary" size="sm" onClick={onBack}>
             <Icon name="arrow_forward" size={18} />
-            كل الأنواع
-          </Button>
+            {t("كل الأنواع")}</Button>
           <h2 className="text-title-sm text-on-surface font-semibold">{title}</h2>
-          <span className="text-xs text-on-surface-variant">({materials.length} صنف)</span>
+          <span className="text-xs text-on-surface-variant">({materials.length} {t(" صنف)")}</span>
         </div>
-        <div className="flex items-center gap-stack-sm">
-          <SearchInput value={table.search} onChange={table.setSearch} placeholder="بحث بالاسم أو الوحدة..." />
+        <div className="flex flex-wrap items-center gap-stack-sm">
+          <SearchInput value={table.search} onChange={table.setSearch} placeholder={t("بحث بالاسم أو الوحدة...")} />
           <MultiSheetExportButton filename={title} sheets={exportSheets()} />
         </div>
       </div>
 
       {materials.length === 0 ? (
-        <EmptyState icon="inventory_2" title="لا توجد أصناف في هذا النوع" />
+        <EmptyState icon="inventory_2" title={t("لا توجد أصناف في هذا النوع")} />
       ) : (
         <>
           <Table>
@@ -134,7 +135,7 @@ export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions
                 {allColumns.map((c) => (
                   <Th key={c.key}>{c.label}</Th>
                 ))}
-                {canManage && <Th>إجراءات</Th>}
+                {canManage && <Th>{t("إجراءات")}</Th>}
               </tr>
               <tr>
                 {allColumns.map((c) => (
@@ -142,7 +143,7 @@ export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions
                     <input
                       value={table.filters[c.key] ?? ""}
                       onChange={(e) => table.setFilter(c.key, e.target.value)}
-                      placeholder="فلتر..."
+                      placeholder={t("فلتر...")}
                       className="w-full rounded bg-surface-container-low border border-outline-variant px-2 py-1 text-xs outline-none focus:border-primary"
                     />
                   </th>
@@ -154,8 +155,7 @@ export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions
               {table.pageRows.length === 0 ? (
                 <tr>
                   <td colSpan={allColumns.length + (canManage ? 1 : 0)} className="p-stack-lg text-center text-body-sm text-on-surface-variant">
-                    لا توجد نتائج مطابقة للفلاتر
-                  </td>
+                    {t("لا توجد نتائج مطابقة للفلاتر")}</td>
                 </tr>
               ) : (
                 table.pageRows.map((m) => (
@@ -170,17 +170,17 @@ export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions
                     <TdMono>{formatCurrency(m.unitPrice)}</TdMono>
                     <TdMono>{formatCurrency(m.totalPrice)}</TdMono>
                     <TdMono>{m.minimumThreshold}</TdMono>
-                    <Td>{m.isLowStock ? <Badge tone="error">نقص مخزون</Badge> : <Badge tone="success">متاح</Badge>}</Td>
+                    <Td>{m.isLowStock ? <Badge tone="error">{t("نقص مخزون")}</Badge> : <Badge tone="success">{t("متاح")}</Badge>}</Td>
                     {extraFieldDefinitions.map((f) => (
                       <Td key={f.key}>{m.extraFieldValues[f.key] ?? "-"}</Td>
                     ))}
                     {canManage && (
                       <Td>
                         <div className="flex items-center gap-1">
-                          <button className="text-on-surface-variant hover:text-on-surface" title="تعديل الاسم والبيانات" onClick={() => setEditingMaterial(m)}>
+                          <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل الاسم والبيانات")} onClick={() => setEditingMaterial(m)}>
                             <Icon name="edit" size={18} />
                           </button>
-                          <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeletingMaterial(m)}>
+                          <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => setDeletingMaterial(m)}>
                             <Icon name="delete" size={18} />
                           </button>
                         </div>
@@ -192,9 +192,9 @@ export function CategoryMaterialsTable({ title, materials, extraFieldDefinitions
               {table.filteredRows.length > 0 && (
                 <tr className="bg-surface-container-low font-semibold">
                   <td colSpan={4} className="p-stack-md text-body-sm text-on-surface">
-                    إجمالي قيمة المخزون {table.filteredRows.length !== materials.length && "(للنتائج المعروضة)"}
+                    {t("إجمالي قيمة المخزون ")}{table.filteredRows.length !== materials.length && t("(للنتائج المعروضة)")}
                   </td>
-                  <td dir="ltr" className="p-stack-md text-mono-data text-primary text-right">
+                  <td dir="ltr" className="p-stack-md text-mono-data text-primary text-page-start">
                     {formatCurrency(table.filteredRows.reduce((sum, m) => sum + m.totalPrice, 0))}
                   </td>
                   <td colSpan={allColumns.length - 5 + (canManage ? 1 : 0)} />

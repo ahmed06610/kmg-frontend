@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ import { settleCustodySchema, type SettleCustodyFormValues } from "@/schema/cash
 import type { CustodyDTO } from "@/types/custody";
 
 export function SettleCustodyDialog({ open, onClose, custody }: { open: boolean; onClose: () => void; custody: CustodyDTO | null }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,7 +45,7 @@ export function SettleCustodyDialog({ open, onClose, custody }: { open: boolean;
     const result = await settleCustody({ custodyId: custody.id, ...data, notes: data.notes || null });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     onClose();
@@ -54,32 +56,31 @@ export function SettleCustodyDialog({ open, onClose, custody }: { open: boolean;
     <Dialog
       open={open}
       onClose={onClose}
-      title={`تسوية عهدة - ${custody.employeeName}`}
+      title={t("تسوية عهدة - {0}", [custody.employeeName])}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="settle-custody-form" disabled={loading}>
-            {loading ? "جاري التسوية..." : "تسوية العهدة"}
+            {loading ? t("جاري التسوية...") : t("تسوية العهدة")}
           </Button>
         </>
       }
     >
       <p className="text-body-sm text-on-surface-variant">
-        قيمة العهدة المصروفة: <span dir="ltr" className="font-mono-data text-on-surface">{formatCurrency(custody.amount)}</span>
+        {t("قيمة العهدة المصروفة: ")}<span dir="ltr" className="font-mono-data text-on-surface">{formatCurrency(custody.amount)}</span>
       </p>
       <form id="settle-custody-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="المصروف الفعلي" error={errors.settledAmount?.message}>
+        <FieldGroup label={t("المصروف الفعلي")} error={errors.settledAmount?.message}>
           <Input type="number" step="0.01" dir="ltr" {...register("settledAmount", { valueAsNumber: true })} />
         </FieldGroup>
-        <FieldGroup label="تاريخ التسوية" error={errors.settledDate?.message}>
+        <FieldGroup label={t("تاريخ التسوية")} error={errors.settledDate?.message}>
           <Input type="date" {...register("settledDate")} />
         </FieldGroup>
-        <FieldGroup label="ملاحظات" error={errors.notes?.message}>
+        <FieldGroup label={t("ملاحظات")} error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

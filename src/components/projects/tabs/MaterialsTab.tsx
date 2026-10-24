@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -34,6 +35,7 @@ export function MaterialsTab({
   canManage: boolean;
   canManageStock: boolean;
 }) {
+  const t = useT();
   const [issueOpen, setIssueOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
   const [editingMovement, setEditingMovement] = useState<StockMovementDTO | null>(null);
@@ -55,44 +57,42 @@ export function MaterialsTab({
     <div className="flex flex-col gap-stack-md">
       <div className="flex items-center justify-between flex-wrap gap-stack-sm">
         <p className="text-body-sm text-on-surface-variant">
-          إجمالي تكلفة الخامات: <span dir="ltr" className="font-mono-data text-on-surface font-semibold">{formatCurrency(totalMaterialsCost)}</span>
+          {t("إجمالي تكلفة الخامات: ")}<span dir="ltr" className="font-mono-data text-on-surface font-semibold">{formatCurrency(totalMaterialsCost)}</span>
         </p>
         {canManage && (
           <div className="flex gap-stack-sm">
             <Button size="sm" variant="secondary" onClick={() => setReturnOpen(true)}>
               <Icon name="undo" size={18} />
-              مرتجع
-            </Button>
+              {t("مرتجع")}</Button>
             <Button size="sm" onClick={() => setIssueOpen(true)}>
               <Icon name="output" size={18} />
-              صرف خامة
-            </Button>
+              {t("صرف خامة")}</Button>
           </div>
         )}
       </div>
 
       <ProjectMaterialsSummary movements={movements} materials={materials} categories={categories} totalMaterialsCost={totalMaterialsCost} />
 
-      <p className="text-title-sm text-on-surface mt-stack-sm">سجل حركات الخامات</p>
-      {movements.length > 0 && <SearchInput value={table.search} onChange={table.setSearch} placeholder="بحث بالخامة..." />}
+      <p className="text-title-sm text-on-surface mt-stack-sm">{t("سجل حركات الخامات")}</p>
+      {movements.length > 0 && <SearchInput value={table.search} onChange={table.setSearch} placeholder={t("بحث بالخامة...")} />}
 
       {movements.length === 0 ? (
-        <EmptyState icon="inventory_2" title="لا توجد حركات مخزون على هذا المشروع بعد" />
+        <EmptyState icon="inventory_2" title={t("لا توجد حركات مخزون على هذا المشروع بعد")} />
       ) : table.totalCount === 0 ? (
-        <EmptyState icon="search_off" title="لا توجد نتائج مطابقة" />
+        <EmptyState icon="search_off" title={t("لا توجد نتائج مطابقة")} />
       ) : (
         <>
           <Table>
             <THead>
               <tr>
-                <Th>النوع</Th>
-                <Th>الخامة</Th>
-                <Th>الكمية</Th>
-                <Th>السعر وقتها</Th>
-                <Th>الإجمالي</Th>
-                <Th>التاريخ</Th>
-                <Th>المستخدم</Th>
-                {canManageStock && <Th>إجراءات</Th>}
+                <Th>{t("النوع")}</Th>
+                <Th>{t("الخامة")}</Th>
+                <Th>{t("الكمية")}</Th>
+                <Th>{t("السعر وقتها")}</Th>
+                <Th>{t("الإجمالي")}</Th>
+                <Th>{t("التاريخ")}</Th>
+                <Th>{t("المستخدم")}</Th>
+                {canManageStock && <Th>{t("إجراءات")}</Th>}
               </tr>
             </THead>
             <TBody>
@@ -102,7 +102,7 @@ export function MaterialsTab({
                 const total = signedTotal(m);
                 return (
                   <Tr key={m.id}>
-                    <Td>{movementTypeLabels[m.movementType] ?? m.movementType}</Td>
+                    <Td>{t(movementTypeLabels[m.movementType] ?? m.movementType)}</Td>
                     <Td>{label}</Td>
                     <TdMono>{m.quantity}</TdMono>
                     <TdMono>{formatCurrency(m.unitPriceAtTime)}</TdMono>
@@ -119,9 +119,9 @@ export function MaterialsTab({
               })}
               <tr className="bg-surface-container-low font-semibold">
                 <td colSpan={4} className="p-stack-md text-body-sm text-on-surface">
-                  {isFiltered ? "إجمالي النتائج المعروضة" : "الإجمالي (صرف - مرتجع)"}
+                  {isFiltered ? t("إجمالي النتائج المعروضة") : t("الإجمالي (صرف - مرتجع)")}
                 </td>
-                <td dir="ltr" className="p-stack-md text-mono-data text-primary text-right">
+                <td dir="ltr" className="p-stack-md text-mono-data text-primary text-page-start">
                   {formatCurrency(filteredTotal)}
                 </td>
                 <td colSpan={canManageStock ? 3 : 2} />

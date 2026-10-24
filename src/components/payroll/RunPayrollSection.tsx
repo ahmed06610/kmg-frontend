@@ -1,5 +1,7 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
+import { tr } from "@/lib/i18n/global";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -54,7 +56,7 @@ const ARABIC_WEEKDAYS = ["الأحد", "الاثنين", "الثلاثاء", "ا
 
 function longDateLabel(dateStr: string): string {
   const d = new Date(dateStr);
-  return `${ARABIC_WEEKDAYS[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  return `${tr(ARABIC_WEEKDAYS[d.getDay()])} ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
 }
 
 // اختصارات لتحديد الفترة بسرعة: لو فيه تاريخ بداية متحدد، الكويك أكشن بيحرك تاريخ النهاية بس (بداية + المدة)
@@ -84,6 +86,7 @@ function computeQuickRange(option: QuickRangeOption, currentStart: string): { st
 }
 
 function QuickDateRangeActions({ periodStart, onChange }: { periodStart: string; onChange: (start: string, end: string) => void }) {
+  const t = useT();
   return (
     <div className="flex items-center gap-1 flex-wrap">
       {QUICK_RANGE_OPTIONS.map((opt) => (
@@ -96,7 +99,7 @@ function QuickDateRangeActions({ periodStart, onChange }: { periodStart: string;
           }}
           className="px-2 py-1 rounded-md text-xs bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors"
         >
-          {opt.label}
+          {t(opt.label)}
         </button>
       ))}
     </div>
@@ -104,6 +107,7 @@ function QuickDateRangeActions({ periodStart, onChange }: { periodStart: string;
 }
 
 function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
+  const t = useT();
   const router = useRouter();
   const activeEmployees = employees.filter((e) => !e.suspended);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -132,11 +136,11 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
 
   async function handlePreviewAll() {
     if (!periodStart || !periodEnd) {
-      setError("حدد بداية ونهاية الفترة أولًا");
+      setError(t("حدد بداية ونهاية الفترة أولًا"));
       return;
     }
     if (selected.size === 0) {
-      setError("اختر موظف واحد على الأقل");
+      setError(t("اختر موظف واحد على الأقل"));
       return;
     }
 
@@ -153,7 +157,7 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
       if (result.success && result.data) {
         results.push(result.data);
       } else {
-        failed.push({ name: employee.name, message: result.message ?? "حدث خطأ" });
+        failed.push({ name: employee.name, message: result.message ?? t("حدث خطأ") });
       }
     }
 
@@ -161,17 +165,17 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
     setPreviews(results);
 
     if (failed.length > 0) {
-      setError(`فشلت معاينة ${failed.length} موظف: ${failed.map((f) => `${f.name} (${f.message})`).join("، ")}`);
+      setError(t("فشلت معاينة {0} موظف: {1}", [failed.length, failed.map((f) => `${f.name} (${f.message})`).join(t("، "))]));
     }
   }
 
   async function handleDisburse() {
     if (!periodStart || !periodEnd) {
-      setError("حدد بداية ونهاية الفترة أولًا");
+      setError(t("حدد بداية ونهاية الفترة أولًا"));
       return;
     }
     if (selected.size === 0) {
-      setError("اختر موظف واحد على الأقل");
+      setError(t("اختر موظف واحد على الأقل"));
       return;
     }
 
@@ -187,26 +191,26 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
       if (result.success && result.data) {
         succeeded.push(result.data);
       } else {
-        failed.push({ name: employee.name, message: result.message ?? "حدث خطأ" });
+        failed.push({ name: employee.name, message: result.message ?? t("حدث خطأ") });
       }
     }
 
     setRunning(false);
 
     if (succeeded.length > 0) {
-      downloadWorkbook(`صرف_رواتب_${periodStart}_${periodEnd}`, [
+      downloadWorkbook(t("صرف_رواتب_{0}_{1}", [periodStart, periodEnd]), [
         {
-          name: "صرف الرواتب",
+          name: t("صرف الرواتب"),
           columns: [
-            { header: "الموظف", key: "employee" },
-            { header: "الأساسي", key: "base" },
-            { header: "أجر أيام المأمورية الإضافي", key: "missionDoubleUp" },
-            { header: "حوافز", key: "bonus" },
-            { header: "خصومات", key: "deductions" },
-            { header: "قسط سلفة", key: "advanceInstallment" },
-            { header: "خصم تأمين", key: "insurance" },
-            { header: "خصم مصر للتأمين", key: "misrInsurance" },
-            { header: "الصافي", key: "net" },
+            { header: t("الموظف"), key: "employee" },
+            { header: t("الأساسي"), key: "base" },
+            { header: t("أجر أيام المأمورية الإضافي"), key: "missionDoubleUp" },
+            { header: t("حوافز"), key: "bonus" },
+            { header: t("خصومات"), key: "deductions" },
+            { header: t("قسط سلفة"), key: "advanceInstallment" },
+            { header: t("خصم تأمين"), key: "insurance" },
+            { header: t("خصم مصر للتأمين"), key: "misrInsurance" },
+            { header: t("الصافي"), key: "net" },
           ],
           rows: succeeded.map((p) => ({
             employee: p.employeeName,
@@ -224,7 +228,7 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
     }
 
     if (failed.length > 0) {
-      setError(`فشل صرف راتب ${failed.length} موظف: ${failed.map((f) => `${f.name} (${f.message})`).join("، ")}`);
+      setError(t("فشل صرف راتب {0} موظف: {1}", [failed.length, failed.map((f) => `${f.name} (${f.message})`).join(t("، "))]));
     }
 
     setSelected(new Set());
@@ -236,11 +240,11 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
   // وعمود "سفر" لأيام المأمورية، وباقي الأعمدة من بيانات الراتب الفعلية - بدون أي صرف فعلي، معاينة بس
   async function handleExportWeekly() {
     if (!periodStart || !periodEnd) {
-      setError("حدد بداية ونهاية الفترة أولًا");
+      setError(t("حدد بداية ونهاية الفترة أولًا"));
       return;
     }
     if (selected.size === 0) {
-      setError("اختر موظف واحد على الأقل");
+      setError(t("اختر موظف واحد على الأقل"));
       return;
     }
 
@@ -253,7 +257,7 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
 
     for (const week of weeks) {
       const rows: StyledPayrollWeek["rows"] = [];
-      const periodLabel = `الاجور من ${longDateLabel(week.start)} حتى ${longDateLabel(week.end)}`;
+      const periodLabel = t("الاجور من {0} حتى {1}", [longDateLabel(week.start), longDateLabel(week.end)]);
       for (const employeeId of selected) {
         const employee = activeEmployees.find((e) => e.id === employeeId)!;
         const result = await previewPayroll({ employeeId, periodStart: week.start, periodEnd: week.end });
@@ -277,31 +281,31 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
             net: p.netPaid,
           });
         } else {
-          failed.push({ name: `${employee.name} (${week.start})`, message: result.message ?? "حدث خطأ" });
+          failed.push({ name: `${employee.name} (${week.start})`, message: result.message ?? t("حدث خطأ") });
         }
       }
-      sheets.push({ sheetName: `من ${shortDate(week.start)} حتى ${shortDate(week.end)}`, periodLabel, rows });
+      sheets.push({ sheetName: t("من {0} حتى {1}", [shortDate(week.start), shortDate(week.end)]), periodLabel, rows });
     }
 
     if (sheets.some((s) => s.rows.length > 0)) {
-      await downloadStyledWeeklyPayroll(`الرواتب_الاسبوعي_${periodStart}_${periodEnd}`, sheets);
+      await downloadStyledWeeklyPayroll(t("الرواتب_الاسبوعي_{0}_{1}", [periodStart, periodEnd]), sheets);
     }
 
     setExportingWeekly(false);
 
     if (failed.length > 0) {
-      setError(`فشلت معاينة ${failed.length} سجل: ${failed.map((f) => `${f.name} (${f.message})`).join("، ")}`);
+      setError(t("فشلت معاينة {0} سجل: {1}", [failed.length, failed.map((f) => `${f.name} (${f.message})`).join(t("، "))]));
     }
   }
 
   return (
     <Card>
-      <p className="text-title-sm text-on-surface mb-stack-md">صرف رواتب جماعي</p>
+      <p className="text-title-sm text-on-surface mb-stack-md">{t("صرف رواتب جماعي")}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-stack-md mb-stack-sm">
-        <FieldGroup label="بداية الفترة">
+        <FieldGroup label={t("بداية الفترة")}>
           <Input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} />
         </FieldGroup>
-        <FieldGroup label="نهاية الفترة">
+        <FieldGroup label={t("نهاية الفترة")}>
           <Input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} />
         </FieldGroup>
       </div>
@@ -316,16 +320,16 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
       </div>
 
       {activeEmployees.length === 0 ? (
-        <EmptyState icon="groups" title="لا يوجد موظفين نشطين" />
+        <EmptyState icon="groups" title={t("لا يوجد موظفين نشطين")} />
       ) : (
-        <Table>
+        <Table className="min-w-0">
           <THead>
             <tr>
               <Th>
                 <input type="checkbox" checked={selected.size === activeEmployees.length} onChange={toggleAll} />
               </Th>
-              <Th>الموظف</Th>
-              <Th>نوع الأجر</Th>
+              <Th>{t("الموظف")}</Th>
+              <Th>{t("نوع الأجر")}</Th>
             </tr>
           </THead>
           <TBody>
@@ -335,44 +339,44 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
                   <input type="checkbox" checked={selected.has(e.id)} onChange={() => toggle(e.id)} />
                 </Td>
                 <Td>{e.name}</Td>
-                <Td>{e.wageType === 1 ? "شهري" : "يومي"}</Td>
+                <Td>{e.wageType === 1 ? t("شهري") : t("يومي")}</Td>
               </Tr>
             ))}
           </TBody>
         </Table>
       )}
 
-      {error && <div className="mt-stack-md rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{error}</div>}
+      {error && <div className="mt-stack-md rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(error)}</div>}
 
       <div className="mt-stack-md flex items-center gap-stack-sm flex-wrap">
         <Button variant="secondary" onClick={handlePreviewAll} disabled={previewing || running || selected.size === 0}>
-          {previewing ? "جاري المعاينة..." : `معاينة قبل الصرف (${selected.size})`}
+          {previewing ? t("جاري المعاينة...") : t("معاينة قبل الصرف ({0})", [selected.size])}
         </Button>
         <Button onClick={handleDisburse} disabled={running || previewing || selected.size === 0}>
-          {running ? "جاري الصرف..." : `صرف رواتب المحددين (${selected.size})`}
+          {running ? t("جاري الصرف...") : t("صرف رواتب المحددين ({0})", [selected.size])}
         </Button>
         <Button variant="secondary" onClick={handleExportWeekly} disabled={exportingWeekly || running || selected.size === 0}>
           <Icon name="download" size={18} />
-          {exportingWeekly ? "جاري التصدير..." : "تصدير الشكل الأسبوعي"}
+          {exportingWeekly ? t("جاري التصدير...") : t("تصدير الشكل الأسبوعي")}
         </Button>
       </div>
 
       {previews && previews.length > 0 && (
         <div className="mt-stack-md">
-          <p className="text-body-sm text-on-surface-variant mb-stack-sm">معاينة المستحقات قبل الصرف الفعلي - راجع الأرقام ثم اضغط "صرف رواتب المحددين" لو كل شيء صحيح</p>
+          <p className="text-body-sm text-on-surface-variant mb-stack-sm">{t("معاينة المستحقات قبل الصرف الفعلي - راجع الأرقام ثم اضغط \"صرف رواتب المحددين\" لو كل شيء صحيح")}</p>
           <Table>
             <THead>
               <tr>
-                <Th>الموظف</Th>
-                <Th>أيام العمل</Th>
-                <Th>الأساسي</Th>
-                <Th>أجر أيام المأمورية الإضافي</Th>
-                <Th>حوافز</Th>
-                <Th>خصومات</Th>
-                <Th>قسط سلفة</Th>
-                <Th>خصم تأمين</Th>
-                <Th>خصم مصر للتأمين</Th>
-                <Th>الصافي</Th>
+                <Th>{t("الموظف")}</Th>
+                <Th>{t("أيام العمل")}</Th>
+                <Th>{t("الأساسي")}</Th>
+                <Th>{t("أجر أيام المأمورية الإضافي")}</Th>
+                <Th>{t("حوافز")}</Th>
+                <Th>{t("خصومات")}</Th>
+                <Th>{t("قسط سلفة")}</Th>
+                <Th>{t("خصم تأمين")}</Th>
+                <Th>{t("خصم مصر للتأمين")}</Th>
+                <Th>{t("الصافي")}</Th>
               </tr>
             </THead>
             <TBody>
@@ -381,7 +385,7 @@ function BulkPayrollSection({ employees }: { employees: EmployeeListDTO[] }) {
                   <Td>{p.employeeName}</Td>
                   <TdMono>
                     {p.workshopDays + p.missionDays}
-                    {p.excludedFridays > 0 && <div className="text-[11px] text-on-surface-variant font-sans">من غير {p.excludedFridays} جمعة</div>}
+                    {p.excludedFridays > 0 && <div className="text-[11px] text-on-surface-variant font-sans">{t("من غير ")}{p.excludedFridays} {t(" جمعة")}</div>}
                   </TdMono>
                   <TdMono>{formatCurrency(p.baseAmount)}</TdMono>
                   <TdMono>{formatCurrency(p.missionDoubleUpAmount)}</TdMono>
@@ -410,6 +414,7 @@ export function RunPayrollSection({
   history: PayrollPayoutDTO[];
   canManage: boolean;
 }) {
+  const t = useT();
   const router = useRouter();
   const [preview, setPreview] = useState<PayrollPreviewDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -440,7 +445,7 @@ export function RunPayrollSection({
     const result = await previewPayroll(data);
     setPreviewLoading(false);
     if (!result.success || !result.data) {
-      setError(result.message ?? "حدث خطأ");
+      setError(result.message ?? t("حدث خطأ"));
       return;
     }
     setPreview(result.data);
@@ -452,7 +457,7 @@ export function RunPayrollSection({
     const result = await runPayroll(getValues());
     setRunLoading(false);
     if (!result.success) {
-      setError(result.message ?? "حدث خطأ");
+      setError(result.message ?? t("حدث خطأ"));
       return;
     }
     setPreview(null);
@@ -465,7 +470,7 @@ export function RunPayrollSection({
       <Card>
         <form onSubmit={onPreview} className="flex flex-col gap-stack-md">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-stack-md">
-            <FieldGroup label="الموظف" error={errors.employeeId?.message}>
+            <FieldGroup label={t("الموظف")} error={errors.employeeId?.message}>
               <Controller
                 name="employeeId"
                 control={control}
@@ -473,16 +478,16 @@ export function RunPayrollSection({
                   <Combobox
                     value={field.value ? String(field.value) : ""}
                     onChange={(v) => field.onChange(Number(v))}
-                    placeholder="اختر موظف"
+                    placeholder={t("اختر موظف")}
                     options={employees.map((e) => ({ value: String(e.id), label: e.name }))}
                   />
                 )}
               />
             </FieldGroup>
-            <FieldGroup label="بداية الفترة" error={errors.periodStart?.message}>
+            <FieldGroup label={t("بداية الفترة")} error={errors.periodStart?.message}>
               <Input type="date" {...register("periodStart")} />
             </FieldGroup>
-            <FieldGroup label="نهاية الفترة" error={errors.periodEnd?.message}>
+            <FieldGroup label={t("نهاية الفترة")} error={errors.periodEnd?.message}>
               <Input type="date" {...register("periodEnd")} />
             </FieldGroup>
           </div>
@@ -495,49 +500,49 @@ export function RunPayrollSection({
           />
           <div>
             <Button type="submit" variant="secondary" disabled={previewLoading}>
-              {previewLoading ? "جاري الحساب..." : "معاينة المستحقات"}
+              {previewLoading ? t("جاري الحساب...") : t("معاينة المستحقات")}
             </Button>
           </div>
         </form>
 
-        {error && <div className="mt-stack-md rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{error}</div>}
+        {error && <div className="mt-stack-md rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(error)}</div>}
 
         {preview && (
           <div className="mt-stack-lg flex flex-col gap-stack-md">
             <div className="grid grid-cols-2 sm:grid-cols-7 gap-stack-sm text-center">
-              <PreviewStat label="الأساسي" value={preview.baseAmount} />
-              <PreviewStat label="أجر أيام المأمورية الإضافي" value={preview.missionDoubleUpAmount} />
-              <PreviewStat label="حوافز" value={preview.bonusAmount} tone="text-success" />
-              <PreviewStat label="خصومات" value={-preview.deductionsAmount} tone="text-error" />
-              <PreviewStat label="قسط سلفة" value={-preview.advanceInstallmentAmount} tone="text-error" />
-              <PreviewStat label="خصم تأمين" value={-preview.insuranceAmount} tone="text-error" />
-              <PreviewStat label="خصم مصر للتأمين" value={-preview.misrInsuranceAmount} tone="text-error" />
+              <PreviewStat label={t("الأساسي")} value={preview.baseAmount} />
+              <PreviewStat label={t("أجر أيام المأمورية الإضافي")} value={preview.missionDoubleUpAmount} />
+              <PreviewStat label={t("حوافز")} value={preview.bonusAmount} tone="text-success" />
+              <PreviewStat label={t("خصومات")} value={-preview.deductionsAmount} tone="text-error" />
+              <PreviewStat label={t("قسط سلفة")} value={-preview.advanceInstallmentAmount} tone="text-error" />
+              <PreviewStat label={t("خصم تأمين")} value={-preview.insuranceAmount} tone="text-error" />
+              <PreviewStat label={t("خصم مصر للتأمين")} value={-preview.misrInsuranceAmount} tone="text-error" />
             </div>
             {(preview.workshopDays > 0 || preview.missionDays > 0 || preview.excludedFridays > 0) && (
               <p className="text-xs text-on-surface-variant">
-                أيام ورشة: <span dir="ltr" className="font-mono-data text-on-surface">{preview.workshopDays}</span>
+                {t("أيام ورشة: ")}<span dir="ltr" className="font-mono-data text-on-surface">{preview.workshopDays}</span>
                 {preview.missionDays > 0 && (
                   <>
-                    {" "}· أيام مأمورية: <span dir="ltr" className="font-mono-data text-on-surface">{preview.missionDays}</span>
+                    {" "}{t("· أيام مأمورية: ")}<span dir="ltr" className="font-mono-data text-on-surface">{preview.missionDays}</span>
                   </>
                 )}
                 {preview.excludedFridays > 0 && (
                   <>
-                    {" "}· أيام جمعة مستبعدة (إجازة):{" "}
+                    {" "}{t("· أيام جمعة مستبعدة (إجازة):")}{" "}
                     <span dir="ltr" className="font-mono-data text-on-surface">{preview.excludedFridays}</span>
                   </>
                 )}
               </p>
             )}
             <div className="flex items-center justify-between rounded-lg bg-surface-container-low px-stack-md py-stack-sm">
-              <span className="text-body-sm text-on-surface-variant">صافي المستحق لـ {preview.employeeName}</span>
+              <span className="text-body-sm text-on-surface-variant">{t("صافي المستحق لـ ")}{preview.employeeName}</span>
               <span dir="ltr" className="text-title-sm text-mono-data text-success font-bold">
                 {formatCurrency(preview.netPaid)}
               </span>
             </div>
             <div>
               <Button onClick={onRun} disabled={runLoading}>
-                {runLoading ? "جاري الصرف..." : "اعتماد وصرف الراتب"}
+                {runLoading ? t("جاري الصرف...") : t("اعتماد وصرف الراتب")}
               </Button>
             </div>
           </div>
@@ -546,16 +551,16 @@ export function RunPayrollSection({
 
       <div>
         <div className="flex items-center justify-between mb-stack-sm">
-          <h3 className="text-title-sm text-on-surface">آخر عمليات الصرف</h3>
+          <h3 className="text-title-sm text-on-surface">{t("آخر عمليات الصرف")}</h3>
           {history.length > 0 && (
             <ExportButton
-              filename="سجل_الرواتب"
+              filename={t("سجل_الرواتب")}
               columns={[
-                { header: "الموظف", key: "employee" },
-                { header: "بداية الفترة", key: "start" },
-                { header: "نهاية الفترة", key: "end" },
-                { header: "الصافي", key: "net" },
-                { header: "تاريخ الصرف", key: "paidDate" },
+                { header: t("الموظف"), key: "employee" },
+                { header: t("بداية الفترة"), key: "start" },
+                { header: t("نهاية الفترة"), key: "end" },
+                { header: t("الصافي"), key: "net" },
+                { header: t("تاريخ الصرف"), key: "paidDate" },
               ]}
               rows={history.map((p) => ({
                 employee: p.employeeName,
@@ -568,16 +573,16 @@ export function RunPayrollSection({
           )}
         </div>
         {history.length === 0 ? (
-          <EmptyState icon="history" title="لا يوجد رواتب مصروفة بعد" />
+          <EmptyState icon="history" title={t("لا يوجد رواتب مصروفة بعد")} />
         ) : (
           <Table>
             <THead>
               <tr>
-                <Th>الموظف</Th>
-                <Th>الفترة</Th>
-                <Th>الصافي</Th>
-                <Th>تاريخ الصرف</Th>
-                {canManage && <Th>إجراءات</Th>}
+                <Th>{t("الموظف")}</Th>
+                <Th>{t("الفترة")}</Th>
+                <Th>{t("الصافي")}</Th>
+                <Th>{t("تاريخ الصرف")}</Th>
+                {canManage && <Th>{t("إجراءات")}</Th>}
               </tr>
             </THead>
             <TBody>
@@ -592,10 +597,10 @@ export function RunPayrollSection({
                   {canManage && (
                     <Td>
                       <div className="flex items-center gap-1">
-                        <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingPayout(p)}>
+                        <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل")} onClick={() => setEditingPayout(p)}>
                           <Icon name="edit" size={18} />
                         </button>
-                        <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeletingPayout(p)}>
+                        <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => setDeletingPayout(p)}>
                           <Icon name="delete" size={18} />
                         </button>
                       </div>
@@ -612,8 +617,8 @@ export function RunPayrollSection({
       <ConfirmDialog
         open={!!deletingPayout}
         onClose={() => setDeletingPayout(null)}
-        title="حذف الراتب المصروف"
-        message="هل أنت متأكد من حذف هذا الراتب؟ سيتم إلغاء أثره في الخزنة وإرجاع أي سلف أو تسويات استخدمها."
+        title={t("حذف الراتب المصروف")}
+        message={t("هل أنت متأكد من حذف هذا الراتب؟ سيتم إلغاء أثره في الخزنة وإرجاع أي سلف أو تسويات استخدمها.")}
         onConfirm={() => deletePayrollPayout(deletingPayout!.id)}
         onConfirmed={() => router.refresh()}
       />
@@ -622,6 +627,7 @@ export function RunPayrollSection({
 }
 
 function EditPayrollPayoutDialog({ open, onClose, payout }: { open: boolean; onClose: () => void; payout: PayrollPayoutDTO | null }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -667,7 +673,7 @@ function EditPayrollPayoutDialog({ open, onClose, payout }: { open: boolean; onC
     const result = await updatePayrollPayout({ id: payout.id, ...data });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     onClose();
@@ -678,43 +684,42 @@ function EditPayrollPayoutDialog({ open, onClose, payout }: { open: boolean; onC
     <Dialog
       open={open}
       onClose={onClose}
-      title={`تعديل راتب ${payout.employeeName}`}
+      title={t("تعديل راتب {0}", [payout.employeeName])}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="edit-payout-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ"}
+            {loading ? t("جاري الحفظ...") : t("حفظ")}
           </Button>
         </>
       }
     >
       <form id="edit-payout-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
         <div className="grid grid-cols-2 gap-stack-md">
-          <FieldGroup label="الأساسي" error={errors.baseAmount?.message}>
+          <FieldGroup label={t("الأساسي")} error={errors.baseAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("baseAmount", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="أجر أيام المأمورية الإضافي" error={errors.missionDoubleUpAmount?.message}>
+          <FieldGroup label={t("أجر أيام المأمورية الإضافي")} error={errors.missionDoubleUpAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("missionDoubleUpAmount", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="حوافز" error={errors.bonusAmount?.message}>
+          <FieldGroup label={t("حوافز")} error={errors.bonusAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("bonusAmount", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="خصومات" error={errors.deductionsAmount?.message}>
+          <FieldGroup label={t("خصومات")} error={errors.deductionsAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("deductionsAmount", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="قسط سلفة" error={errors.advanceInstallmentAmount?.message}>
+          <FieldGroup label={t("قسط سلفة")} error={errors.advanceInstallmentAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("advanceInstallmentAmount", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="خصم تأمين" error={errors.insuranceAmount?.message}>
+          <FieldGroup label={t("خصم تأمين")} error={errors.insuranceAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("insuranceAmount", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="خصم مصر للتأمين" error={errors.misrInsuranceAmount?.message}>
+          <FieldGroup label={t("خصم مصر للتأمين")} error={errors.misrInsuranceAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("misrInsuranceAmount", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

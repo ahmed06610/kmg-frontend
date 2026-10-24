@@ -1,3 +1,6 @@
+"use client";
+
+import { useT } from "@/lib/i18n/client";
 import { Icon } from "@/components/ui/Icon";
 import { cn, formatCurrency } from "@/lib/utils";
 
@@ -16,9 +19,10 @@ export function KpiCard({
   valueTone?: "error" | "success";
   subtitle?: string;
 }) {
+  const t = useT();
   return (
     <div className="bg-surface-container-lowest rounded-xl p-stack-md border border-outline-variant shadow-[var(--shadow-soft)] relative overflow-hidden">
-      <div className={cn("absolute top-0 right-0 w-full h-1", highlight ? "bg-primary" : "bg-surface-variant")} />
+      <div className={cn("absolute top-0 start-0 w-full h-1", highlight ? "bg-primary" : "bg-surface-variant")} />
       <div className="flex justify-between items-start mb-2 gap-2">
         <p className={cn("text-body-sm text-on-surface-variant", highlight && "font-semibold text-primary")}>{label}</p>
         {changePercent !== undefined && changePercent !== 0 && (
@@ -37,11 +41,11 @@ export function KpiCard({
       <h3
         dir="ltr"
         className={cn(
-          "text-xl text-mono-data tracking-tight text-right",
+          "text-xl text-mono-data tracking-tight text-start",
           valueTone === "error" ? "text-error" : "text-on-surface",
         )}
       >
-        {formatCurrency(value)} <span className="text-xs text-on-surface-variant">ج.م</span>
+        {formatCurrency(value)} <span className="text-xs text-on-surface-variant">{t("ج.م")}</span>
       </h3>
       {subtitle && <p className="text-[10px] text-on-surface-variant mt-1">{subtitle}</p>}
     </div>

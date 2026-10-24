@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { downloadWorkbook, type ExcelColumn, type ExcelSheet } from "@/lib/excel";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
@@ -11,15 +12,15 @@ interface ExportButtonProps {
 }
 
 export function ExportButton({ filename, columns, rows }: ExportButtonProps) {
+  const t = useT();
   function handleExport() {
-    downloadWorkbook(filename, [{ name: "بيانات", columns, rows }]);
+    downloadWorkbook(filename, [{ name: t("بيانات"), columns, rows }]);
   }
 
   return (
     <Button variant="secondary" size="sm" onClick={handleExport} disabled={rows.length === 0}>
       <Icon name="download" size={16} />
-      تصدير Excel
-    </Button>
+      {t("تصدير Excel")}</Button>
   );
 }
 
@@ -27,7 +28,7 @@ export function ExportButton({ filename, columns, rows }: ExportButtonProps) {
 export function MultiSheetExportButton({
   filename,
   sheets,
-  label = "تصدير Excel",
+  label,
   disabled,
 }: {
   filename: string;
@@ -35,6 +36,8 @@ export function MultiSheetExportButton({
   label?: string;
   disabled?: boolean;
 }) {
+  const t = useT();
+  label ??= t("تصدير Excel");
   function handleExport() {
     downloadWorkbook(filename, sheets);
   }

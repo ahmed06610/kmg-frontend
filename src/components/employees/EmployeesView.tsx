@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import Link from "next/link";
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
@@ -25,7 +26,7 @@ function KpiCard({ label, value, tone }: { label: string; value: string; tone?: 
   return (
     <Card className="p-stack-md">
       <p className="text-label-caps text-on-surface-variant mb-1">{label}</p>
-      <p dir="ltr" className={`text-title-sm text-mono-data text-right ${tone ?? "text-on-surface"}`}>
+      <p dir="ltr" className={`text-title-sm text-mono-data text-page-start ${tone ?? "text-on-surface"}`}>
         {value}
       </p>
     </Card>
@@ -43,6 +44,7 @@ export function EmployeesView({
   canCreateWorker: boolean;
   canRegisterEmployee: boolean;
 }) {
+  const t = useT();
   const [workerDialogOpen, setWorkerDialogOpen] = useState(false);
   const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
   const [editingWorker, setEditingWorker] = useState<EmployeeListDTO | null>(null);
@@ -62,45 +64,43 @@ export function EmployeesView({
     <div className="flex flex-col gap-stack-lg">
       <div className="flex items-center justify-between flex-wrap gap-stack-sm">
         <div>
-          <h1 className="text-headline-md text-on-surface">الموظفين</h1>
-          <p className="text-body-sm text-on-surface-variant">{employees.length} موظف</p>
+          <h1 className="text-headline-md text-on-surface">{t("الموظفين")}</h1>
+          <p className="text-body-sm text-on-surface-variant">{t("{0} موظف", [employees.length])}</p>
         </div>
         <div className="flex gap-stack-sm">
           {canRegisterEmployee && (
             <Button variant="secondary" onClick={() => setRegisterDialogOpen(true)}>
               <Icon name="admin_panel_settings" size={18} />
-              تسجيل موظف بحساب دخول
-            </Button>
+              {t("تسجيل موظف بحساب دخول")}</Button>
           )}
           {canCreateWorker && (
             <Button onClick={() => setWorkerDialogOpen(true)}>
               <Icon name="add" />
-              عامل جديد
-            </Button>
+              {t("عامل جديد")}</Button>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-gutter">
-        <KpiCard label="إجمالي الموظفين" value={String(employees.length)} />
-        <KpiCard label="إداريون" value={String(admins.length)} />
-        <KpiCard label="عمال" value={String(workers.length)} />
-        <KpiCard label="سلف قائمة" value={formatCurrency(totalAdvances)} tone="text-error" />
+        <KpiCard label={t("إجمالي الموظفين")} value={String(employees.length)} />
+        <KpiCard label={t("إداريون")} value={String(admins.length)} />
+        <KpiCard label={t("عمال")} value={String(workers.length)} />
+        <KpiCard label={t("سلف قائمة")} value={formatCurrency(totalAdvances)} tone="text-error" />
       </div>
 
       <div className="flex items-center justify-between gap-stack-sm flex-wrap">
-        <SearchInput value={table.search} onChange={table.setSearch} placeholder="بحث بالاسم..." />
+        <SearchInput value={table.search} onChange={table.setSearch} placeholder={t("بحث بالاسم...")} />
         <ExportButton
-          filename="الموظفين"
+          filename={t("الموظفين")}
           columns={[
-            { header: "الاسم", key: "name" },
-            { header: "النوع", key: "type" },
-            { header: "نوع الأجر", key: "wageType" },
-            { header: "قيمة الأجر", key: "wageAmount" },
-            { header: "التأمين", key: "insuranceAmount" },
-            { header: "مصر للتأمين", key: "misrInsuranceAmount" },
-            { header: "السلف المتبقية", key: "advances" },
-            { header: "الحالة", key: "status" },
+            { header: t("الاسم"), key: "name" },
+            { header: t("النوع"), key: "type" },
+            { header: t("نوع الأجر"), key: "wageType" },
+            { header: t("قيمة الأجر"), key: "wageAmount" },
+            { header: t("التأمين"), key: "insuranceAmount" },
+            { header: t("مصر للتأمين"), key: "misrInsuranceAmount" },
+            { header: t("السلف المتبقية"), key: "advances" },
+            { header: t("الحالة"), key: "status" },
           ]}
           rows={table.filteredRows.map((e) => ({
             name: e.name,
@@ -110,29 +110,29 @@ export function EmployeesView({
             insuranceAmount: e.insuranceAmount,
             misrInsuranceAmount: e.misrInsuranceAmount,
             advances: e.remainingAdvances,
-            status: e.suspended ? "موقوف" : "نشط",
+            status: e.suspended ? t("موقوف") : t("نشط"),
           }))}
         />
       </div>
 
       {table.totalCount === 0 ? (
-        <EmptyState icon="badge" title="لا يوجد موظفين مطابقين" />
+        <EmptyState icon="badge" title={t("لا يوجد موظفين مطابقين")} />
       ) : (
         <>
           <Table>
             <THead>
               <tr>
-                <Th>الاسم</Th>
-                <Th>النوع</Th>
-                <Th>نوع الأجر</Th>
-                <Th>قيمة الأجر</Th>
-                <Th>التأمين</Th>
-                <Th>مصر للتأمين</Th>
-                <Th>السلف المتبقية</Th>
-                <Th>المدير</Th>
-                <Th>حساب دخول</Th>
-                <Th>الحالة</Th>
-                {(canCreateWorker || canRegisterEmployee) && <Th>إجراءات</Th>}
+                <Th>{t("الاسم")}</Th>
+                <Th>{t("النوع")}</Th>
+                <Th>{t("نوع الأجر")}</Th>
+                <Th>{t("قيمة الأجر")}</Th>
+                <Th>{t("التأمين")}</Th>
+                <Th>{t("مصر للتأمين")}</Th>
+                <Th>{t("السلف المتبقية")}</Th>
+                <Th>{t("المدير")}</Th>
+                <Th>{t("حساب دخول")}</Th>
+                <Th>{t("الحالة")}</Th>
+                {(canCreateWorker || canRegisterEmployee) && <Th>{t("إجراءات")}</Th>}
               </tr>
             </THead>
             <TBody>
@@ -152,18 +152,18 @@ export function EmployeesView({
                     {e.remainingAdvances > 0 ? formatCurrency(e.remainingAdvances) : "-"}
                   </TdMono>
                   <Td>{e.managerName ?? "-"}</Td>
-                  <Td>{e.hasLoginAccount ? <Badge tone="info">نعم</Badge> : <Badge tone="neutral">لا</Badge>}</Td>
-                  <Td>{e.suspended ? <Badge tone="error">موقوف</Badge> : <Badge tone="success">نشط</Badge>}</Td>
+                  <Td>{e.hasLoginAccount ? <Badge tone="info">{t("نعم")}</Badge> : <Badge tone="neutral">{t("لا")}</Badge>}</Td>
+                  <Td>{e.suspended ? <Badge tone="error">{t("موقوف")}</Badge> : <Badge tone="success">{t("نشط")}</Badge>}</Td>
                   {(canCreateWorker || canRegisterEmployee) && (
                     <Td>
                       {e.hasLoginAccount
                         ? canRegisterEmployee && (
-                            <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingAdmin(e)}>
+                            <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل")} onClick={() => setEditingAdmin(e)}>
                               <Icon name="edit" size={18} />
                             </button>
                           )
                         : canCreateWorker && (
-                            <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingWorker(e)}>
+                            <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل")} onClick={() => setEditingWorker(e)}>
                               <Icon name="edit" size={18} />
                             </button>
                           )}

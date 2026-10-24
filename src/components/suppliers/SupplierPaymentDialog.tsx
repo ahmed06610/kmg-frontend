@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export function SupplierPaymentDialog({ open, onClose, supplierId, outstanding, payment }: Props) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -79,7 +81,7 @@ export function SupplierPaymentDialog({ open, onClose, supplierId, outstanding, 
 
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     reset();
@@ -91,56 +93,54 @@ export function SupplierPaymentDialog({ open, onClose, supplierId, outstanding, 
     <Dialog
       open={open}
       onClose={onClose}
-      title={isEdit ? "تعديل دفعة المورد" : "تسجيل دفعة للمورد"}
+      title={isEdit ? t("تعديل دفعة المورد") : t("تسجيل دفعة للمورد")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="supplier-payment-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ"}
+            {loading ? t("جاري الحفظ...") : t("حفظ")}
           </Button>
         </>
       }
     >
       <p className="text-body-sm text-on-surface-variant">
-        المستحق الحالي: <span dir="ltr" className="font-mono-data text-on-surface">{outstanding.toFixed(2)}</span>
+        {t("المستحق الحالي: ")}<span dir="ltr" className="font-mono-data text-on-surface">{outstanding.toFixed(2)}</span>
       </p>
       <form id="supplier-payment-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
         <label className="flex items-center gap-2 text-body-sm text-on-surface">
           <input type="checkbox" {...register("isCheck")} />
-          دفعة بشيك
-        </label>
+          {t("دفعة بشيك")}</label>
 
         {isCheck ? (
-          <FieldGroup label="قيمة الشيك" error={errors.amountCash?.message}>
+          <FieldGroup label={t("قيمة الشيك")} error={errors.amountCash?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("amountCash", { valueAsNumber: true })} />
           </FieldGroup>
         ) : (
           <div className="grid grid-cols-2 gap-stack-md">
-            <FieldGroup label="المبلغ كاش" error={errors.amountCash?.message}>
+            <FieldGroup label={t("المبلغ كاش")} error={errors.amountCash?.message}>
               <Input type="number" step="0.01" dir="ltr" {...register("amountCash", { valueAsNumber: true })} />
             </FieldGroup>
-            <FieldGroup label="المبلغ كريديت" error={errors.amountCredit?.message}>
+            <FieldGroup label={t("المبلغ كريديت")} error={errors.amountCredit?.message}>
               <Input type="number" step="0.01" dir="ltr" {...register("amountCredit", { valueAsNumber: true })} />
             </FieldGroup>
           </div>
         )}
 
         {isCheck && (
-          <FieldGroup label="تاريخ استحقاق الشيك" error={errors.checkDueDate?.message}>
+          <FieldGroup label={t("تاريخ استحقاق الشيك")} error={errors.checkDueDate?.message}>
             <Input type="date" {...register("checkDueDate")} />
           </FieldGroup>
         )}
 
-        <FieldGroup label="تاريخ الدفعة" error={errors.paymentDate?.message}>
+        <FieldGroup label={t("تاريخ الدفعة")} error={errors.paymentDate?.message}>
           <Input type="date" {...register("paymentDate")} />
         </FieldGroup>
-        <FieldGroup label="ملاحظات" error={errors.notes?.message}>
+        <FieldGroup label={t("ملاحظات")} error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
         <InvoiceAttachmentField folder="suppliers" value={attachment} onChange={setAttachment} />
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

@@ -1,3 +1,5 @@
+"use client";
+
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -31,7 +33,7 @@ const components: Components = {
       </code>
     ),
   pre: ({ children }) => (
-    <pre dir="ltr" className="my-2 overflow-x-auto rounded-lg bg-surface-container-highest p-3 text-left text-xs leading-relaxed">
+    <pre dir="ltr" className="my-2 overflow-x-auto rounded-lg bg-surface-container-highest p-3 text-end text-xs leading-relaxed">
       {children}
     </pre>
   ),

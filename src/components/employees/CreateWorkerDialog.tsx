@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,6 +13,7 @@ import { createWorkerSchema, type CreateWorkerFormValues } from "@/schema/employ
 import { EmployeeType, WageType } from "@/types/enums";
 
 export function CreateWorkerDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -32,7 +34,7 @@ export function CreateWorkerDialog({ open, onClose }: { open: boolean; onClose: 
     const result = await createWorker({ ...data, phone: data.phone || null });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     reset();
@@ -44,51 +46,50 @@ export function CreateWorkerDialog({ open, onClose }: { open: boolean; onClose: 
     <Dialog
       open={open}
       onClose={onClose}
-      title="عامل جديد (بدون حساب دخول)"
+      title={t("عامل جديد (بدون حساب دخول)")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="create-worker-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ"}
+            {loading ? t("جاري الحفظ...") : t("حفظ")}
           </Button>
         </>
       }
     >
       <form id="create-worker-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="الاسم" error={errors.name?.message}>
+        <FieldGroup label={t("الاسم")} error={errors.name?.message}>
           <Input {...register("name")} />
         </FieldGroup>
-        <FieldGroup label="رقم الهاتف" error={errors.phone?.message}>
+        <FieldGroup label={t("رقم الهاتف")} error={errors.phone?.message}>
           <Input {...register("phone")} />
         </FieldGroup>
         <div className="grid grid-cols-2 gap-stack-md">
-          <FieldGroup label="النوع" error={errors.employeeType?.message}>
+          <FieldGroup label={t("النوع")} error={errors.employeeType?.message}>
             <Select {...register("employeeType", { valueAsNumber: true })}>
-              <option value={EmployeeType.Worker}>عامل</option>
-              <option value={EmployeeType.Admin}>إداري</option>
+              <option value={EmployeeType.Worker}>{t("عامل")}</option>
+              <option value={EmployeeType.Admin}>{t("إداري")}</option>
             </Select>
           </FieldGroup>
-          <FieldGroup label="نوع الأجر" error={errors.wageType?.message}>
+          <FieldGroup label={t("نوع الأجر")} error={errors.wageType?.message}>
             <Select {...register("wageType", { valueAsNumber: true })}>
-              <option value={WageType.Daily}>يومي</option>
-              <option value={WageType.Monthly}>شهري</option>
+              <option value={WageType.Daily}>{t("يومي")}</option>
+              <option value={WageType.Monthly}>{t("شهري")}</option>
             </Select>
           </FieldGroup>
         </div>
         <div className="grid grid-cols-2 gap-stack-md">
-          <FieldGroup label="قيمة الأجر" error={errors.wageAmount?.message}>
+          <FieldGroup label={t("قيمة الأجر")} error={errors.wageAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("wageAmount", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="قيمة التأمين الشهري" error={errors.insuranceAmount?.message}>
+          <FieldGroup label={t("قيمة التأمين الشهري")} error={errors.insuranceAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("insuranceAmount", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="قيمة مصر للتأمين الشهري" error={errors.misrInsuranceAmount?.message}>
+          <FieldGroup label={t("قيمة مصر للتأمين الشهري")} error={errors.misrInsuranceAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("misrInsuranceAmount", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

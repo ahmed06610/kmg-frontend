@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function ProjectEditDialog({ open, onClose, project, clients }: Props) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -84,7 +86,7 @@ export function ProjectEditDialog({ open, onClose, project, clients }: Props) {
 
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     onClose();
@@ -95,24 +97,23 @@ export function ProjectEditDialog({ open, onClose, project, clients }: Props) {
     <Dialog
       open={open}
       onClose={onClose}
-      title="تعديل بيانات المشروع"
+      title={t("تعديل بيانات المشروع")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="edit-project-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ"}
+            {loading ? t("جاري الحفظ...") : t("حفظ")}
           </Button>
         </>
       }
     >
       <form id="edit-project-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="اسم المشروع" error={errors.name?.message}>
+        <FieldGroup label={t("اسم المشروع")} error={errors.name?.message}>
           <Input {...register("name")} />
         </FieldGroup>
 
-        <FieldGroup label="العميل" error={errors.clientId?.message}>
+        <FieldGroup label={t("العميل")} error={errors.clientId?.message}>
           <Controller
             name="clientId"
             control={control}
@@ -120,50 +121,50 @@ export function ProjectEditDialog({ open, onClose, project, clients }: Props) {
               <Combobox
                 value={field.value ? String(field.value) : ""}
                 onChange={(v) => field.onChange(Number(v))}
-                placeholder="اختر العميل"
+                placeholder={t("اختر العميل")}
                 options={clients.map((c) => ({ value: String(c.id), label: c.name }))}
               />
             )}
           />
         </FieldGroup>
 
-        <FieldGroup label="قيمة العقد" error={errors.contractValue?.message}>
+        <FieldGroup label={t("قيمة العقد")} error={errors.contractValue?.message}>
           <Input type="number" step="0.01" dir="ltr" {...register("contractValue", { valueAsNumber: true })} />
         </FieldGroup>
 
-        <FieldGroup label="وصف المشروع" error={errors.description?.message}>
+        <FieldGroup label={t("وصف المشروع")} error={errors.description?.message}>
           <Textarea rows={2} {...register("description")} />
         </FieldGroup>
 
         {isManufacture && (
           <>
             <div className="grid grid-cols-2 gap-stack-md">
-              <FieldGroup label="نسبة تأمين المناقصة %" error={errors.tenderInsurancePercent?.message}>
+              <FieldGroup label={t("نسبة تأمين المناقصة %")} error={errors.tenderInsurancePercent?.message}>
                 <Input type="number" step="0.01" dir="ltr" disabled={project.insuranceRecovered} {...register("tenderInsurancePercent", { valueAsNumber: true })} />
               </FieldGroup>
-              <FieldGroup label="تاريخ استحقاق استرداد التأمين" error={errors.insuranceDueDate?.message}>
+              <FieldGroup label={t("تاريخ استحقاق استرداد التأمين")} error={errors.insuranceDueDate?.message}>
                 <Input type="date" disabled={project.insuranceRecovered} {...register("insuranceDueDate")} />
               </FieldGroup>
             </div>
-            {project.insuranceRecovered && <p className="text-xs text-on-surface-variant -mt-2">التأمين مسترد بالفعل - مينفعش يتعدّل</p>}
+            {project.insuranceRecovered && <p className="text-xs text-on-surface-variant -mt-2">{t("التأمين مسترد بالفعل - مينفعش يتعدّل")}</p>}
 
-            <FieldGroup label="نسبة ضريبة المناقصة %" error={errors.tenderTaxPercent?.message}>
+            <FieldGroup label={t("نسبة ضريبة المناقصة %")} error={errors.tenderTaxPercent?.message}>
               <Input type="number" step="0.01" dir="ltr" {...register("tenderTaxPercent", { valueAsNumber: true })} />
             </FieldGroup>
 
             <div className="grid grid-cols-2 gap-stack-md">
-              <FieldGroup label="نسبة ضمان الأعمال %" error={errors.workGuaranteePercent?.message}>
+              <FieldGroup label={t("نسبة ضمان الأعمال %")} error={errors.workGuaranteePercent?.message}>
                 <Input type="number" step="0.01" dir="ltr" disabled={project.workGuaranteeRecovered} {...register("workGuaranteePercent", { valueAsNumber: true })} />
               </FieldGroup>
-              <FieldGroup label="تاريخ استحقاق استرداد الضمان" error={errors.workGuaranteeDueDate?.message}>
+              <FieldGroup label={t("تاريخ استحقاق استرداد الضمان")} error={errors.workGuaranteeDueDate?.message}>
                 <Input type="date" disabled={project.workGuaranteeRecovered} {...register("workGuaranteeDueDate")} />
               </FieldGroup>
             </div>
-            {project.workGuaranteeRecovered && <p className="text-xs text-on-surface-variant -mt-2">ضمان الأعمال مسترد بالفعل - مينفعش يتعدّل</p>}
+            {project.workGuaranteeRecovered && <p className="text-xs text-on-surface-variant -mt-2">{t("ضمان الأعمال مسترد بالفعل - مينفعش يتعدّل")}</p>}
           </>
         )}
 
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

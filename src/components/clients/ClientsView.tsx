@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
@@ -15,6 +16,7 @@ import type { ClientListDTO } from "@/types/client";
 import { ClientFormDialog } from "./ClientFormDialog";
 
 export function ClientsView({ clients, canManage }: { clients: ClientListDTO[]; canManage: boolean }) {
+  const t = useT();
   const [dialogOpen, setDialogOpen] = useState(false);
   const table = useTableState({
     rows: clients,
@@ -26,29 +28,28 @@ export function ClientsView({ clients, canManage }: { clients: ClientListDTO[]; 
     <div className="flex flex-col gap-stack-lg">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-headline-md text-on-surface">العملاء</h1>
-          <p className="text-body-sm text-on-surface-variant">{clients.length} عميل</p>
+          <h1 className="text-headline-md text-on-surface">{t("العملاء")}</h1>
+          <p className="text-body-sm text-on-surface-variant">{t("{0} عميل", [clients.length])}</p>
         </div>
         {canManage && (
           <Button onClick={() => setDialogOpen(true)}>
             <Icon name="add" />
-            عميل جديد
-          </Button>
+            {t("عميل جديد")}</Button>
         )}
       </div>
 
       {clients.length > 0 && (
         <div className="flex items-center justify-between gap-stack-sm flex-wrap">
-          <SearchInput value={table.search} onChange={table.setSearch} placeholder="بحث بالاسم أو الهاتف..." />
+          <SearchInput value={table.search} onChange={table.setSearch} placeholder={t("بحث بالاسم أو الهاتف...")} />
           <ExportButton
-            filename="العملاء"
+            filename={t("العملاء")}
             columns={[
-              { header: "اسم العميل", key: "name" },
-              { header: "الهاتف", key: "phone" },
-              { header: "عدد المشاريع", key: "projectsCount" },
-              { header: "إجمالي التعاقدات", key: "totalContractValue" },
-              { header: "المحصَّل", key: "totalCollected" },
-              { header: "المتبقي", key: "totalRemaining" },
+              { header: t("اسم العميل"), key: "name" },
+              { header: t("الهاتف"), key: "phone" },
+              { header: t("عدد المشاريع"), key: "projectsCount" },
+              { header: t("إجمالي التعاقدات"), key: "totalContractValue" },
+              { header: t("المحصَّل"), key: "totalCollected" },
+              { header: t("المتبقي"), key: "totalRemaining" },
             ]}
             rows={table.filteredRows.map((c) => ({
               name: c.name,
@@ -63,20 +64,20 @@ export function ClientsView({ clients, canManage }: { clients: ClientListDTO[]; 
       )}
 
       {clients.length === 0 ? (
-        <EmptyState icon="groups" title="لا يوجد عملاء بعد" description="ابدأ بإضافة أول عميل للشركة" />
+        <EmptyState icon="groups" title={t("لا يوجد عملاء بعد")} description={t("ابدأ بإضافة أول عميل للشركة")} />
       ) : table.totalCount === 0 ? (
-        <EmptyState icon="search_off" title="لا يوجد عملاء مطابقين للبحث" />
+        <EmptyState icon="search_off" title={t("لا يوجد عملاء مطابقين للبحث")} />
       ) : (
         <>
           <Table>
             <THead>
               <tr>
-                <Th>اسم العميل</Th>
-                <Th>الهاتف</Th>
-                <Th>عدد المشاريع</Th>
-                <Th>إجمالي التعاقدات</Th>
-                <Th>المحصَّل</Th>
-                <Th>المتبقي</Th>
+                <Th>{t("اسم العميل")}</Th>
+                <Th>{t("الهاتف")}</Th>
+                <Th>{t("عدد المشاريع")}</Th>
+                <Th>{t("إجمالي التعاقدات")}</Th>
+                <Th>{t("المحصَّل")}</Th>
+                <Th>{t("المتبقي")}</Th>
               </tr>
             </THead>
             <TBody>
@@ -87,7 +88,7 @@ export function ClientsView({ clients, canManage }: { clients: ClientListDTO[]; 
                       {c.name}
                     </Link>
                   </Td>
-                  <Td dir="ltr" className="text-right">
+                  <Td dir="ltr" className="text-page-start">
                     {c.phone ?? "-"}
                   </Td>
                   <Td>{c.projectsCount}</Td>

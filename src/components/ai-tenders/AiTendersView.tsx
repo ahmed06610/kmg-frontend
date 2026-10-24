@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -17,6 +18,7 @@ function deadlineTone(days: number | null): "error" | "warning" | "neutral" {
 }
 
 export function AiTendersView({ results }: { results: AiTenderResultDTO[] }) {
+  const t = useT();
   const table = useTableState({
     rows: results,
     pageSize: 10,
@@ -29,28 +31,28 @@ export function AiTendersView({ results }: { results: AiTenderResultDTO[] }) {
   return (
     <div className="flex flex-col gap-stack-lg">
       <div>
-        <h1 className="text-headline-md text-on-surface">مناقصات AI</h1>
-        <p className="text-body-sm text-on-surface-variant">{results.length} مناقصة مطابقة من فحص خدمة الذكاء الاصطناعي</p>
+        <h1 className="text-headline-md text-on-surface">{t("مناقصات AI")}</h1>
+        <p className="text-body-sm text-on-surface-variant">{results.length} {t(" مناقصة مطابقة من فحص خدمة الذكاء الاصطناعي")}</p>
       </div>
 
       {results.length > 0 && (
-        <SearchInput value={table.search} onChange={table.setSearch} placeholder="بحث بالعنوان أو الجهة أو النوع..." />
+        <SearchInput value={table.search} onChange={table.setSearch} placeholder={t("بحث بالعنوان أو الجهة أو النوع...")} />
       )}
 
       {results.length === 0 ? (
-        <EmptyState icon="request_quote" title="لا توجد مناقصات مطابقة حاليًا" description="هتظهر هنا أول ما خدمة الـ AI تلاقي مناقصات مناسبة" />
+        <EmptyState icon="request_quote" title={t("لا توجد مناقصات مطابقة حاليًا")} description={t("هتظهر هنا أول ما خدمة الـ AI تلاقي مناقصات مناسبة")} />
       ) : table.totalCount === 0 ? (
-        <EmptyState icon="search_off" title="لا توجد نتائج مطابقة للبحث" />
+        <EmptyState icon="search_off" title={t("لا توجد نتائج مطابقة للبحث")} />
       ) : (
         <>
           <Table>
             <THead>
               <tr>
-                <Th>عنوان المناقصة</Th>
-                <Th>الجهة</Th>
-                <Th>النوع</Th>
-                <Th>الموعد النهائي</Th>
-                <Th>المصدر</Th>
+                <Th>{t("عنوان المناقصة")}</Th>
+                <Th>{t("الجهة")}</Th>
+                <Th>{t("النوع")}</Th>
+                <Th>{t("الموعد النهائي")}</Th>
+                <Th>{t("المصدر")}</Th>
               </tr>
             </THead>
             <TBody>
@@ -61,8 +63,8 @@ export function AiTendersView({ results }: { results: AiTenderResultDTO[] }) {
                       {r.tenderTitle ?? r.tenderId}
                     </Link>
                     {r.isNewCategory && (
-                      <span className="mr-2">
-                        <Badge tone="info">نوع جديد</Badge>
+                      <span className="ms-2">
+                        <Badge tone="info">{t("نوع جديد")}</Badge>
                       </span>
                     )}
                   </Td>
@@ -73,7 +75,7 @@ export function AiTendersView({ results }: { results: AiTenderResultDTO[] }) {
                       <span>{r.submissionDeadline ?? "-"}</span>
                       {r.daysUntilDeadline !== null && (
                         <Badge tone={deadlineTone(r.daysUntilDeadline)}>
-                          {r.daysUntilDeadline <= 0 ? "انتهى الموعد" : `متبقي ${r.daysUntilDeadline} يوم`}
+                          {r.daysUntilDeadline <= 0 ? t("انتهى الموعد") : t("متبقي {0} يوم", [r.daysUntilDeadline])}
                         </Badge>
                       )}
                     </div>

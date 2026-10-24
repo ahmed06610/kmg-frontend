@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -30,6 +31,7 @@ export function WriteOffsTab({
   remainingBalance: number;
   canManage: boolean;
 }) {
+  const t = useT();
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingWriteOff, setEditingWriteOff] = useState<ProjectWriteOffDTO | null>(null);
@@ -47,39 +49,38 @@ export function WriteOffsTab({
       <div className="flex items-center justify-between flex-wrap gap-stack-sm">
         <div className="flex flex-col gap-1">
           <p className="text-body-sm text-on-surface-variant">
-            إجمالي خصم الأعمال: <span dir="ltr" className="font-mono-data text-on-surface font-semibold">{formatCurrency(total)}</span>
+            {t("إجمالي خصم الأعمال: ")}<span dir="ltr" className="font-mono-data text-on-surface font-semibold">{formatCurrency(total)}</span>
           </p>
           <p className="text-body-sm text-on-surface-variant">
-            المتبقي بعد الخصم: <span dir="ltr" className="font-mono-data text-on-surface font-semibold">{formatCurrency(remainingBalance)}</span>
+            {t("المتبقي بعد الخصم: ")}<span dir="ltr" className="font-mono-data text-on-surface font-semibold">{formatCurrency(remainingBalance)}</span>
           </p>
         </div>
         {canManage && (
           <Button size="sm" onClick={() => setDialogOpen(true)}>
             <Icon name="add" size={18} />
-            إضافة خصم
-          </Button>
+            {t("إضافة خصم")}</Button>
         )}
       </div>
 
-      {writeOffs.length > 0 && <SearchInput value={table.search} onChange={table.setSearch} placeholder="بحث بالسبب..." />}
+      {writeOffs.length > 0 && <SearchInput value={table.search} onChange={table.setSearch} placeholder={t("بحث بالسبب...")} />}
 
       {writeOffs.length === 0 ? (
         <EmptyState
           icon="money_off"
-          title="لا توجد خصومات أعمال مسجلة"
-          description="سجّل هنا أي مبلغ متعذر تحصيله من العميل عشان المتبقي يبقى صحيح"
+          title={t("لا توجد خصومات أعمال مسجلة")}
+          description={t("سجّل هنا أي مبلغ متعذر تحصيله من العميل عشان المتبقي يبقى صحيح")}
         />
       ) : table.totalCount === 0 ? (
-        <EmptyState icon="search_off" title="لا توجد نتائج مطابقة" />
+        <EmptyState icon="search_off" title={t("لا توجد نتائج مطابقة")} />
       ) : (
         <>
         <Table>
           <THead>
             <tr>
-              <Th>القيمة</Th>
-              <Th>السبب</Th>
-              <Th>التاريخ</Th>
-              {canManage && <Th>إجراءات</Th>}
+              <Th>{t("القيمة")}</Th>
+              <Th>{t("السبب")}</Th>
+              <Th>{t("التاريخ")}</Th>
+              {canManage && <Th>{t("إجراءات")}</Th>}
             </tr>
           </THead>
           <TBody>
@@ -91,10 +92,10 @@ export function WriteOffsTab({
                 {canManage && (
                   <Td>
                     <div className="flex items-center gap-1">
-                      <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingWriteOff(w)}>
+                      <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل")} onClick={() => setEditingWriteOff(w)}>
                         <Icon name="edit" size={18} />
                       </button>
-                      <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeletingWriteOff(w)}>
+                      <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => setDeletingWriteOff(w)}>
                         <Icon name="delete" size={18} />
                       </button>
                     </div>
@@ -118,8 +119,8 @@ export function WriteOffsTab({
       <ConfirmDialog
         open={!!deletingWriteOff}
         onClose={() => setDeletingWriteOff(null)}
-        title="حذف خصم الأعمال"
-        message="هل أنت متأكد من حذف هذا الخصم؟ سيرجع المبلغ للمتبقي على المشروع."
+        title={t("حذف خصم الأعمال")}
+        message={t("هل أنت متأكد من حذف هذا الخصم؟ سيرجع المبلغ للمتبقي على المشروع.")}
         onConfirm={() => deleteProjectWriteOff(deletingWriteOff!.id, projectId)}
         onConfirmed={() => router.refresh()}
       />
@@ -138,6 +139,7 @@ function WriteOffDialog({
   projectId: number;
   writeOff?: ProjectWriteOffDTO;
 }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -172,7 +174,7 @@ function WriteOffDialog({
       : await createProjectWriteOff({ projectId, ...data });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     onClose();
@@ -183,29 +185,28 @@ function WriteOffDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={isEdit ? "تعديل خصم أعمال" : "إضافة خصم أعمال"}
+      title={isEdit ? t("تعديل خصم أعمال") : t("إضافة خصم أعمال")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="project-writeoff-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ"}
+            {loading ? t("جاري الحفظ...") : t("حفظ")}
           </Button>
         </>
       }
     >
       <form id="project-writeoff-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="القيمة" error={errors.amount?.message}>
+        <FieldGroup label={t("القيمة")} error={errors.amount?.message}>
           <Input type="number" step="0.01" dir="ltr" {...register("amount", { valueAsNumber: true })} />
         </FieldGroup>
-        <FieldGroup label="السبب" error={errors.reason?.message}>
-          <Input placeholder="مبلغ متعذر تحصيله من العميل..." {...register("reason")} />
+        <FieldGroup label={t("السبب")} error={errors.reason?.message}>
+          <Input placeholder={t("مبلغ متعذر تحصيله من العميل...")} {...register("reason")} />
         </FieldGroup>
-        <FieldGroup label="التاريخ" error={errors.writeOffDate?.message}>
+        <FieldGroup label={t("التاريخ")} error={errors.writeOffDate?.message}>
           <Input type="date" {...register("writeOffDate")} />
         </FieldGroup>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

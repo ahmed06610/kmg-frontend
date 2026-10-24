@@ -1,3 +1,6 @@
+"use client";
+
+import { useT } from "@/lib/i18n/client";
 import { Icon } from "@/components/ui/Icon";
 import { formatCurrency } from "@/lib/utils";
 
@@ -14,18 +17,19 @@ export function CategoryCard({
   totalValue: number;
   onClick: () => void;
 }) {
+  const t = useT();
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-start gap-stack-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-stack-lg text-right hover:border-primary hover:shadow-[var(--shadow-soft)] transition-all"
+      className="flex flex-col items-start gap-stack-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-stack-lg text-start hover:border-primary hover:shadow-[var(--shadow-soft)] transition-all"
     >
       <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
         <Icon name={icon} size={22} />
       </div>
       <p className="text-title-sm text-on-surface font-semibold">{name}</p>
       <div className="flex flex-col gap-0.5 w-full">
-        <p className="text-xs text-on-surface-variant">{itemsCount} صنف</p>
-        <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-right">
+        <p className="text-xs text-on-surface-variant">{t("{0} صنف", [itemsCount])}</p>
+        <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-page-start">
           {formatCurrency(totalValue)}
         </p>
       </div>

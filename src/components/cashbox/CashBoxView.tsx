@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { deleteMiscExpense } from "@/actions/cashbox";
@@ -35,6 +36,7 @@ interface Props {
 }
 
 export function CashBoxView({ totals, transactions, filter, custodies, employees, projects, tab, canManage }: Props) {
+  const t = useT();
   const router = useRouter();
   const [search, setSearch] = useState(filter.search ?? "");
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
@@ -67,15 +69,14 @@ export function CashBoxView({ totals, transactions, filter, custodies, employees
     <div className="flex flex-col gap-stack-lg">
       <div className="flex items-center justify-between flex-wrap gap-stack-sm">
         <div>
-          <h1 className="text-headline-md text-on-surface">الخزنة</h1>
-          <p className="text-body-sm text-on-surface-variant">كل حركة مالية في النظام مربوطة تلقائيًا بمصدرها</p>
+          <h1 className="text-headline-md text-on-surface">{t("الخزنة")}</h1>
+          <p className="text-body-sm text-on-surface-variant">{t("كل حركة مالية في النظام مربوطة تلقائيًا بمصدرها")}</p>
         </div>
         {canManage && tab === "transactions" && (
-          <div className="flex items-center gap-stack-sm">
+          <div className="flex flex-wrap items-center gap-stack-sm">
             <Button variant="secondary" onClick={() => setAdjustDialogOpen(true)}>
               <Icon name="tune" size={18} />
-              تعديل رصيد الخزنة
-            </Button>
+              {t("تعديل رصيد الخزنة")}</Button>
             <Button
               onClick={() => {
                 setEditingTransaction(undefined);
@@ -83,28 +84,27 @@ export function CashBoxView({ totals, transactions, filter, custodies, employees
               }}
             >
               <Icon name="add" size={18} />
-              مصروف نثري
-            </Button>
+              {t("مصروف نثري")}</Button>
           </div>
         )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-gutter">
         <Card>
-          <p className="text-body-sm text-on-surface-variant">الرصيد الكاش</p>
-          <p dir="ltr" className="text-headline-md text-mono-data text-on-surface mt-1 text-right">
+          <p className="text-body-sm text-on-surface-variant">{t("الرصيد الكاش")}</p>
+          <p dir="ltr" className="text-headline-md text-mono-data text-on-surface mt-1 text-page-start">
             {formatCurrency(totals.totalCash)}
           </p>
         </Card>
         <Card>
-          <p className="text-body-sm text-on-surface-variant">الرصيد الكريديت</p>
-          <p dir="ltr" className="text-headline-md text-mono-data text-on-surface mt-1 text-right">
+          <p className="text-body-sm text-on-surface-variant">{t("الرصيد الكريديت")}</p>
+          <p dir="ltr" className="text-headline-md text-mono-data text-on-surface mt-1 text-page-start">
             {formatCurrency(totals.totalCredit)}
           </p>
         </Card>
         <Card className="bg-primary text-on-primary">
-          <p className="text-body-sm opacity-80">الرصيد الإجمالي</p>
-          <p dir="ltr" className="text-headline-md text-mono-data mt-1 text-right">
+          <p className="text-body-sm opacity-80">{t("الرصيد الإجمالي")}</p>
+          <p dir="ltr" className="text-headline-md text-mono-data mt-1 text-page-start">
             {formatCurrency(totals.totalBalance)}
           </p>
         </Card>
@@ -112,8 +112,8 @@ export function CashBoxView({ totals, transactions, filter, custodies, employees
 
       <Tabs
         items={[
-          { key: "transactions", label: "الحركات" },
-          { key: "custody", label: "عهد", badge: custodies.filter((c) => c.status === "Active").length },
+          { key: "transactions", label: t("الحركات") },
+          { key: "custody", label: t("عهد"), badge: custodies.filter((c) => c.status === "Active").length },
         ]}
         active={tab}
         onChange={(key) => pushFilter({ tab: key })}
@@ -126,7 +126,7 @@ export function CashBoxView({ totals, transactions, filter, custodies, employees
       <Card className="!p-stack-md">
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-stack-sm items-end">
           <div className="flex flex-col gap-1">
-            <label className="text-label-caps text-on-surface-variant">من تاريخ</label>
+            <label className="text-label-caps text-on-surface-variant">{t("من تاريخ")}</label>
             <input
               type="date"
               className="rounded bg-surface-container-lowest border border-outline-variant p-2 text-body-sm"
@@ -135,7 +135,7 @@ export function CashBoxView({ totals, transactions, filter, custodies, employees
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-label-caps text-on-surface-variant">إلى تاريخ</label>
+            <label className="text-label-caps text-on-surface-variant">{t("إلى تاريخ")}</label>
             <input
               type="date"
               className="rounded bg-surface-container-lowest border border-outline-variant p-2 text-body-sm"
@@ -144,35 +144,35 @@ export function CashBoxView({ totals, transactions, filter, custodies, employees
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-label-caps text-on-surface-variant">النوع</label>
+            <label className="text-label-caps text-on-surface-variant">{t("النوع")}</label>
             <Select
               defaultValue={filter.type ?? 0}
               onChange={(e) => pushFilter({ type: Number(e.target.value) || undefined })}
             >
-              <option value={0}>الكل</option>
+              <option value={0}>{t("الكل")}</option>
               {Object.entries(TransactionType).map(([key, value]) => (
                 <option key={key} value={value}>
-                  {transactionTypeLabels[key] ?? key}
+                  {t(transactionTypeLabels[key] ?? key)}
                 </option>
               ))}
             </Select>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-label-caps text-on-surface-variant">الاتجاه</label>
+            <label className="text-label-caps text-on-surface-variant">{t("الاتجاه")}</label>
             <Select
               defaultValue={filter.isIn === undefined ? "" : String(filter.isIn)}
               onChange={(e) => pushFilter({ isIn: e.target.value === "" ? undefined : e.target.value === "true" })}
             >
-              <option value="">الكل</option>
-              <option value="true">داخل</option>
-              <option value="false">خارج</option>
+              <option value="">{t("الكل")}</option>
+              <option value="true">{t("داخل")}</option>
+              <option value="false">{t("خارج")}</option>
             </Select>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-label-caps text-on-surface-variant">بحث</label>
+            <label className="text-label-caps text-on-surface-variant">{t("بحث")}</label>
             <input
               type="text"
-              placeholder="الوصف، المشروع، المورد..."
+              placeholder={t("الوصف، المشروع، المورد...")}
               className="rounded bg-surface-container-lowest border border-outline-variant p-2 text-body-sm"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -183,73 +183,73 @@ export function CashBoxView({ totals, transactions, filter, custodies, employees
 
       <div>
         <div className="flex items-center justify-between mb-stack-sm">
-          <h3 className="text-title-sm text-on-surface">الحركات ({transactions.totalCount})</h3>
+          <h3 className="text-title-sm text-on-surface">{t("الحركات (")}{transactions.totalCount})</h3>
           {transactions.items.length > 0 && (
             <ExportButton
-              filename="حركات_الخزنة"
+              filename={t("حركات_الخزنة")}
               columns={[
-                { header: "النوع", key: "type" },
-                { header: "الوصف", key: "description" },
-                { header: "كاش", key: "cash" },
-                { header: "كريديت", key: "credit" },
-                { header: "المصدر", key: "source" },
-                { header: "التاريخ", key: "date" },
-                { header: "المستخدم", key: "user" },
+                { header: t("النوع"), key: "type" },
+                { header: t("الوصف"), key: "description" },
+                { header: t("كاش"), key: "cash" },
+                { header: t("كريديت"), key: "credit" },
+                { header: t("المصدر"), key: "source" },
+                { header: t("التاريخ"), key: "date" },
+                { header: t("المستخدم"), key: "user" },
               ]}
-              rows={transactions.items.map((t) => ({
-                type: transactionTypeLabels[t.transactionType] ?? t.transactionType,
-                description: t.description,
-                cash: t.amountCash,
-                credit: t.amountCredit,
-                source: t.projectName ?? t.supplierName ?? "-",
-                date: formatDate(t.transactionDate),
-                user: t.createdByEmployeeName,
+              rows={transactions.items.map((tx) => ({
+                type: t(transactionTypeLabels[tx.transactionType] ?? tx.transactionType),
+                description: tx.description,
+                cash: tx.amountCash,
+                credit: tx.amountCredit,
+                source: tx.projectName ?? tx.supplierName ?? "-",
+                date: formatDate(tx.transactionDate),
+                user: tx.createdByEmployeeName,
               }))}
             />
           )}
         </div>
         {transactions.items.length === 0 ? (
-          <EmptyState icon="account_balance_wallet" title="لا توجد حركات مطابقة" />
+          <EmptyState icon="account_balance_wallet" title={t("لا توجد حركات مطابقة")} />
         ) : (
           <>
             <Table>
               <THead>
                 <tr>
-                  <Th>النوع</Th>
-                  <Th>الوصف</Th>
-                  <Th>كاش</Th>
-                  <Th>كريديت</Th>
-                  <Th>المصدر</Th>
-                  <Th>التاريخ</Th>
-                  <Th>المستخدم</Th>
-                  {canManage && <Th>إجراءات</Th>}
+                  <Th>{t("النوع")}</Th>
+                  <Th>{t("الوصف")}</Th>
+                  <Th>{t("كاش")}</Th>
+                  <Th>{t("كريديت")}</Th>
+                  <Th>{t("المصدر")}</Th>
+                  <Th>{t("التاريخ")}</Th>
+                  <Th>{t("المستخدم")}</Th>
+                  {canManage && <Th>{t("إجراءات")}</Th>}
                 </tr>
               </THead>
               <TBody>
-                {transactions.items.map((t) => (
-                  <Tr key={t.id}>
-                    <Td>{transactionTypeLabels[t.transactionType] ?? t.transactionType}</Td>
-                    <Td>{t.description}</Td>
-                    <TdMono className={t.amountCash >= 0 ? "text-success" : "text-error"}>{formatCurrency(t.amountCash)}</TdMono>
-                    <TdMono className={t.amountCredit >= 0 ? "text-success" : "text-error"}>{formatCurrency(t.amountCredit)}</TdMono>
-                    <Td>{t.projectName ?? t.supplierName ?? "-"}</Td>
-                    <Td>{formatDate(t.transactionDate)}</Td>
-                    <Td>{t.createdByEmployeeName}</Td>
+                {transactions.items.map((tx) => (
+                  <Tr key={tx.id}>
+                    <Td>{t(transactionTypeLabels[tx.transactionType] ?? tx.transactionType)}</Td>
+                    <Td>{tx.description}</Td>
+                    <TdMono className={tx.amountCash >= 0 ? "text-success" : "text-error"}>{formatCurrency(tx.amountCash)}</TdMono>
+                    <TdMono className={tx.amountCredit >= 0 ? "text-success" : "text-error"}>{formatCurrency(tx.amountCredit)}</TdMono>
+                    <Td>{tx.projectName ?? tx.supplierName ?? "-"}</Td>
+                    <Td>{formatDate(tx.transactionDate)}</Td>
+                    <Td>{tx.createdByEmployeeName}</Td>
                     {canManage && (
                       <Td>
-                        {t.miscExpenseId ? (
+                        {tx.miscExpenseId ? (
                           <div className="flex items-center gap-1">
                             <button
                               className="text-on-surface-variant hover:text-on-surface"
-                              title="تعديل"
+                              title={t("تعديل")}
                               onClick={() => {
-                                setEditingTransaction(t);
+                                setEditingTransaction(tx);
                                 setExpenseDialogOpen(true);
                               }}
                             >
                               <Icon name="edit" size={18} />
                             </button>
-                            <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeletingTransaction(t)}>
+                            <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => setDeletingTransaction(tx)}>
                               <Icon name="delete" size={18} />
                             </button>
                           </div>
@@ -271,14 +271,14 @@ export function CashBoxView({ totals, transactions, filter, custodies, employees
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-gutter">
         <Card>
-          <p className="text-body-sm text-on-surface-variant">إجمالي الكاش (حسب الفلتر الحالي)</p>
-          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-right">
+          <p className="text-body-sm text-on-surface-variant">{t("إجمالي الكاش (حسب الفلتر الحالي)")}</p>
+          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-page-start">
             {formatCurrency(transactions.filteredTotalCash)}
           </p>
         </Card>
         <Card>
-          <p className="text-body-sm text-on-surface-variant">إجمالي الكريديت (حسب الفلتر الحالي)</p>
-          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-right">
+          <p className="text-body-sm text-on-surface-variant">{t("إجمالي الكريديت (حسب الفلتر الحالي)")}</p>
+          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-page-start">
             {formatCurrency(transactions.filteredTotalCredit)}
           </p>
         </Card>
@@ -301,8 +301,8 @@ export function CashBoxView({ totals, transactions, filter, custodies, employees
       <ConfirmDialog
         open={!!deletingTransaction}
         onClose={() => setDeletingTransaction(null)}
-        title="حذف المصروف النثري"
-        message="هل أنت متأكد من حذف هذا المصروف؟ سيتم إلغاء أثره في الخزنة."
+        title={t("حذف المصروف النثري")}
+        message={t("هل أنت متأكد من حذف هذا المصروف؟ سيتم إلغاء أثره في الخزنة.")}
         onConfirm={() => deleteMiscExpense(deletingTransaction!.miscExpenseId!)}
         onConfirmed={() => router.refresh()}
       />

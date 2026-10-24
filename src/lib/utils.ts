@@ -1,5 +1,15 @@
 import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
+
+// أحجام الخط المخصصة في globals.css (text-title-sm، text-body-sm...) - لازم tailwind-merge يعرف إنها
+// أحجام خط مش ألوان، وإلا بيعتبرها بتتعارض مع text-on-primary وأخواتها ويشيل اللون
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      "font-size": [{ text: ["display-lg", "headline-md", "title-sm", "title-md", "body-md", "body-sm", "label-caps", "mono-data"] }],
+    },
+  },
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

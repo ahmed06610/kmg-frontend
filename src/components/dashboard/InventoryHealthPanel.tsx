@@ -1,18 +1,21 @@
+"use client";
+
+import { useT } from "@/lib/i18n/client";
 import Link from "next/link";
 import type { LowStockMaterialDTO } from "@/types/dashboard";
 
 export function InventoryHealthPanel({ materials }: { materials: LowStockMaterialDTO[] }) {
+  const t = useT();
   return (
     <div className="bg-surface-container-lowest rounded-xl elevation-1 shadow-[var(--shadow-soft)] border border-outline-variant p-stack-lg flex flex-col">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-title-sm text-on-surface font-bold">صحة المخزون (خامات تحت الحد الأدنى)</h3>
+        <h3 className="text-title-sm text-on-surface font-bold">{t("صحة المخزون (خامات تحت الحد الأدنى)")}</h3>
         <Link href="/stock" className="text-primary hover:underline text-sm font-medium">
-          المخزون
-        </Link>
+          {t("المخزون")}</Link>
       </div>
 
       {materials.length === 0 ? (
-        <p className="text-body-sm text-on-surface-variant text-center py-stack-md">كل الخامات فوق الحد الأدنى</p>
+        <p className="text-body-sm text-on-surface-variant text-center py-stack-md">{t("كل الخامات فوق الحد الأدنى")}</p>
       ) : (
         <div className="space-y-4">
           {materials.slice(0, 4).map((m) => {
@@ -23,8 +26,8 @@ export function InventoryHealthPanel({ materials }: { materials: LowStockMateria
                 <div className="flex justify-between text-sm mb-1">
                   <span className="font-medium">{m.name}</span>
                   <span className={`text-xs ${critical ? "text-error font-medium" : "text-on-surface-variant"}`}>
-                    متبقي: <span dir="ltr" className="text-mono-data">{m.quantity}</span> {m.unit}
-                    {critical && " (حرج)"}
+                    {t("متبقي: ")}<span dir="ltr" className="text-mono-data">{m.quantity}</span> {m.unit}
+                    {critical && t(" (حرج)")}
                   </span>
                 </div>
                 <div className={`w-full rounded-full h-2 overflow-hidden flex ${critical ? "bg-error-container" : "bg-surface-variant"}`}>

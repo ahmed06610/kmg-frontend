@@ -1,5 +1,7 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
+import { intlLocale, tr } from "@/lib/i18n/global";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { clearAiChat, loadOlderAiChatMessages, sendAiChatMessage } from "@/actions/aiChat";
 import { Button } from "@/components/ui/Button";
@@ -33,13 +35,13 @@ function dayLabel(iso: string) {
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
   const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
-  if (sameDay(date, today)) return "النهارده";
-  if (sameDay(date, yesterday)) return "امبارح";
-  return date.toLocaleDateString("ar-EG", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  if (sameDay(date, today)) return tr("النهارده");
+  if (sameDay(date, yesterday)) return tr("امبارح");
+  return date.toLocaleDateString(intlLocale(), { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
 
 function timeLabel(iso: string) {
-  return new Date(iso).toLocaleTimeString("ar-EG", { hour: "numeric", minute: "2-digit" });
+  return new Date(iso).toLocaleTimeString(intlLocale(), { hour: "numeric", minute: "2-digit" });
 }
 
 interface AiChatViewProps {
@@ -50,6 +52,7 @@ interface AiChatViewProps {
 }
 
 export function AiChatView({ initialPage, username, variant = "page", onClose }: AiChatViewProps) {
+  const t = useT();
   const [messages, setMessages] = useState<ChatItem[]>(initialPage.items);
   const [hasMore, setHasMore] = useState(initialPage.hasMore);
   const [loadingOlder, setLoadingOlder] = useState(false);
@@ -112,7 +115,7 @@ export function AiChatView({ initialPage, username, variant = "page", onClose }:
     setLoadingOlder(false);
 
     if (!result.success || !result.data) {
-      setOlderError(result.message ?? "تعذر تحميل الرسايل الأقدم");
+      setOlderError(result.message ?? t("تعذر تحميل الرسايل الأقدم"));
       return;
     }
 
@@ -171,7 +174,7 @@ export function AiChatView({ initialPage, username, variant = "page", onClose }:
     try {
       result = await sendAiChatMessage(content);
     } catch {
-      result = { success: false, message: "تعذر الاتصال بالسيرفر - اتأكد من الإنترنت وجرّب تاني" };
+      result = { success: false, message: t("تعذر الاتصال بالسيرفر - اتأكد من الإنترنت وجرّب تاني") };
     } finally {
       sendingRef.current = false;
       setSending(false);
@@ -179,7 +182,7 @@ export function AiChatView({ initialPage, username, variant = "page", onClose }:
 
     if (!result.success || !result.data) {
       setMessages((current) =>
-        current.map((m) => (m.id === tempId ? { ...m, status: "failed", error: result.message ?? "تعذر الإرسال" } : m)),
+        current.map((m) => (m.id === tempId ? { ...m, status: "failed", error: result.message ?? t("تعذر الإرسال") } : m)),
       );
       return;
     }
@@ -213,24 +216,23 @@ export function AiChatView({ initialPage, username, variant = "page", onClose }:
             <Icon name="smart_toy" size={22} />
           </span>
           <div className="min-w-0">
-            <h1 className="text-title-sm text-on-surface">مساعد KMG الذكي</h1>
+            <h1 className="text-title-sm text-on-surface">{t("مساعد KMG الذكي")}</h1>
             <p className={cn("text-xs text-on-surface-variant", variant === "page" ? "hidden sm:block" : "hidden")}>
-              اسأل عن المشاريع والخزنة والمخزن والمناقصات - بيقرا البيانات المسموح لك بيها بس، والمحادثة محفوظة
-            </p>
+              {t("اسأل عن المشاريع والخزنة والمخزن والمناقصات - بيقرا البيانات المسموح لك بيها بس، والمحادثة محفوظة")}</p>
           </div>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {messages.length > 0 && (
-            <Button variant="secondary" size="sm" onClick={() => setClearOpen(true)} disabled={sending} aria-label="مسح المحادثة" title="مسح المحادثة">
+            <Button variant="secondary" size="sm" onClick={() => setClearOpen(true)} disabled={sending} aria-label={t("مسح المحادثة")} title={t("مسح المحادثة")}>
               <Icon name="delete_sweep" size={18} />
-              {variant === "page" && <span className="hidden sm:inline">مسح المحادثة</span>}
+              {variant === "page" && <span className="hidden sm:inline">{t("مسح المحادثة")}</span>}
             </Button>
           )}
           {onClose && (
             <button
               type="button"
               onClick={onClose}
-              aria-label="قفل المساعد"
+              aria-label={t("قفل المساعد")}
               className="flex items-center justify-center w-9 h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
             >
               <Icon name="close" size={20} />
@@ -246,20 +248,17 @@ export function AiChatView({ initialPage, username, variant = "page", onClose }:
             {loadingOlder ? (
               <span className="flex items-center gap-2 text-xs text-on-surface-variant">
                 <Icon name="progress_activity" size={16} className="animate-spin" />
-                جاري تحميل رسايل أقدم...
-              </span>
+                {t("جاري تحميل رسايل أقدم...")}</span>
             ) : olderError ? (
               <button type="button" onClick={() => void loadOlder()} className="text-xs text-error hover:underline">
-                {olderError} - اضغط للمحاولة تاني
-              </button>
+                {t(olderError)} {t(" - اضغط للمحاولة تاني")}</button>
             ) : (
               <button type="button" onClick={() => void loadOlder()} className="text-xs text-primary hover:underline">
-                عرض رسايل أقدم
-              </button>
+                {t("عرض رسايل أقدم")}</button>
             )}
           </div>
         )}
-        {!hasMore && messages.length > 0 && <p className="text-center text-[11px] text-on-surface-variant py-2">بداية المحادثة</p>}
+        {!hasMore && messages.length > 0 && <p className="text-center text-[11px] text-on-surface-variant py-2">{t("بداية المحادثة")}</p>}
 
         {messages.length === 0 && !sending ? (
           <div className="h-full flex flex-col items-center justify-center text-center gap-stack-md">
@@ -267,18 +266,18 @@ export function AiChatView({ initialPage, username, variant = "page", onClose }:
               <Icon name="forum" size={34} />
             </span>
             <div>
-              <p className="text-title-sm text-on-surface">أهلًا {username}، تحب تسأل عن إيه؟</p>
-              <p className="text-body-sm text-on-surface-variant mt-1">اكتب سؤالك تحت، أو ابدأ بواحد من دول</p>
+              <p className="text-title-sm text-on-surface">{t("أهلًا ")}{username}{t("، تحب تسأل عن إيه؟")}</p>
+              <p className="text-body-sm text-on-surface-variant mt-1">{t("اكتب سؤالك تحت، أو ابدأ بواحد من دول")}</p>
             </div>
             <div className="flex flex-wrap justify-center gap-2 max-w-xl">
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
                   type="button"
-                  onClick={() => void send(s)}
+                  onClick={() => void send(t(s))}
                   className="text-body-sm rounded-full border border-outline-variant px-3 py-1.5 text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
                 >
-                  {s}
+                  {t(s)}
                 </button>
               ))}
             </div>
@@ -324,16 +323,18 @@ export function AiChatView({ initialPage, username, variant = "page", onClose }:
             rows={1}
             dir="auto"
             maxLength={4000}
-            placeholder="اكتب سؤالك... (Shift+Enter لسطر جديد)"
+            // التلميح بتاع Shift+Enter بيتلف في سطرين على الموبايل، فبقى في الـ title بس
+            placeholder={t("اكتب سؤالك...")}
+            title={t("اكتب سؤالك... (Shift+Enter لسطر جديد)")}
             className="flex-1 resize-none bg-transparent outline-none text-body-sm text-on-surface py-1.5 max-h-[180px]"
           />
           <button
             type="submit"
             disabled={!input.trim() || sending}
-            aria-label="إرسال"
+            aria-label={t("إرسال")}
             className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-on-primary disabled:opacity-40 shrink-0 transition-opacity"
           >
-            <Icon name="send" size={18} className="-scale-x-100" />
+            <Icon name="send" size={18} className="rtl:-scale-x-100" />
           </button>
         </div>
       </form>
@@ -341,9 +342,9 @@ export function AiChatView({ initialPage, username, variant = "page", onClose }:
       <ConfirmDialog
         open={clearOpen}
         onClose={() => setClearOpen(false)}
-        title="مسح المحادثة"
-        message="هيتم مسح كل رسايل المحادثة دي نهائيًا ومش هتقدر ترجعلها. متأكد؟"
-        confirmLabel="مسح المحادثة"
+        title={t("مسح المحادثة")}
+        message={t("هيتم مسح كل رسايل المحادثة دي نهائيًا ومش هتقدر ترجعلها. متأكد؟")}
+        confirmLabel={t("مسح المحادثة")}
         onConfirm={clearAiChat}
         onConfirmed={() => {
           setMessages([]);
@@ -355,6 +356,7 @@ export function AiChatView({ initialPage, username, variant = "page", onClose }:
 }
 
 function MessageBubble({ message, onRetry, onRemove, disabled }: { message: ChatItem; onRetry: () => void; onRemove: () => void; disabled: boolean }) {
+  const t = useT();
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
 
@@ -377,8 +379,8 @@ function MessageBubble({ message, onRetry, onRemove, disabled }: { message: Chat
           className={cn(
             "rounded-2xl px-4 py-2.5 text-body-sm leading-relaxed max-w-full",
             isUser
-              ? "bg-primary text-on-primary rounded-br-sm whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
-              : "bg-surface-container-high text-on-surface rounded-bl-sm",
+              ? "bg-primary text-on-primary rounded-es-sm whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+              : "bg-surface-container-high text-on-surface rounded-ee-sm",
             message.status === "pending" && "opacity-70",
             message.status === "failed" && "ring-1 ring-error",
           )}
@@ -386,16 +388,14 @@ function MessageBubble({ message, onRetry, onRemove, disabled }: { message: Chat
           {isUser ? message.content : <ChatMarkdown content={message.content} />}
         </div>
         <div className="flex items-center gap-2 mt-1 px-1 text-[11px] text-on-surface-variant">
-          {message.status === "pending" && <span>جاري الإرسال...</span>}
+          {message.status === "pending" && <span>{t("جاري الإرسال...")}</span>}
           {message.status === "failed" ? (
             <>
               <span className="text-error">{message.error}</span>
               <button type="button" onClick={onRetry} disabled={disabled} className="text-primary font-semibold hover:underline disabled:opacity-50">
-                إعادة المحاولة
-              </button>
+                {t("إعادة المحاولة")}</button>
               <button type="button" onClick={onRemove} className="hover:text-on-surface">
-                حذف
-              </button>
+                {t("حذف")}</button>
             </>
           ) : (
             !message.status && <span>{timeLabel(message.createdAt)}</span>
@@ -403,7 +403,7 @@ function MessageBubble({ message, onRetry, onRemove, disabled }: { message: Chat
           {!isUser && !message.status && (
             <button type="button" onClick={copy} className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 hover:text-on-surface">
               <Icon name={copied ? "check" : "content_copy"} size={13} />
-              {copied ? "اتنسخ" : "نسخ"}
+              {copied ? t("اتنسخ") : t("نسخ")}
             </button>
           )}
         </div>
@@ -414,6 +414,7 @@ function MessageBubble({ message, onRetry, onRemove, disabled }: { message: Chat
 }
 
 function TypingIndicator() {
+  const t = useT();
   const [slow, setSlow] = useState(false);
 
   useEffect(() => {
@@ -424,12 +425,12 @@ function TypingIndicator() {
   return (
     <div className="flex items-end gap-2 justify-end">
       <div className="flex flex-col items-end gap-1">
-        <div className="rounded-2xl rounded-bl-sm bg-surface-container-high px-4 py-3 flex gap-1.5" role="status" aria-label="الـ AI بيكتب">
+        <div className="rounded-2xl rounded-ee-sm bg-surface-container-high px-4 py-3 flex gap-1.5" role="status" aria-label={t("الـ AI بيكتب")}>
           {[0, 150, 300].map((delay) => (
             <span key={delay} className="w-2 h-2 rounded-full bg-on-surface-variant animate-bounce" style={{ animationDelay: `${delay}ms` }} />
           ))}
         </div>
-        {slow && <span className="px-1 text-[11px] text-on-surface-variant">الرد واخد وقت أطول من العادي، لسه شغال...</span>}
+        {slow && <span className="px-1 text-[11px] text-on-surface-variant">{t("الرد واخد وقت أطول من العادي، لسه شغال...")}</span>}
       </div>
       <span className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-primary/15 text-primary shrink-0">
         <Icon name="smart_toy" size={18} />

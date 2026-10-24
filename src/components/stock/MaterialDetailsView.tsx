@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
@@ -45,6 +46,7 @@ export function MaterialDetailsView({
   categories: MaterialCategoryDTO[];
   canManage: boolean;
 }) {
+  const t = useT();
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [purchaseOpen, setPurchaseOpen] = useState(false);
@@ -76,65 +78,58 @@ export function MaterialDetailsView({
         <div>
           <h1 className="text-headline-md text-on-surface">{formatMaterialLabel(material, categories)}</h1>
           <p className="text-body-sm text-on-surface-variant">
-            {material.unit} · {material.isLowStock ? <Badge tone="error">نقص مخزون</Badge> : <Badge tone="success">متاح</Badge>}
+            {material.unit} · {material.isLowStock ? <Badge tone="error">{t("نقص مخزون")}</Badge> : <Badge tone="success">{t("متاح")}</Badge>}
           </p>
         </div>
         {canManage && (
           <div className="flex flex-wrap gap-stack-sm">
             <Button variant="secondary" onClick={() => setEditOpen(true)}>
               <Icon name="edit" size={18} />
-              تعديل البيانات
-            </Button>
+              {t("تعديل البيانات")}</Button>
             <Button variant="secondary" onClick={() => setAdjustOpen(true)}>
               <Icon name="fact_check" size={18} />
-              تسوية جرد
-            </Button>
+              {t("تسوية جرد")}</Button>
             <Button variant="secondary" onClick={() => setMergeOpen(true)}>
               <Icon name="merge" size={18} />
-              دمج
-            </Button>
+              {t("دمج")}</Button>
             <Button variant="secondary" onClick={() => setReturnOpen(true)}>
               <Icon name="undo" size={18} />
-              مرتجع
-            </Button>
+              {t("مرتجع")}</Button>
             <Button variant="secondary" onClick={() => setIssueOpen(true)}>
               <Icon name="output" size={18} />
-              صرف
-            </Button>
+              {t("صرف")}</Button>
             <Button onClick={() => setPurchaseOpen(true)}>
               <Icon name="shopping_cart" size={18} />
-              شراء
-            </Button>
+              {t("شراء")}</Button>
             <Button variant="danger" onClick={() => setDeleteOpen(true)}>
               <Icon name="delete" size={18} />
-              حذف
-            </Button>
+              {t("حذف")}</Button>
           </div>
         )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-gutter">
         <Card>
-          <p className="text-body-sm text-on-surface-variant">الكمية المتاحة</p>
-          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-right">
+          <p className="text-body-sm text-on-surface-variant">{t("الكمية المتاحة")}</p>
+          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-page-start">
             {material.quantity} {material.unit}
           </p>
         </Card>
         <Card>
-          <p className="text-body-sm text-on-surface-variant">سعر الوحدة</p>
-          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-right">
+          <p className="text-body-sm text-on-surface-variant">{t("سعر الوحدة")}</p>
+          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-page-start">
             {formatCurrency(material.unitPrice)}
           </p>
         </Card>
         <Card>
-          <p className="text-body-sm text-on-surface-variant">الإجمالي</p>
-          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-right">
+          <p className="text-body-sm text-on-surface-variant">{t("الإجمالي")}</p>
+          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-page-start">
             {formatCurrency(material.totalPrice)}
           </p>
         </Card>
         <Card>
-          <p className="text-body-sm text-on-surface-variant">الحد الأدنى</p>
-          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-right">
+          <p className="text-body-sm text-on-surface-variant">{t("الحد الأدنى")}</p>
+          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-page-start">
             {material.minimumThreshold}
           </p>
         </Card>
@@ -142,11 +137,11 @@ export function MaterialDetailsView({
 
       {(material.categoryName || Object.keys(material.extraFieldValues).length > 0) && (
         <Card>
-          <p className="text-body-sm text-on-surface-variant mb-2">بيانات النوع</p>
+          <p className="text-body-sm text-on-surface-variant mb-2">{t("بيانات النوع")}</p>
           <div className="flex flex-wrap gap-gutter text-body-sm">
             {material.categoryName && (
               <div>
-                <span className="text-on-surface-variant">النوع: </span>
+                <span className="text-on-surface-variant">{t("النوع: ")}</span>
                 <span className="text-on-surface font-semibold">{material.categoryName}</span>
               </div>
             )}
@@ -168,29 +163,27 @@ export function MaterialDetailsView({
         <div className="rounded-lg border border-outline-variant bg-surface-container-low px-stack-md py-stack-sm text-xs text-on-surface-variant flex items-start gap-2">
           <Icon name="lightbulb" size={16} className="text-primary mt-0.5 shrink-0" />
           <span>
-            أي حركة متسجلة غلط (شراء / صرف / مرتجع / رصيد افتتاحي / تسوية جرد) تقدر تعدلها أو تحذفها من زراير الإجراءات في الجداول تحت. الرصيد
-            وتكلفة المشاريع ومستحقات الموردين بيتعاد حسابهم تلقائيًا، والخزنة مش بتتأثر (بتتأثر بس بدفعات الموردين).
-          </span>
+            {t("أي حركة متسجلة غلط (شراء / صرف / مرتجع / رصيد افتتاحي / تسوية جرد) تقدر تعدلها أو تحذفها من زراير الإجراءات في الجداول تحت. الرصيد وتكلفة المشاريع ومستحقات الموردين بيتعاد حسابهم تلقائيًا، والخزنة مش بتتأثر (بتتأثر بس بدفعات الموردين).")}</span>
         </div>
       )}
 
       {purchases.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>سجل المشتريات ({purchases.length})</CardTitle>
+            <CardTitle>{t("سجل المشتريات (")}{purchases.length})</CardTitle>
           </CardHeader>
           <Table>
             <THead>
               <tr>
-                <Th>التاريخ</Th>
-                <Th>السعر</Th>
-                <Th>الكمية</Th>
-                <Th>الإجمالي</Th>
-                <Th>النقل</Th>
-                <Th>الإجمالي بالنقل</Th>
-                <Th>تكلفة الوحدة بالنقل</Th>
-                <Th>المورد</Th>
-                {canManage && <Th>إجراءات</Th>}
+                <Th>{t("التاريخ")}</Th>
+                <Th>{t("السعر")}</Th>
+                <Th>{t("الكمية")}</Th>
+                <Th>{t("الإجمالي")}</Th>
+                <Th>{t("النقل")}</Th>
+                <Th>{t("الإجمالي بالنقل")}</Th>
+                <Th>{t("تكلفة الوحدة بالنقل")}</Th>
+                <Th>{t("المورد")}</Th>
+                {canManage && <Th>{t("إجراءات")}</Th>}
               </tr>
             </THead>
             <TBody>
@@ -213,15 +206,14 @@ export function MaterialDetailsView({
               ))}
               <tr className="bg-surface-container-low font-semibold">
                 <td colSpan={3} className="p-stack-md text-body-sm text-on-surface">
-                  إجمالي المشتريات
-                </td>
-                <td dir="ltr" className="p-stack-md text-mono-data text-primary text-right">
+                  {t("إجمالي المشتريات")}</td>
+                <td dir="ltr" className="p-stack-md text-mono-data text-primary text-page-start">
                   {formatCurrency(purchasesTotal)}
                 </td>
-                <td dir="ltr" className="p-stack-md text-mono-data text-on-surface text-right">
+                <td dir="ltr" className="p-stack-md text-mono-data text-on-surface text-page-start">
                   {purchasesTransport > 0 ? formatCurrency(purchasesTransport) : "-"}
                 </td>
-                <td dir="ltr" className="p-stack-md text-mono-data text-primary text-right">
+                <td dir="ltr" className="p-stack-md text-mono-data text-primary text-page-start">
                   {formatCurrency(purchasesTotal + purchasesTransport)}
                 </td>
                 <td />
@@ -239,28 +231,28 @@ export function MaterialDetailsView({
 
       <Card>
         <CardHeader className="flex items-center justify-between flex-wrap gap-stack-sm">
-          <CardTitle>سجل الحركات ({movements.length})</CardTitle>
+          <CardTitle>{t("سجل الحركات (")}{movements.length})</CardTitle>
           {movements.length > 0 && (
-            <SearchInput value={movementsTable.search} onChange={movementsTable.setSearch} placeholder="بحث بالمشروع أو المورد..." className="sm:w-64" />
+            <SearchInput value={movementsTable.search} onChange={movementsTable.setSearch} placeholder={t("بحث بالمشروع أو المورد...")} className="sm:w-64" />
           )}
         </CardHeader>
         {movements.length === 0 ? (
-          <EmptyState icon="history" title="لا توجد حركات مسجلة بعد" />
+          <EmptyState icon="history" title={t("لا توجد حركات مسجلة بعد")} />
         ) : movementsTable.totalCount === 0 ? (
-          <EmptyState icon="search_off" title="لا توجد نتائج مطابقة" />
+          <EmptyState icon="search_off" title={t("لا توجد نتائج مطابقة")} />
         ) : (
           <>
             <Table>
               <THead>
                 <tr>
-                  <Th>النوع</Th>
-                  <Th>الكمية</Th>
-                  <Th>السعر وقت الحركة</Th>
-                  <Th>الإجمالي</Th>
-                  <Th>المشروع / المورد</Th>
-                  <Th>التاريخ</Th>
-                  <Th>المستخدم</Th>
-                  {canManage && <Th>إجراءات</Th>}
+                  <Th>{t("النوع")}</Th>
+                  <Th>{t("الكمية")}</Th>
+                  <Th>{t("السعر وقت الحركة")}</Th>
+                  <Th>{t("الإجمالي")}</Th>
+                  <Th>{t("المشروع / المورد")}</Th>
+                  <Th>{t("التاريخ")}</Th>
+                  <Th>{t("المستخدم")}</Th>
+                  {canManage && <Th>{t("إجراءات")}</Th>}
                 </tr>
               </THead>
               <TBody>
@@ -268,7 +260,7 @@ export function MaterialDetailsView({
                   const signed = signedQuantity(m);
                   return (
                     <Tr key={m.id}>
-                      <Td>{movementTypeLabels[m.movementType] ?? m.movementType}</Td>
+                      <Td>{t(movementTypeLabels[m.movementType] ?? m.movementType)}</Td>
                       <TdMono className={signed < 0 ? "text-error" : "text-success"}>
                         {signed > 0 ? "+" : ""}
                         {signed}

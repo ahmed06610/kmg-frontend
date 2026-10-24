@@ -1,3 +1,6 @@
+import type { Locale } from "./preferences-shared";
+import { HELP_CONTENT_EN } from "./help-content.en";
+
 /**
  * محتوى "شرح الصفحة" لكل صفحة في السايد بار - بيتعرض في HelpDrawer.
  * كل صفحة مقسمة لأقسام (إزاي تعمل أكشن معين خطوة بخطوة) + أسئلة شائعة.
@@ -145,7 +148,7 @@ export const HELP_CONTENT: Record<string, PageHelp> = {
         steps: [
           "من تابة \"المأموريات\" اضغط \"مأمورية جديدة\"، اختار رئيس العمال والعمال وعدد أيام كل عامل وقيمة العهدة.",
           "العهدة بتتخصم من الخزنة فورًا وبتظهر في مصاريف المشروع.",
-          "يومية العامل في المأمورية بتتحسب مضاعفة (×2) في تكلفة العمالة وفي الرواتب.",
+          "لكل عامل في المأمورية أجر يومي خاص بيها (افتراضيًا ضعف يوميته وتقدر تغيره)، وعدد الأيام ممكن يبقى كسر (3.5 يوم مثلًا) - بيتحسب في تكلفة العمالة وفي الرواتب.",
           "في آخر المأمورية اضغط \"تسوية\" واكتب المصروف الفعلي: لو أقل من العهدة الباقي يرجع الخزنة، ولو أكتر الزيادة بتتسجل مصروف نثري \"فرق تسوية عهدة\".",
         ],
       },
@@ -426,8 +429,8 @@ export const HELP_CONTENT: Record<string, PageHelp> = {
       },
     ],
     faqs: [
-      { q: "صرفت راتب غلط؟", a: "الراتب المصروف مش بيتحذف عشان سجل الموظف يفضل سليم. لو صرفت زيادة سجل \"خصم\" بالفرق يتطبق في الراتب الجاي، ولو صرفت ناقص سجل \"حافز\" بالفرق." },
-      { q: "ليه أيام المأمورية مضاعفة؟", a: "سياسة الشركة: يوم المأمورية بيتحسب بيوميتين للعامل." },
+      { q: "صرفت راتب غلط؟", a: "عدّل أو احذف عملية الصرف من \"آخر عمليات الصرف\" - أثرها في الخزنة بيتلغي. أو سجل \"خصم\"/\"حافز\" بالفرق يتطبق في الراتب الجاي." },
+      { q: "أجر أيام المأمورية بيتحسب إزاي؟", a: "كل عامل في المأمورية ليه أجر يومي بيتحدد وقت إنشائها (افتراضيًا ضعف يوميته). الراتب بيضيف الفرق بين أجر المأمورية واليومية العادية عن كل يوم مأمورية في الفترة." },
       { q: "خصم/حافز متطبقش؟", a: "بيتطبق بس لو تاريخه جوه فترة الراتب اللي اتشغل. لو اتطبق بالفعل بيظهر عليه \"مُطبَّق\"." },
     ],
   },
@@ -591,8 +594,13 @@ export const HELP_CONTENT: Record<string, PageHelp> = {
 };
 
 /** بيرجع شرح الصفحة الحالية حسب المسار (أطول href مطابق - عشان /projects/5 ترجع شرح المشاريع) */
-export function findHelpForPath(pathname: string): { href: string; help: PageHelp } | null {
-  const keys = Object.keys(HELP_CONTENT).sort((a, b) => b.length - a.length);
+export function getHelpContent(locale: Locale): Record<string, PageHelp> {
+  return locale === "en" ? HELP_CONTENT_EN : HELP_CONTENT;
+}
+
+export function findHelpForPath(pathname: string, locale: Locale = "ar"): { href: string; help: PageHelp } | null {
+  const content = getHelpContent(locale);
+  const keys = Object.keys(content).sort((a, b) => b.length - a.length);
   const href = keys.find((k) => (k === "/" ? pathname === "/" : pathname === k || pathname.startsWith(`${k}/`)));
-  return href ? { href, help: HELP_CONTENT[href] } : null;
+  return href ? { href, help: content[href] } : null;
 }

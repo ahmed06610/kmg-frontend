@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -28,6 +29,7 @@ interface Props {
 }
 
 export function IssueReturnDialog({ open, onClose, mode, materials, projects, categories, defaultMaterialId, defaultProjectId }: Props) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -74,7 +76,7 @@ export function IssueReturnDialog({ open, onClose, mode, materials, projects, ca
 
   const onSubmit = async (data: IssueReturnFormValues) => {
     if (isIssue && !data.unitPrice) {
-      setServerError("اختر سعر الدفعة المطلوب الصرف منها");
+      setServerError(t("اختر سعر الدفعة المطلوب الصرف منها"));
       return;
     }
     setLoading(true);
@@ -97,7 +99,7 @@ export function IssueReturnDialog({ open, onClose, mode, materials, projects, ca
         });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     reset();
@@ -110,20 +112,19 @@ export function IssueReturnDialog({ open, onClose, mode, materials, projects, ca
     <Dialog
       open={open}
       onClose={onClose}
-      title={isIssue ? "صرف خامة لمشروع" : "مرتجع خامة من مشروع"}
+      title={isIssue ? t("صرف خامة لمشروع") : t("مرتجع خامة من مشروع")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="issue-return-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : isIssue ? "تسجيل الصرف" : "تسجيل المرتجع"}
+            {loading ? t("جاري الحفظ...") : isIssue ? t("تسجيل الصرف") : t("تسجيل المرتجع")}
           </Button>
         </>
       }
     >
       <form id="issue-return-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="الخامة" error={errors.materialId?.message}>
+        <FieldGroup label={t("الخامة")} error={errors.materialId?.message}>
           <Controller
             name="materialId"
             control={control}
@@ -132,15 +133,15 @@ export function IssueReturnDialog({ open, onClose, mode, materials, projects, ca
                 value={field.value ? String(field.value) : ""}
                 onChange={(v) => field.onChange(Number(v))}
                 disabled={!!defaultMaterialId}
-                placeholder="اختر خامة"
-                options={materials.map((m) => ({ value: String(m.id), label: formatMaterialLabel(m, categories), hint: `متاح: ${m.quantity}` }))}
+                placeholder={t("اختر خامة")}
+                options={materials.map((m) => ({ value: String(m.id), label: formatMaterialLabel(m, categories), hint: t("متاح: {0}", [m.quantity]) }))}
               />
             )}
           />
         </FieldGroup>
 
         {isIssue && !!materialId && (
-          <FieldGroup label="السعر (الدفعة المطلوب الصرف منها)">
+          <FieldGroup label={t("السعر (الدفعة المطلوب الصرف منها)")}>
             <Controller
               name="unitPrice"
               control={control}
@@ -148,23 +149,23 @@ export function IssueReturnDialog({ open, onClose, mode, materials, projects, ca
                 <Combobox
                   value={field.value ? String(field.value) : ""}
                   onChange={(v) => field.onChange(Number(v))}
-                  placeholder={batchesLoading ? "جاري التحميل..." : "اختر السعر"}
+                  placeholder={batchesLoading ? t("جاري التحميل...") : t("اختر السعر")}
                   disabled={batchesLoading}
                   options={batches.map((b) => ({
                     value: String(b.unitPrice),
-                    label: `${formatCurrency(b.unitPrice)} جنيه`,
-                    hint: `متاح: ${b.availableQuantity} · أول شراء ${formatDate(b.firstPurchaseDate)}`,
+                    label: t("{0} جنيه", [formatCurrency(b.unitPrice)]),
+                    hint: t("متاح: {0} · أول شراء {1}", [b.availableQuantity, formatDate(b.firstPurchaseDate)]),
                   }))}
                 />
               )}
             />
             {!batchesLoading && batches.length === 0 && (
-              <p className="text-xs text-error mt-1">لا يوجد رصيد متاح لهذه الخامة بأي سعر</p>
+              <p className="text-xs text-error mt-1">{t("لا يوجد رصيد متاح لهذه الخامة بأي سعر")}</p>
             )}
           </FieldGroup>
         )}
 
-        <FieldGroup label="المشروع" error={errors.projectId?.message}>
+        <FieldGroup label={t("المشروع")} error={errors.projectId?.message}>
           <Controller
             name="projectId"
             control={control}
@@ -173,13 +174,13 @@ export function IssueReturnDialog({ open, onClose, mode, materials, projects, ca
                 value={field.value ? String(field.value) : ""}
                 onChange={(v) => field.onChange(Number(v))}
                 disabled={!!defaultProjectId}
-                placeholder="اختر مشروع"
+                placeholder={t("اختر مشروع")}
                 options={projects.map((p) => ({ value: String(p.id), label: p.name }))}
               />
             )}
           />
         </FieldGroup>
-        <FieldGroup label="الكمية" error={errors.quantity?.message}>
+        <FieldGroup label={t("الكمية")} error={errors.quantity?.message}>
           <Input
             type="number"
             step="0.01"
@@ -188,11 +189,11 @@ export function IssueReturnDialog({ open, onClose, mode, materials, projects, ca
             max={isIssue ? batches.find((b) => b.unitPrice === selectedUnitPrice)?.availableQuantity : undefined}
           />
         </FieldGroup>
-        <FieldGroup label="ملاحظات" error={errors.notes?.message}>
+        <FieldGroup label={t("ملاحظات")} error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
         {isIssue && <InvoiceAttachmentField folder="stock" value={attachment} onChange={setAttachment} />}
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

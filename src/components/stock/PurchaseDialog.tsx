@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -34,6 +35,7 @@ export function PurchaseDialog({
   /** لو موجودة، الدايلوج بيفتح في وضع "تعديل خطأ" على حركة شراء متسجلة بالفعل بدل إضافة شراء جديد */
   purchase?: StockMovementDTO;
 }) {
+  const t = useT();
   const router = useRouter();
   const isEdit = !!purchase;
   const [serverError, setServerError] = useState<string | null>(null);
@@ -93,7 +95,7 @@ export function PurchaseDialog({
     const result = isEdit ? await updatePurchase({ id: purchase!.id, ...payload }) : await recordPurchase(payload);
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     reset();
@@ -106,20 +108,19 @@ export function PurchaseDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={isEdit ? "تعديل خطأ في عملية شراء" : "تسجيل شراء خامة"}
+      title={isEdit ? t("تعديل خطأ في عملية شراء") : t("تسجيل شراء خامة")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="purchase-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : isEdit ? "حفظ التعديل" : "تسجيل الشراء"}
+            {loading ? t("جاري الحفظ...") : isEdit ? t("حفظ التعديل") : t("تسجيل الشراء")}
           </Button>
         </>
       }
     >
       <form id="purchase-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="الخامة" error={errors.materialId?.message}>
+        <FieldGroup label={t("الخامة")} error={errors.materialId?.message}>
           <Controller
             name="materialId"
             control={control}
@@ -133,18 +134,18 @@ export function PurchaseDialog({
                   if (material) setValue("unitPrice", material.unitPrice);
                 }}
                 disabled={!!defaultMaterialId || isEdit}
-                placeholder="اختر خامة"
-                options={materials.map((m) => ({ value: String(m.id), label: formatMaterialLabel(m, categories), hint: `متاح: ${m.quantity}` }))}
+                placeholder={t("اختر خامة")}
+                options={materials.map((m) => ({ value: String(m.id), label: formatMaterialLabel(m, categories), hint: t("متاح: {0}", [m.quantity]) }))}
               />
             )}
           />
           {selectedMaterial && (
             <p className="text-xs text-on-surface-variant mt-1">
-              الرصيد الحالي: {selectedMaterial.quantity} {selectedMaterial.unit} · آخر سعر: {formatCurrency(selectedMaterial.unitPrice)}
+              {t("الرصيد الحالي: ")}{selectedMaterial.quantity} {selectedMaterial.unit} {t(" · آخر سعر: ")}{formatCurrency(selectedMaterial.unitPrice)}
             </p>
           )}
         </FieldGroup>
-        <FieldGroup label="المورد" error={errors.supplierId?.message}>
+        <FieldGroup label={t("المورد")} error={errors.supplierId?.message}>
           <Controller
             name="supplierId"
             control={control}
@@ -152,53 +153,52 @@ export function PurchaseDialog({
               <Combobox
                 value={field.value ? String(field.value) : ""}
                 onChange={(v) => field.onChange(Number(v))}
-                placeholder="اختر مورد"
+                placeholder={t("اختر مورد")}
                 options={suppliers.map((s) => ({ value: String(s.id), label: s.name }))}
               />
             )}
           />
         </FieldGroup>
         <div className="grid grid-cols-2 gap-stack-md">
-          <FieldGroup label="الكمية" error={errors.quantity?.message}>
+          <FieldGroup label={t("الكمية")} error={errors.quantity?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("quantity", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="سعر الوحدة" error={errors.unitPrice?.message}>
+          <FieldGroup label={t("سعر الوحدة")} error={errors.unitPrice?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("unitPrice", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
-        <FieldGroup label="قيمة النقل (اختياري)" error={errors.transportCost?.message}>
+        <FieldGroup label={t("قيمة النقل (اختياري)")} error={errors.transportCost?.message}>
           <Input type="number" step="0.01" dir="ltr" {...register("transportCost", { valueAsNumber: true })} />
         </FieldGroup>
         {materialsTotal > 0 && (
           <div className="rounded-lg border border-outline-variant bg-surface-container-low px-stack-md py-stack-sm text-body-sm flex flex-col gap-1">
             <div className="flex justify-between">
-              <span className="text-on-surface-variant">الخامة</span>
+              <span className="text-on-surface-variant">{t("الخامة")}</span>
               <span dir="ltr" className="font-mono-data">{formatCurrency(materialsTotal)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-on-surface-variant">النقل</span>
+              <span className="text-on-surface-variant">{t("النقل")}</span>
               <span dir="ltr" className="font-mono-data">{formatCurrency(transport)}</span>
             </div>
             <div className="flex justify-between font-semibold border-t border-outline-variant pt-1">
-              <span>المستحق للمورد عن العملية دي</span>
+              <span>{t("المستحق للمورد عن العملية دي")}</span>
               <span dir="ltr" className="font-mono-data">{formatCurrency(materialsTotal + transport)}</span>
             </div>
             {transport > 0 && quantity > 0 && (
               <div className="flex justify-between text-xs text-on-surface-variant">
-                <span>تكلفة الوحدة بالنقل</span>
+                <span>{t("تكلفة الوحدة بالنقل")}</span>
                 <span dir="ltr" className="font-mono-data">{formatCurrency((materialsTotal + transport) / quantity)}</span>
               </div>
             )}
             <p className="text-xs text-on-surface-variant">
-              النقل بيتضاف على مستحق المورد ومش بيتخصم من الخزنة دلوقتي - بيتخصم مع دفعة المورد (كاش فورًا، أو الشيك لما يتصرف).
-            </p>
+              {t("النقل بيتضاف على مستحق المورد ومش بيتخصم من الخزنة دلوقتي - بيتخصم مع دفعة المورد (كاش فورًا، أو الشيك لما يتصرف).")}</p>
           </div>
         )}
-        <FieldGroup label="ملاحظات" error={errors.notes?.message}>
+        <FieldGroup label={t("ملاحظات")} error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
         <InvoiceAttachmentField folder="stock" value={attachment} onChange={setAttachment} />
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

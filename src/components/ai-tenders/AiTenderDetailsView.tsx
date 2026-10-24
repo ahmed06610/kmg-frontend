@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { dismissAiTenderResult } from "@/actions/aiTenderResults";
@@ -23,6 +24,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export function AiTenderDetailsView({ tender }: { tender: AiTenderResultDTO }) {
+  const t = useT();
   const router = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -44,34 +46,33 @@ export function AiTenderDetailsView({ tender }: { tender: AiTenderResultDTO }) {
     <div className="flex flex-col gap-stack-lg max-w-3xl">
       <div className="flex items-start justify-between gap-stack-sm flex-wrap">
         <div>
-          <Breadcrumb items={[{ label: "مناقصات AI", href: "/ai-tenders" }, { label: tender.tenderTitle ?? tender.tenderId }]} />
+          <Breadcrumb items={[{ label: t("مناقصات AI"), href: "/ai-tenders" }, { label: tender.tenderTitle ?? tender.tenderId }]} />
           <h1 className="text-headline-md text-on-surface mt-1">{tender.tenderTitle ?? tender.tenderId}</h1>
-          <p className="text-body-sm text-on-surface-variant">{tender.issuingEntity ?? "جهة غير محددة"}</p>
+          <p className="text-body-sm text-on-surface-variant">{tender.issuingEntity ?? t("جهة غير محددة")}</p>
         </div>
         <Button variant="danger" onClick={() => setConfirmOpen(true)}>
           <Icon name="close" />
-          مش مهتم
-        </Button>
+          {t("مش مهتم")}</Button>
       </div>
 
       <div className="flex flex-wrap gap-2">
         {tender.businessCategory && <Badge tone="info">{tender.businessCategory}</Badge>}
-        {tender.isNewCategory && <Badge tone="info">نوع جديد</Badge>}
+        {tender.isNewCategory && <Badge tone="info">{t("نوع جديد")}</Badge>}
         {tender.daysUntilDeadline !== null && (
-          <Badge tone={deadlineTone}>{tender.daysUntilDeadline <= 0 ? "انتهى الموعد" : `متبقي ${tender.daysUntilDeadline} يوم على الموعد النهائي`}</Badge>
+          <Badge tone={deadlineTone}>{tender.daysUntilDeadline <= 0 ? t("انتهى الموعد") : t("متبقي {0} يوم على الموعد النهائي", [tender.daysUntilDeadline])}</Badge>
         )}
         {tender.sourceSite && <Badge tone="neutral">{tender.sourceSite}</Badge>}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>سبب المطابقة</CardTitle>
+          <CardTitle>{t("سبب المطابقة")}</CardTitle>
         </CardHeader>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-stack-md">
-          <Field label="طريقة المطابقة" value={tender.matchedVia} />
-          <Field label="الموعد النهائي لتقديم العطاء" value={tender.submissionDeadline} />
+          <Field label={t("طريقة المطابقة")} value={tender.matchedVia} />
+          <Field label={t("الموعد النهائي لتقديم العطاء")} value={tender.submissionDeadline} />
           <div className="sm:col-span-2">
-            <Field label="تفسير الـ AI للمطابقة" value={tender.matchReason} />
+            <Field label={t("تفسير الـ AI للمطابقة")} value={tender.matchReason} />
           </div>
         </div>
       </Card>
@@ -79,48 +80,47 @@ export function AiTenderDetailsView({ tender }: { tender: AiTenderResultDTO }) {
       {hasDocumentData && (
         <Card>
           <CardHeader>
-            <CardTitle>بيانات من كراسة الشروط</CardTitle>
+            <CardTitle>{t("بيانات من كراسة الشروط")}</CardTitle>
           </CardHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-stack-md">
-            <Field label="الجهة (من الكراسة)" value={tender.documentEntity} />
-            <Field label="الموقع" value={tender.location} />
-            <Field label="ثمن الكراسة" value={tender.bookletFee} />
-            <Field label="التأمين الابتدائي" value={tender.initialInsurance} />
-            <Field label="آخر موعد لتقديم المستندات" value={tender.documentSubmitBy} />
-            <Field label="بيانات التواصل" value={tender.contactInfo} />
+            <Field label={t("الجهة (من الكراسة)")} value={tender.documentEntity} />
+            <Field label={t("الموقع")} value={tender.location} />
+            <Field label={t("ثمن الكراسة")} value={tender.bookletFee} />
+            <Field label={t("التأمين الابتدائي")} value={tender.initialInsurance} />
+            <Field label={t("آخر موعد لتقديم المستندات")} value={tender.documentSubmitBy} />
+            <Field label={t("بيانات التواصل")} value={tender.contactInfo} />
             <div className="sm:col-span-2">
-              <Field label="نطاق الأعمال" value={tender.scopeOfWork} />
+              <Field label={t("نطاق الأعمال")} value={tender.scopeOfWork} />
             </div>
             <div className="sm:col-span-2">
-              <Field label="الخامات المطلوبة" value={tender.materialsRequired} />
+              <Field label={t("الخامات المطلوبة")} value={tender.materialsRequired} />
             </div>
             <div className="sm:col-span-2">
-              <Field label="الكميات" value={tender.quantities} />
+              <Field label={t("الكميات")} value={tender.quantities} />
             </div>
             <div className="sm:col-span-2">
-              <Field label="ملاحظات الـ AI" value={tender.relevanceNote} />
+              <Field label={t("ملاحظات الـ AI")} value={tender.relevanceNote} />
             </div>
           </div>
         </Card>
       )}
 
       <div className="flex items-center justify-between text-body-sm text-on-surface-variant">
-        <span>أول ظهور: {formatDate(tender.firstReceivedAt)}</span>
-        <span>آخر تحديث: {formatDate(tender.lastUpdatedAt)}</span>
+        <span>{t("أول ظهور: ")}{formatDate(tender.firstReceivedAt)}</span>
+        <span>{t("آخر تحديث: ")}{formatDate(tender.lastUpdatedAt)}</span>
         {tender.sourceUrl && (
           <a href={tender.sourceUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
             <Icon name="open_in_new" size={16} />
-            المصدر الأصلي
-          </a>
+            {t("المصدر الأصلي")}</a>
         )}
       </div>
 
       <ConfirmDialog
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title="مش مهتم بالمناقصة دي؟"
-        message="هتختفي المناقصة دي من القائمة. لو خدمة الـ AI رجعتلك نفس المناقصة تاني في تحديث جديد هتفضل مخفية."
-        confirmLabel="نعم، إخفاء"
+        title={t("مش مهتم بالمناقصة دي؟")}
+        message={t("هتختفي المناقصة دي من القائمة. لو خدمة الـ AI رجعتلك نفس المناقصة تاني في تحديث جديد هتفضل مخفية.")}
+        confirmLabel={t("نعم، إخفاء")}
         onConfirm={() => dismissAiTenderResult(tender.id)}
         onConfirmed={() => router.push("/ai-tenders")}
       />

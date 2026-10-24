@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -31,6 +32,7 @@ export function CustodyDialog({
   /** لما الدايلوج يتفتح من جوه صفحة مشروع: العهدة بتتربط بالمشروع ده تلقائيًا ومينفعش يتغير */
   fixedProjectId?: number;
 }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -69,7 +71,7 @@ export function CustodyDialog({
     const result = isEdit ? await updateCustody({ id: custody!.id, ...payload }) : await createCustody(payload);
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     reset();
@@ -81,20 +83,19 @@ export function CustodyDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={isEdit ? "تعديل عهدة جانبية" : "عهدة جانبية جديدة"}
+      title={isEdit ? t("تعديل عهدة جانبية") : t("عهدة جانبية جديدة")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="custody-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : isEdit ? "حفظ التعديلات" : "صرف العهدة"}
+            {loading ? t("جاري الحفظ...") : isEdit ? t("حفظ التعديلات") : t("صرف العهدة")}
           </Button>
         </>
       }
     >
       <form id="custody-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="الموظف" error={errors.employeeId?.message}>
+        <FieldGroup label={t("الموظف")} error={errors.employeeId?.message}>
           <Controller
             name="employeeId"
             control={control}
@@ -102,27 +103,27 @@ export function CustodyDialog({
               <Combobox
                 value={field.value ? String(field.value) : ""}
                 onChange={(v) => field.onChange(Number(v))}
-                placeholder="اختر موظف"
+                placeholder={t("اختر موظف")}
                 options={employees.map((e) => ({ value: String(e.id), label: e.name }))}
               />
             )}
           />
         </FieldGroup>
         <div className="grid grid-cols-2 gap-stack-md">
-          <FieldGroup label="القيمة كاش" error={errors.amountCash?.message}>
+          <FieldGroup label={t("القيمة كاش")} error={errors.amountCash?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("amountCash", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="القيمة كريديت" error={errors.amountCredit?.message}>
+          <FieldGroup label={t("القيمة كريديت")} error={errors.amountCredit?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("amountCredit", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
-        <FieldGroup label="الوصف" error={errors.description?.message}>
-          <Input {...register("description")} placeholder="سبب صرف العهدة" />
+        <FieldGroup label={t("الوصف")} error={errors.description?.message}>
+          <Input {...register("description")} placeholder={t("سبب صرف العهدة")} />
         </FieldGroup>
-        <FieldGroup label="تاريخ الصرف" error={errors.issueDate?.message}>
+        <FieldGroup label={t("تاريخ الصرف")} error={errors.issueDate?.message}>
           <Input type="date" {...register("issueDate")} />
         </FieldGroup>
-        <FieldGroup label="ربط بمشروع (اختياري)">
+        <FieldGroup label={t("ربط بمشروع (اختياري)")}>
           <Controller
             name="projectId"
             control={control}
@@ -131,19 +132,18 @@ export function CustodyDialog({
                 value={field.value ? String(field.value) : ""}
                 onChange={(v) => field.onChange(v ? Number(v) : undefined)}
                 disabled={fixedProjectId != null}
-                placeholder="بدون ربط بمشروع"
+                placeholder={t("بدون ربط بمشروع")}
                 options={projects.map((p) => ({ value: String(p.id), label: `${p.name} (${p.projectCode})` }))}
               />
             )}
           />
         </FieldGroup>
         <p className="text-xs text-on-surface-variant -mt-2">
-          العهدة المربوطة بمشروع بتظهر في مصاريف المشروع وبتتحسب في صافي ربحه، ويمكن تسويتها من الخزنة أو من صفحة المشروع.
-        </p>
-        <FieldGroup label="ملاحظات" error={errors.notes?.message}>
+          {t("العهدة المربوطة بمشروع بتظهر في مصاريف المشروع وبتتحسب في صافي ربحه، ويمكن تسويتها من الخزنة أو من صفحة المشروع.")}</p>
+        <FieldGroup label={t("ملاحظات")} error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { deleteStockMovement, getMaterialPriceBatches, updateStockMovement } from "@/actions/stock";
@@ -26,12 +27,13 @@ export function MovementActions({
   onEdit: (m: StockMovementDTO) => void;
   onDelete: (m: StockMovementDTO) => void;
 }) {
+  const t = useT();
   return (
     <div className="flex items-center gap-1">
-      <button className="text-on-surface-variant hover:text-on-surface" title="تعديل / تصحيح خطأ" onClick={() => onEdit(movement)}>
+      <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل / تصحيح خطأ")} onClick={() => onEdit(movement)}>
         <Icon name="edit" size={18} />
       </button>
-      <button className="text-error hover:opacity-80" title="حذف الحركة" onClick={() => onDelete(movement)}>
+      <button className="text-error hover:opacity-80" title={t("حذف الحركة")} onClick={() => onDelete(movement)}>
         <Icon name="delete" size={18} />
       </button>
     </div>
@@ -67,6 +69,7 @@ export function MovementDialogs({
   suppliers: SupplierListDTO[];
   projects: ProjectListDTO[];
 }) {
+  const t = useT();
   const router = useRouter();
   const isPurchase = editing?.movementType === "Purchase";
 
@@ -84,10 +87,10 @@ export function MovementDialogs({
       <ConfirmDialog
         open={!!deleting}
         onClose={onCloseDelete}
-        title={`حذف حركة ${deleting ? (movementTypeLabels[deleting.movementType] ?? deleting.movementType) : ""}`}
+        title={t("حذف حركة {0}", [deleting ? (movementTypeLabels[deleting.movementType] ?? deleting.movementType) : ""])}
         message={
           deleting
-            ? `${deleting.materialName} - كمية ${deleting.quantity}. ${deleteMessages[deleting.movementType] ?? ""} هل أنت متأكد؟`
+            ? t("{0} - كمية {1}. {2} هل أنت متأكد؟", [deleting.materialName, deleting.quantity, t(deleteMessages[deleting.movementType] ?? "")])
             : ""
         }
         onConfirm={() => deleteStockMovement(deleting!.id)}
@@ -108,6 +111,7 @@ function EditMovementDialog({
   movement: StockMovementDTO | null;
   projects: ProjectListDTO[];
 }) {
+  const t = useT();
   const router = useRouter();
   const [quantity, setQuantity] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
@@ -154,11 +158,11 @@ function EditMovementDialog({
     e.preventDefault();
     const qty = Number(quantity);
     if (!Number.isFinite(qty) || qty === 0 || (!isAdjustment && qty < 0)) {
-      setServerError(isAdjustment ? "الفرق لازم يكون رقم غير صفر" : "الكمية يجب أن تكون أكبر من صفر");
+      setServerError(isAdjustment ? t("الفرق لازم يكون رقم غير صفر") : t("الكمية يجب أن تكون أكبر من صفر"));
       return;
     }
     if (hasProject && !projectId) {
-      setServerError("اختر المشروع");
+      setServerError(t("اختر المشروع"));
       return;
     }
     setLoading(true);
@@ -174,7 +178,7 @@ function EditMovementDialog({
     });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     onClose();
@@ -185,64 +189,61 @@ function EditMovementDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={`تعديل حركة ${movementTypeLabels[movement.movementType] ?? movement.movementType} - ${movement.materialName}`}
+      title={t("تعديل حركة {0} - {1}", [t(movementTypeLabels[movement.movementType] ?? movement.movementType), movement.materialName])}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="edit-movement-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ التعديل"}
+            {loading ? t("جاري الحفظ...") : t("حفظ التعديل")}
           </Button>
         </>
       }
     >
       <form id="edit-movement-form" onSubmit={onSubmit} className="flex flex-col gap-stack-md">
-        <FieldGroup label={isAdjustment ? "فرق الجرد (موجب = زيادة، سالب = عجز)" : "الكمية"}>
+        <FieldGroup label={isAdjustment ? t("فرق الجرد (موجب = زيادة، سالب = عجز)") : t("الكمية")}>
           <Input type="number" step="0.01" dir="ltr" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
         </FieldGroup>
 
         {isIssue && (
-          <FieldGroup label="سعر الصرف (دفعة السعر)">
+          <FieldGroup label={t("سعر الصرف (دفعة السعر)")}>
             <Select value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} dir="ltr">
               {priceOptions.length === 0 && <option value={unitPrice}>{formatCurrency(Number(unitPrice))}</option>}
               {priceOptions.map((o) => (
                 <option key={o.price} value={o.price}>
-                  {formatCurrency(o.price)} — متاح {o.available}
+                  {formatCurrency(o.price)} {t(" — متاح ")}{o.available}
                 </option>
               ))}
             </Select>
           </FieldGroup>
         )}
         {hasPrice && !isIssue && (
-          <FieldGroup label="سعر الوحدة">
+          <FieldGroup label={t("سعر الوحدة")}>
             <Input type="number" step="0.01" dir="ltr" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
           </FieldGroup>
         )}
 
         {hasProject && (
-          <FieldGroup label="المشروع">
+          <FieldGroup label={t("المشروع")}>
             <Combobox
               value={projectId ? String(projectId) : ""}
               onChange={(v) => setProjectId(v ? Number(v) : null)}
-              placeholder="اختر مشروع"
+              placeholder={t("اختر مشروع")}
               options={projects.map((p) => ({ value: String(p.id), label: p.projectCode ? `${p.name} (${p.projectCode})` : p.name }))}
             />
           </FieldGroup>
         )}
 
-        <FieldGroup label="تاريخ الحركة">
+        <FieldGroup label={t("تاريخ الحركة")}>
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </FieldGroup>
-        <FieldGroup label="ملاحظات">
+        <FieldGroup label={t("ملاحظات")}>
           <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
         </FieldGroup>
 
         <p className="text-xs text-on-surface-variant">
-          رصيد الخامة وتكلفة المشروع بيتعاد حسابهم تلقائيًا بعد الحفظ. لو التعديل هيخلي أي رصيد بالسالب (المخزن أو دفعة السعر أو
-          المرتجع أكبر من المصروف) هيترفض برسالة توضح السبب.
-        </p>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+          {t("رصيد الخامة وتكلفة المشروع بيتعاد حسابهم تلقائيًا بعد الحفظ. لو التعديل هيخلي أي رصيد بالسالب (المخزن أو دفعة السعر أو المرتجع أكبر من المصروف) هيترفض برسالة توضح السبب.")}</p>
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

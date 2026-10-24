@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useEffect } from "react";
 import { Icon } from "./Icon";
 
@@ -13,6 +14,7 @@ interface DialogProps {
 }
 
 export function Dialog({ open, onClose, title, children, footer, maxWidth = "max-w-lg" }: DialogProps) {
+  const t = useT();
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -35,7 +37,7 @@ export function Dialog({ open, onClose, title, children, footer, maxWidth = "max
         >
           <header className="flex items-center justify-between px-stack-lg py-gutter border-b border-outline-variant shrink-0">
             <h2 className="text-title-sm text-on-surface">{title}</h2>
-            <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface" aria-label="إغلاق">
+            <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface" aria-label={t("إغلاق")}>
               <Icon name="close" />
             </button>
           </header>

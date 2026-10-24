@@ -1,3 +1,4 @@
+import { tr } from "@/lib/i18n/global";
 import type { ExcelSheet } from "@/lib/excel";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { expenseCategoryLabels, movementTypeLabels, projectStatusLabels, projectTypeLabels } from "@/types/enums";
@@ -9,41 +10,41 @@ export function buildProjectExportSheets(project: ProjectDetailsDTO, missions: M
   const sheets: ExcelSheet[] = [];
 
   sheets.push({
-    name: "نظرة عامة",
+    name: tr("نظرة عامة"),
     columns: [
-      { header: "البيان", key: "label" },
-      { header: "القيمة", key: "value" },
+      { header: tr("البيان"), key: "label" },
+      { header: tr("القيمة"), key: "value" },
     ],
     rows: [
-      { label: "اسم المشروع", value: project.name },
-      { label: "الكود", value: project.projectCode },
-      { label: "النوع", value: projectTypeLabels[project.projectType] ?? project.projectType },
-      { label: "الحالة", value: projectStatusLabels[project.status] ?? project.status },
-      { label: "العميل", value: project.clientName },
-      { label: "تاريخ الإنشاء", value: formatDate(project.createdAt) },
-      { label: "قيمة العقد", value: formatCurrency(project.contractValue) },
-      { label: "إجمالي المحصَّل", value: formatCurrency(project.totalCollected) },
-      { label: "إجمالي خصم الأعمال", value: formatCurrency(project.totalWriteOffs) },
-      { label: "المتبقي", value: formatCurrency(project.remainingBalance) },
-      { label: "تكلفة الخامات", value: formatCurrency(project.totalMaterialsCost) },
-      { label: "المصاريف النثرية", value: formatCurrency(project.totalPettyExpenses) },
-      { label: "تكلفة العمالة", value: formatCurrency(project.totalLaborCost) },
-      { label: "عهد المأموريات", value: formatCurrency(project.totalMissionCustodyCost) },
-      { label: "العهد الجانبية", value: formatCurrency(project.totalSideCustodyCost) },
-      { label: "إجمالي التكلفة", value: formatCurrency(project.totalCost) },
-      { label: "صافي الربح", value: formatCurrency(project.netProfit) },
-      { label: "الوصف", value: project.description ?? "-" },
+      { label: tr("اسم المشروع"), value: project.name },
+      { label: tr("الكود"), value: project.projectCode },
+      { label: tr("النوع"), value: tr(projectTypeLabels[project.projectType] ?? project.projectType) },
+      { label: tr("الحالة"), value: tr(projectStatusLabels[project.status] ?? project.status) },
+      { label: tr("العميل"), value: project.clientName },
+      { label: tr("تاريخ الإنشاء"), value: formatDate(project.createdAt) },
+      { label: tr("قيمة العقد"), value: formatCurrency(project.contractValue) },
+      { label: tr("إجمالي المحصَّل"), value: formatCurrency(project.totalCollected) },
+      { label: tr("إجمالي خصم الأعمال"), value: formatCurrency(project.totalWriteOffs) },
+      { label: tr("المتبقي"), value: formatCurrency(project.remainingBalance) },
+      { label: tr("تكلفة الخامات"), value: formatCurrency(project.totalMaterialsCost) },
+      { label: tr("المصاريف النثرية"), value: formatCurrency(project.totalPettyExpenses) },
+      { label: tr("تكلفة العمالة"), value: formatCurrency(project.totalLaborCost) },
+      { label: tr("عهد المأموريات"), value: formatCurrency(project.totalMissionCustodyCost) },
+      { label: tr("العهد الجانبية"), value: formatCurrency(project.totalSideCustodyCost) },
+      { label: tr("إجمالي التكلفة"), value: formatCurrency(project.totalCost) },
+      { label: tr("صافي الربح"), value: formatCurrency(project.netProfit) },
+      { label: tr("الوصف"), value: project.description ?? "-" },
     ],
   });
 
   sheets.push({
-    name: "الدفعات",
+    name: tr("الدفعات"),
     columns: [
-      { header: "المبلغ", key: "amount" },
-      { header: "كاش", key: "amountCash" },
-      { header: "كريديت", key: "amountCredit" },
-      { header: "التاريخ", key: "date" },
-      { header: "ملاحظات", key: "notes" },
+      { header: tr("المبلغ"), key: "amount" },
+      { header: tr("كاش"), key: "amountCash" },
+      { header: tr("كريديت"), key: "amountCredit" },
+      { header: tr("التاريخ"), key: "date" },
+      { header: tr("ملاحظات"), key: "notes" },
     ],
     rows: project.payments.map((p) => ({
       amount: p.amount,
@@ -55,15 +56,15 @@ export function buildProjectExportSheets(project: ProjectDetailsDTO, missions: M
   });
 
   sheets.push({
-    name: "المصاريف",
+    name: tr("المصاريف"),
     columns: [
-      { header: "التصنيف", key: "category" },
-      { header: "القيمة", key: "amount" },
-      { header: "الوصف", key: "description" },
-      { header: "التاريخ", key: "date" },
+      { header: tr("التصنيف"), key: "category" },
+      { header: tr("القيمة"), key: "amount" },
+      { header: tr("الوصف"), key: "description" },
+      { header: tr("التاريخ"), key: "date" },
     ],
     rows: project.expenses.map((e) => ({
-      category: expenseCategoryLabels[e.category] ?? e.category,
+      category: tr(expenseCategoryLabels[e.category] ?? e.category),
       amount: e.amount,
       description: e.description ?? "-",
       date: formatDate(e.expenseDate),
@@ -71,14 +72,14 @@ export function buildProjectExportSheets(project: ProjectDetailsDTO, missions: M
   });
 
   sheets.push({
-    name: "المأموريات",
+    name: tr("المأموريات"),
     columns: [
-      { header: "رئيس العمال", key: "foreman" },
-      { header: "البداية", key: "startDate" },
-      { header: "النهاية", key: "endDate" },
-      { header: "العهدة", key: "advanceAmount" },
-      { header: "المصروف الفعلي", key: "actualSpent" },
-      { header: "الحالة", key: "status" },
+      { header: tr("رئيس العمال"), key: "foreman" },
+      { header: tr("البداية"), key: "startDate" },
+      { header: tr("النهاية"), key: "endDate" },
+      { header: tr("العهدة"), key: "advanceAmount" },
+      { header: tr("المصروف الفعلي"), key: "actualSpent" },
+      { header: tr("الحالة"), key: "status" },
     ],
     rows: missions.map((m) => ({
       foreman: m.foremanName,
@@ -86,24 +87,24 @@ export function buildProjectExportSheets(project: ProjectDetailsDTO, missions: M
       endDate: m.endDate ? formatDate(m.endDate) : "-",
       advanceAmount: m.advanceAmount,
       actualSpent: m.status === "Settled" ? m.actualSpent : "-",
-      status: m.status === "Settled" ? "متسواة" : "مفتوحة",
+      status: m.status === "Settled" ? tr("متسواة") : tr("مفتوحة"),
     })),
   });
 
   sheets.push({
-    name: "الخامات",
+    name: tr("الخامات"),
     columns: [
-      { header: "الخامة", key: "materialName" },
-      { header: "النوع", key: "movementType" },
-      { header: "الكمية", key: "quantity" },
-      { header: "السعر وقت الحركة", key: "unitPriceAtTime" },
-      { header: "الإجمالي", key: "total" },
-      { header: "التاريخ", key: "date" },
-      { header: "ملاحظات", key: "notes" },
+      { header: tr("الخامة"), key: "materialName" },
+      { header: tr("النوع"), key: "movementType" },
+      { header: tr("الكمية"), key: "quantity" },
+      { header: tr("السعر وقت الحركة"), key: "unitPriceAtTime" },
+      { header: tr("الإجمالي"), key: "total" },
+      { header: tr("التاريخ"), key: "date" },
+      { header: tr("ملاحظات"), key: "notes" },
     ],
     rows: project.stockMovements.map((m) => ({
       materialName: m.materialName,
-      movementType: movementTypeLabels[m.movementType] ?? m.movementType,
+      movementType: tr(movementTypeLabels[m.movementType] ?? m.movementType),
       quantity: m.quantity,
       unitPriceAtTime: m.unitPriceAtTime,
       total: m.quantity * m.unitPriceAtTime,
@@ -113,14 +114,14 @@ export function buildProjectExportSheets(project: ProjectDetailsDTO, missions: M
   });
 
   sheets.push({
-    name: "العهد",
+    name: tr("العهد"),
     columns: [
-      { header: "الموظف", key: "employee" },
-      { header: "الوصف", key: "description" },
-      { header: "القيمة", key: "amount" },
-      { header: "المصروف الفعلي", key: "settledAmount" },
-      { header: "تاريخ الصرف", key: "date" },
-      { header: "الحالة", key: "status" },
+      { header: tr("الموظف"), key: "employee" },
+      { header: tr("الوصف"), key: "description" },
+      { header: tr("القيمة"), key: "amount" },
+      { header: tr("المصروف الفعلي"), key: "settledAmount" },
+      { header: tr("تاريخ الصرف"), key: "date" },
+      { header: tr("الحالة"), key: "status" },
     ],
     rows: project.custodies.map((c) => ({
       employee: c.employeeName,
@@ -128,28 +129,28 @@ export function buildProjectExportSheets(project: ProjectDetailsDTO, missions: M
       amount: c.amount,
       settledAmount: c.settledAmount ?? "-",
       date: formatDate(c.issueDate),
-      status: c.status === "Settled" ? "متسواة" : "نشطة",
+      status: c.status === "Settled" ? tr("متسواة") : tr("نشطة"),
     })),
   });
 
   sheets.push({
-    name: "خصم أعمال المشروع",
+    name: tr("خصم أعمال المشروع"),
     columns: [
-      { header: "القيمة", key: "amount" },
-      { header: "السبب", key: "reason" },
-      { header: "التاريخ", key: "date" },
+      { header: tr("القيمة"), key: "amount" },
+      { header: tr("السبب"), key: "reason" },
+      { header: tr("التاريخ"), key: "date" },
     ],
     rows: project.writeOffs.map((w) => ({ amount: w.amount, reason: w.reason, date: formatDate(w.writeOffDate) })),
   });
 
   sheets.push({
-    name: "المرفقات",
+    name: tr("المرفقات"),
     columns: [
-      { header: "اسم الملف", key: "fileName" },
-      { header: "الوصف", key: "description" },
-      { header: "رفعه", key: "uploadedBy" },
-      { header: "التاريخ", key: "date" },
-      { header: "الرابط", key: "url" },
+      { header: tr("اسم الملف"), key: "fileName" },
+      { header: tr("الوصف"), key: "description" },
+      { header: tr("رفعه"), key: "uploadedBy" },
+      { header: tr("التاريخ"), key: "date" },
+      { header: tr("الرابط"), key: "url" },
     ],
     rows: project.attachments.map((a) => ({
       fileName: a.fileName ?? "-",
@@ -161,11 +162,11 @@ export function buildProjectExportSheets(project: ProjectDetailsDTO, missions: M
   });
 
   sheets.push({
-    name: "سجل التدقيق",
+    name: tr("سجل التدقيق"),
     columns: [
-      { header: "الإجراء", key: "action" },
-      { header: "بواسطة", key: "employee" },
-      { header: "التاريخ", key: "date" },
+      { header: tr("الإجراء"), key: "action" },
+      { header: tr("بواسطة"), key: "employee" },
+      { header: tr("التاريخ"), key: "date" },
     ],
     rows: project.auditLogs.map((a) => ({ action: a.actionDescription, employee: a.employeeName, date: formatDate(a.actionDate) })),
   });

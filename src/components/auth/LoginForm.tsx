@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -10,6 +11,7 @@ import { FieldGroup, Input } from "@/components/ui/Field";
 import { loginSchema, type LoginFormValues } from "@/schema/auth";
 
 export function LoginForm() {
+  const t = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export function LoginForm() {
     setLoading(false);
 
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ غير متوقع");
+      setServerError(result.message ?? t("حدث خطأ غير متوقع"));
       return;
     }
 
@@ -41,26 +43,25 @@ export function LoginForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
       {searchParams.get("sessionExpired") && (
         <div className="rounded bg-warning-container text-on-warning-container text-body-sm px-stack-md py-2">
-          انتهت صلاحية الجلسة، سجّل الدخول مرة أخرى
-        </div>
+          {t("انتهت صلاحية الجلسة، سجّل الدخول مرة أخرى")}</div>
       )}
 
-      <FieldGroup label="اسم المستخدم أو البريد الإلكتروني" error={errors.usernameOrEmail?.message}>
+      <FieldGroup label={t("اسم المستخدم أو البريد الإلكتروني")} error={errors.usernameOrEmail?.message}>
         <Input autoFocus autoComplete="username" {...register("usernameOrEmail")} />
       </FieldGroup>
 
-      <FieldGroup label="كلمة المرور" error={errors.password?.message}>
+      <FieldGroup label={t("كلمة المرور")} error={errors.password?.message}>
         <Input type="password" autoComplete="current-password" {...register("password")} />
       </FieldGroup>
 
       {serverError && (
         <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">
-          {serverError}
+          {t(serverError)}
         </div>
       )}
 
       <Button type="submit" disabled={loading} className="w-full mt-stack-sm">
-        {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+        {loading ? t("جاري تسجيل الدخول...") : t("تسجيل الدخول")}
       </Button>
     </form>
   );

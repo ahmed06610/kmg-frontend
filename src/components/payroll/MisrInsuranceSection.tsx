@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -32,6 +33,7 @@ export function MisrInsuranceSection({
   history: MisrInsurancePayoutDTO[];
   canManage: boolean;
 }) {
+  const t = useT();
   const defaultRange = currentMonthRange();
   const [periodStart, setPeriodStart] = useState(defaultRange.start);
   const [periodEnd, setPeriodEnd] = useState(defaultRange.end);
@@ -44,17 +46,17 @@ export function MisrInsuranceSection({
     <div className="flex flex-col gap-stack-lg">
       <Card className="!p-stack-md">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-stack-sm items-end">
-          <FieldGroup label="من تاريخ">
+          <FieldGroup label={t("من تاريخ")}>
             <Input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} />
           </FieldGroup>
-          <FieldGroup label="إلى تاريخ">
+          <FieldGroup label={t("إلى تاريخ")}>
             <Input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} />
           </FieldGroup>
           <div className="sm:col-span-2 flex items-end justify-end">
             {canManage && (
               <Button onClick={() => setPayDialogOpen(true)} disabled={total <= 0}>
                 <Icon name="payments" size={18} />
-                صرف مصر للتأمين ({formatCurrency(total)})
+                {t("صرف مصر للتأمين (")}{formatCurrency(total)})
               </Button>
             )}
           </div>
@@ -63,16 +65,16 @@ export function MisrInsuranceSection({
 
       <Card>
         <CardHeader>
-          <CardTitle>مصر للتأمين للموظفين ({filteredSummary.length})</CardTitle>
+          <CardTitle>{t("مصر للتأمين للموظفين (")}{filteredSummary.length})</CardTitle>
         </CardHeader>
         {filteredSummary.length === 0 ? (
-          <EmptyState icon="health_and_safety" title="لا يوجد موظفين لهم قيمة مصر للتأمين مسجلة" />
+          <EmptyState icon="health_and_safety" title={t("لا يوجد موظفين لهم قيمة مصر للتأمين مسجلة")} />
         ) : (
           <Table>
             <THead>
               <tr>
-                <Th>الموظف</Th>
-                <Th>قيمة مصر للتأمين الشهري</Th>
+                <Th>{t("الموظف")}</Th>
+                <Th>{t("قيمة مصر للتأمين الشهري")}</Th>
               </tr>
             </THead>
             <TBody>
@@ -83,7 +85,7 @@ export function MisrInsuranceSection({
                 </Tr>
               ))}
               <Tr>
-                <Td className="font-semibold">الإجمالي</Td>
+                <Td className="font-semibold">{t("الإجمالي")}</Td>
                 <TdMono className="font-semibold text-primary">{formatCurrency(total)}</TdMono>
               </Tr>
             </TBody>
@@ -93,19 +95,19 @@ export function MisrInsuranceSection({
 
       <Card>
         <CardHeader>
-          <CardTitle>سجل صرف مصر للتأمين ({history.length})</CardTitle>
+          <CardTitle>{t("سجل صرف مصر للتأمين (")}{history.length})</CardTitle>
         </CardHeader>
         {history.length === 0 ? (
-          <EmptyState icon="history" title="لا يوجد مصر للتأمين مصروف بعد" />
+          <EmptyState icon="history" title={t("لا يوجد مصر للتأمين مصروف بعد")} />
         ) : (
           <Table>
             <THead>
               <tr>
-                <Th>الفترة</Th>
-                <Th>الإجمالي</Th>
-                <Th>تاريخ الصرف</Th>
-                <Th>بواسطة</Th>
-                <Th>ملاحظات</Th>
+                <Th>{t("الفترة")}</Th>
+                <Th>{t("الإجمالي")}</Th>
+                <Th>{t("تاريخ الصرف")}</Th>
+                <Th>{t("بواسطة")}</Th>
+                <Th>{t("ملاحظات")}</Th>
               </tr>
             </THead>
             <TBody>
@@ -149,6 +151,7 @@ function PayMisrInsuranceDialog({
   periodEnd: string;
   total: number;
 }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -169,7 +172,7 @@ function PayMisrInsuranceDialog({
     const result = await payMisrInsurance({ ...data, notes: data.notes || null });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     reset();
@@ -181,34 +184,32 @@ function PayMisrInsuranceDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title="صرف مصر للتأمين للموظفين"
+      title={t("صرف مصر للتأمين للموظفين")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="pay-misr-insurance-form" disabled={loading}>
-            {loading ? "جاري الصرف..." : "تأكيد الصرف"}
+            {loading ? t("جاري الصرف...") : t("تأكيد الصرف")}
           </Button>
         </>
       }
     >
       <p className="text-body-sm text-on-surface-variant">
-        هيتم صرف <span dir="ltr" className="font-mono-data text-on-surface">{formatCurrency(total)}</span> من الخزنة كمصروف مصر للتأمين للموظفين.
-      </p>
+        {t("هيتم صرف ")}<span dir="ltr" className="font-mono-data text-on-surface">{formatCurrency(total)}</span> {t(" من الخزنة كمصروف مصر للتأمين للموظفين.")}</p>
       <form id="pay-misr-insurance-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
         <div className="grid grid-cols-2 gap-stack-md">
-          <FieldGroup label="بداية الفترة" error={errors.periodStart?.message}>
+          <FieldGroup label={t("بداية الفترة")} error={errors.periodStart?.message}>
             <Input type="date" {...register("periodStart")} />
           </FieldGroup>
-          <FieldGroup label="نهاية الفترة" error={errors.periodEnd?.message}>
+          <FieldGroup label={t("نهاية الفترة")} error={errors.periodEnd?.message}>
             <Input type="date" {...register("periodEnd")} />
           </FieldGroup>
         </div>
-        <FieldGroup label="ملاحظات" error={errors.notes?.message}>
+        <FieldGroup label={t("ملاحظات")} error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

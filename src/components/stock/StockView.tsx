@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { MultiSheetExportButton } from "@/components/ui/ExportButton";
@@ -34,6 +35,7 @@ export function StockView({
   movements: StockMovementDTO[];
   canManage: boolean;
 }) {
+  const t = useT();
   const [createOpen, setCreateOpen] = useState(false);
   const [purchaseOpen, setPurchaseOpen] = useState(false);
   const [issueOpen, setIssueOpen] = useState(false);
@@ -60,13 +62,13 @@ export function StockView({
       sheets.push({
         name: category.name,
         columns: [
-          { header: "الخامة", key: "name" },
-          { header: "الوحدة", key: "unit" },
-          { header: "الكمية المتاحة", key: "quantity" },
-          { header: "سعر الوحدة", key: "unitPrice" },
-          { header: "الإجمالي", key: "totalPrice" },
-          { header: "الحد الأدنى", key: "minimumThreshold" },
-          { header: "الحالة", key: "status" },
+          { header: t("الخامة"), key: "name" },
+          { header: t("الوحدة"), key: "unit" },
+          { header: t("الكمية المتاحة"), key: "quantity" },
+          { header: t("سعر الوحدة"), key: "unitPrice" },
+          { header: t("الإجمالي"), key: "totalPrice" },
+          { header: t("الحد الأدنى"), key: "minimumThreshold" },
+          { header: t("الحالة"), key: "status" },
           ...category.extraFieldDefinitions.map((f) => ({ header: f.label, key: f.key })),
         ],
         rows: items.map((m) => ({
@@ -76,26 +78,26 @@ export function StockView({
           unitPrice: m.unitPrice,
           totalPrice: m.totalPrice,
           minimumThreshold: m.minimumThreshold,
-          status: m.isLowStock ? "نقص مخزون" : "متاح",
+          status: m.isLowStock ? t("نقص مخزون") : t("متاح"),
           ...Object.fromEntries(category.extraFieldDefinitions.map((f) => [f.key, m.extraFieldValues[f.key] ?? ""])),
         })),
       });
       sheets.push({
-        name: `${category.name} - حركات`,
+        name: t("{0} - حركات", [category.name]),
         columns: [
-          { header: "الخامة", key: "materialName" },
-          { header: "النوع", key: "movementType" },
-          { header: "الكمية", key: "quantity" },
-          { header: "السعر وقت الحركة", key: "unitPriceAtTime" },
-          { header: "المصدر", key: "source" },
-          { header: "التاريخ", key: "date" },
-          { header: "المستخدم", key: "user" },
+          { header: t("الخامة"), key: "materialName" },
+          { header: t("النوع"), key: "movementType" },
+          { header: t("الكمية"), key: "quantity" },
+          { header: t("السعر وقت الحركة"), key: "unitPriceAtTime" },
+          { header: t("المصدر"), key: "source" },
+          { header: t("التاريخ"), key: "date" },
+          { header: t("المستخدم"), key: "user" },
         ],
         rows: movements
           .filter((mv) => ids.has(mv.materialId))
           .map((mv) => ({
             materialName: mv.materialName,
-            movementType: movementTypeLabels[mv.movementType] ?? mv.movementType,
+            movementType: t(movementTypeLabels[mv.movementType] ?? mv.movementType),
             quantity: mv.quantity,
             unitPriceAtTime: mv.unitPriceAtTime,
             source: mv.projectName ?? mv.supplierName ?? "-",
@@ -108,15 +110,15 @@ export function StockView({
     if (uncategorized.length > 0) {
       const ids = new Set(uncategorized.map((m) => m.id));
       sheets.push({
-        name: "بدون نوع",
+        name: t("بدون نوع"),
         columns: [
-          { header: "الخامة", key: "name" },
-          { header: "الوحدة", key: "unit" },
-          { header: "الكمية المتاحة", key: "quantity" },
-          { header: "سعر الوحدة", key: "unitPrice" },
-          { header: "الإجمالي", key: "totalPrice" },
-          { header: "الحد الأدنى", key: "minimumThreshold" },
-          { header: "الحالة", key: "status" },
+          { header: t("الخامة"), key: "name" },
+          { header: t("الوحدة"), key: "unit" },
+          { header: t("الكمية المتاحة"), key: "quantity" },
+          { header: t("سعر الوحدة"), key: "unitPrice" },
+          { header: t("الإجمالي"), key: "totalPrice" },
+          { header: t("الحد الأدنى"), key: "minimumThreshold" },
+          { header: t("الحالة"), key: "status" },
         ],
         rows: uncategorized.map((m) => ({
           name: m.name,
@@ -125,25 +127,25 @@ export function StockView({
           unitPrice: m.unitPrice,
           totalPrice: m.totalPrice,
           minimumThreshold: m.minimumThreshold,
-          status: m.isLowStock ? "نقص مخزون" : "متاح",
+          status: m.isLowStock ? t("نقص مخزون") : t("متاح"),
         })),
       });
       sheets.push({
-        name: "بدون نوع - حركات",
+        name: t("بدون نوع - حركات"),
         columns: [
-          { header: "الخامة", key: "materialName" },
-          { header: "النوع", key: "movementType" },
-          { header: "الكمية", key: "quantity" },
-          { header: "السعر وقت الحركة", key: "unitPriceAtTime" },
-          { header: "المصدر", key: "source" },
-          { header: "التاريخ", key: "date" },
-          { header: "المستخدم", key: "user" },
+          { header: t("الخامة"), key: "materialName" },
+          { header: t("النوع"), key: "movementType" },
+          { header: t("الكمية"), key: "quantity" },
+          { header: t("السعر وقت الحركة"), key: "unitPriceAtTime" },
+          { header: t("المصدر"), key: "source" },
+          { header: t("التاريخ"), key: "date" },
+          { header: t("المستخدم"), key: "user" },
         ],
         rows: movements
           .filter((mv) => ids.has(mv.materialId))
           .map((mv) => ({
             materialName: mv.materialName,
-            movementType: movementTypeLabels[mv.movementType] ?? mv.movementType,
+            movementType: t(movementTypeLabels[mv.movementType] ?? mv.movementType),
             quantity: mv.quantity,
             unitPriceAtTime: mv.unitPriceAtTime,
             source: mv.projectName ?? mv.supplierName ?? "-",
@@ -162,10 +164,10 @@ export function StockView({
     let extraFieldDefinitions: MaterialCategoryDTO["extraFieldDefinitions"] = [];
 
     if (view === ALL) {
-      title = "كل الأصناف";
+      title = t("كل الأصناف");
       scopedMaterials = materials;
     } else if (view === UNCATEGORIZED) {
-      title = "بدون نوع";
+      title = t("بدون نوع");
       scopedMaterials = uncategorized;
     } else {
       const category = categories.find((c) => c.id === view)!;
@@ -198,46 +200,41 @@ export function StockView({
     <div className="flex flex-col gap-stack-lg">
       <div className="flex items-center justify-between flex-wrap gap-stack-sm">
         <div>
-          <h1 className="text-headline-md text-on-surface">المخزون</h1>
-          <p className="text-body-sm text-on-surface-variant">{materials.length} خامة</p>
+          <h1 className="text-headline-md text-on-surface">{t("المخزون")}</h1>
+          <p className="text-body-sm text-on-surface-variant">{t("{0} خامة", [materials.length])}</p>
         </div>
         <div className="flex flex-wrap gap-stack-sm">
           {canManage && (
             <>
               <Button variant="secondary" onClick={() => setCategoriesOpen(true)}>
                 <Icon name="category" size={18} />
-                إدارة الأنواع
-              </Button>
+                {t("إدارة الأنواع")}</Button>
               <Button variant="secondary" onClick={() => setReturnOpen(true)}>
                 <Icon name="undo" size={18} />
-                مرتجع
-              </Button>
+                {t("مرتجع")}</Button>
               <Button variant="secondary" onClick={() => setIssueOpen(true)}>
                 <Icon name="output" size={18} />
-                صرف لمشروع
-              </Button>
+                {t("صرف لمشروع")}</Button>
               <Button variant="secondary" onClick={() => setPurchaseOpen(true)}>
                 <Icon name="shopping_cart" size={18} />
-                شراء
-              </Button>
+                {t("شراء")}</Button>
               <Button onClick={() => setCreateOpen(true)}>
                 <Icon name="add" />
-                خامة جديدة
-              </Button>
+                {t("خامة جديدة")}</Button>
             </>
           )}
-          <MultiSheetExportButton filename="المخزون" sheets={fullExportSheets()} label="تصدير كل المخزون" />
+          <MultiSheetExportButton filename={t("المخزون")} sheets={fullExportSheets()} label={t("تصدير كل المخزون")} />
         </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-gutter">
-        <CategoryCard name="كل الأصناف" icon="apps" itemsCount={materials.length} totalValue={materials.reduce((s, m) => s + m.totalPrice, 0)} onClick={() => setView(ALL)} />
+        <CategoryCard name={t("كل الأصناف")} icon="apps" itemsCount={materials.length} totalValue={materials.reduce((s, m) => s + m.totalPrice, 0)} onClick={() => setView(ALL)} />
         {categoryStats.map(({ category, itemsCount, totalValue }) => (
           <CategoryCard key={category.id} name={category.name} icon="category" itemsCount={itemsCount} totalValue={totalValue} onClick={() => setView(category.id)} />
         ))}
         {uncategorized.length > 0 && (
           <CategoryCard
-            name="بدون نوع"
+            name={t("بدون نوع")}
             icon="widgets"
             itemsCount={uncategorized.length}
             totalValue={uncategorized.reduce((s, m) => s + m.totalPrice, 0)}

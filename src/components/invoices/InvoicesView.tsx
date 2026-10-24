@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export function InvoicesView({ tab, invoices, generatedInvoices, filter }: Props) {
+  const t = useT();
   const router = useRouter();
   const [search, setSearch] = useState(filter.search ?? "");
   const [deleting, setDeleting] = useState<GeneratedInvoiceListDTO | null>(null);
@@ -55,23 +57,22 @@ export function InvoicesView({ tab, invoices, generatedInvoices, filter }: Props
     <div className="flex flex-col gap-stack-lg">
       <div className="flex items-center justify-between flex-wrap gap-stack-sm">
         <div>
-          <h1 className="text-headline-md text-on-surface">الفواتير</h1>
-          <p className="text-body-sm text-on-surface-variant">مرفقات الفواتير الموثّقة على كل أكشن مالي، وإصدار فواتير إلكترونية جديدة</p>
+          <h1 className="text-headline-md text-on-surface">{t("الفواتير")}</h1>
+          <p className="text-body-sm text-on-surface-variant">{t("مرفقات الفواتير الموثّقة على كل أكشن مالي، وإصدار فواتير إلكترونية جديدة")}</p>
         </div>
         {tab === "generated" && (
           <Link href="/invoices/new">
             <Button>
               <Icon name="add" size={18} />
-              فاتورة إلكترونية جديدة
-            </Button>
+              {t("فاتورة إلكترونية جديدة")}</Button>
           </Link>
         )}
       </div>
 
       <Tabs
         items={[
-          { key: "attachments", label: "مرفقات موثّقة", badge: invoices.totalCount },
-          { key: "generated", label: "فواتير صادرة", badge: generatedInvoices.length },
+          { key: "attachments", label: t("مرفقات موثّقة"), badge: invoices.totalCount },
+          { key: "generated", label: t("فواتير صادرة"), badge: generatedInvoices.length },
         ]}
         active={tab}
         onChange={(key) => pushFilter({ tab: key })}
@@ -82,12 +83,12 @@ export function InvoicesView({ tab, invoices, generatedInvoices, filter }: Props
           <Card className="!p-stack-md">
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-stack-sm items-end">
               <div className="flex flex-col gap-1">
-                <label className="text-label-caps text-on-surface-variant">النوع</label>
+                <label className="text-label-caps text-on-surface-variant">{t("النوع")}</label>
                 <Select
                   defaultValue={filter.sourceType ?? ""}
                   onChange={(e) => pushFilter({ sourceType: (e.target.value || undefined) as InvoiceFilter["sourceType"] })}
                 >
-                  <option value="">الكل</option>
+                  <option value="">{t("الكل")}</option>
                   {Object.entries(invoiceSourceTypeLabels).map(([key, label]) => (
                     <option key={key} value={key}>
                       {label}
@@ -96,18 +97,18 @@ export function InvoicesView({ tab, invoices, generatedInvoices, filter }: Props
                 </Select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-label-caps text-on-surface-variant">الاتجاه</label>
+                <label className="text-label-caps text-on-surface-variant">{t("الاتجاه")}</label>
                 <Select
                   defaultValue={filter.direction ?? ""}
                   onChange={(e) => pushFilter({ direction: (e.target.value || undefined) as InvoiceFilter["direction"] })}
                 >
-                  <option value="">الكل</option>
-                  <option value="In">داخل</option>
-                  <option value="Out">خارج</option>
+                  <option value="">{t("الكل")}</option>
+                  <option value="In">{t("داخل")}</option>
+                  <option value="Out">{t("خارج")}</option>
                 </Select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-label-caps text-on-surface-variant">من تاريخ</label>
+                <label className="text-label-caps text-on-surface-variant">{t("من تاريخ")}</label>
                 <input
                   type="date"
                   className="rounded bg-surface-container-lowest border border-outline-variant p-2 text-body-sm"
@@ -116,7 +117,7 @@ export function InvoicesView({ tab, invoices, generatedInvoices, filter }: Props
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-label-caps text-on-surface-variant">إلى تاريخ</label>
+                <label className="text-label-caps text-on-surface-variant">{t("إلى تاريخ")}</label>
                 <input
                   type="date"
                   className="rounded bg-surface-container-lowest border border-outline-variant p-2 text-body-sm"
@@ -125,10 +126,10 @@ export function InvoicesView({ tab, invoices, generatedInvoices, filter }: Props
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-label-caps text-on-surface-variant">بحث</label>
+                <label className="text-label-caps text-on-surface-variant">{t("بحث")}</label>
                 <input
                   type="text"
-                  placeholder="العنوان، المشروع، المورد..."
+                  placeholder={t("العنوان، المشروع، المورد...")}
                   className="rounded bg-surface-container-lowest border border-outline-variant p-2 text-body-sm"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -138,38 +139,36 @@ export function InvoicesView({ tab, invoices, generatedInvoices, filter }: Props
           </Card>
 
           {invoices.items.length === 0 ? (
-            <EmptyState icon="receipt_long" title="لا توجد مرفقات مطابقة" description="مرفقات الفواتير المرفوعة على دفعات المشاريع والمخزون والموردين والمصاريف تظهر هنا" />
+            <EmptyState icon="receipt_long" title={t("لا توجد مرفقات مطابقة")} description={t("مرفقات الفواتير المرفوعة على دفعات المشاريع والمخزون والموردين والمصاريف تظهر هنا")} />
           ) : (
             <>
               <Table>
                 <THead>
                   <tr>
-                    <Th>النوع</Th>
-                    <Th>الاتجاه</Th>
-                    <Th>البيان</Th>
-                    <Th>القيمة</Th>
-                    <Th>التاريخ</Th>
-                    <Th>المستخدم</Th>
-                    <Th>المرفق</Th>
+                    <Th>{t("النوع")}</Th>
+                    <Th>{t("الاتجاه")}</Th>
+                    <Th>{t("البيان")}</Th>
+                    <Th>{t("القيمة")}</Th>
+                    <Th>{t("التاريخ")}</Th>
+                    <Th>{t("المستخدم")}</Th>
+                    <Th>{t("المرفق")}</Th>
                   </tr>
                 </THead>
                 <TBody>
                   {invoices.items.map((inv) => (
                     <Tr key={`${inv.sourceType}-${inv.sourceId}`}>
-                      <Td>{invoiceSourceTypeLabels[inv.sourceType] ?? inv.sourceType}</Td>
+                      <Td>{t(invoiceSourceTypeLabels[inv.sourceType] ?? inv.sourceType)}</Td>
                       <Td>
-                        <Badge tone={inv.direction === "In" ? "success" : "neutral"}>{inv.direction === "In" ? "داخل" : "خارج"}</Badge>
+                        <Badge tone={inv.direction === "In" ? "success" : "neutral"}>{inv.direction === "In" ? t("داخل") : t("خارج")}</Badge>
                       </Td>
                       <Td>
                         {inv.title}
                         {inv.projectId ? (
                           <Link href={`/projects/${inv.projectId}`} className="text-primary hover:underline block text-xs mt-0.5">
-                            عرض المشروع
-                          </Link>
+                            {t("عرض المشروع")}</Link>
                         ) : inv.supplierId ? (
                           <Link href={`/suppliers/${inv.supplierId}`} className="text-primary hover:underline block text-xs mt-0.5">
-                            عرض المورد
-                          </Link>
+                            {t("عرض المورد")}</Link>
                         ) : null}
                       </Td>
                       <TdMono>{formatCurrency(inv.amount)}</TdMono>
@@ -179,8 +178,7 @@ export function InvoicesView({ tab, invoices, generatedInvoices, filter }: Props
                         {inv.attachmentUrl && (
                           <a href={inv.attachmentUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
                             <Icon name="description" size={16} />
-                            عرض
-                          </a>
+                            {t("عرض")}</a>
                         )}
                       </Td>
                     </Tr>
@@ -194,17 +192,17 @@ export function InvoicesView({ tab, invoices, generatedInvoices, filter }: Props
       ) : (
         <>
           {generatedInvoices.length === 0 ? (
-            <EmptyState icon="request_quote" title="لا توجد فواتير إلكترونية صادرة بعد" description="أنشئ فاتورة جديدة وحمّلها كـ PDF بلوجو الشركة" />
+            <EmptyState icon="request_quote" title={t("لا توجد فواتير إلكترونية صادرة بعد")} description={t("أنشئ فاتورة جديدة وحمّلها كـ PDF بلوجو الشركة")} />
           ) : (
             <Table>
               <THead>
                 <tr>
-                  <Th>رقم الفاتورة</Th>
-                  <Th>المستلم</Th>
-                  <Th>المشروع</Th>
-                  <Th>الإجمالي</Th>
-                  <Th>تاريخ الإصدار</Th>
-                  <Th>إجراءات</Th>
+                  <Th>{t("رقم الفاتورة")}</Th>
+                  <Th>{t("المستلم")}</Th>
+                  <Th>{t("المشروع")}</Th>
+                  <Th>{t("الإجمالي")}</Th>
+                  <Th>{t("تاريخ الإصدار")}</Th>
+                  <Th>{t("إجراءات")}</Th>
                 </tr>
               </THead>
               <TBody>
@@ -220,11 +218,11 @@ export function InvoicesView({ tab, invoices, generatedInvoices, filter }: Props
                     <Td>{formatDate(inv.issueDate)}</Td>
                     <Td>
                       <div className="flex items-center gap-1">
-                        <Link href={`/invoices/generated/${inv.id}`} className="text-on-surface-variant hover:text-on-surface" title="عرض">
+                        <Link href={`/invoices/generated/${inv.id}`} className="text-on-surface-variant hover:text-on-surface" title={t("عرض")}>
                           <Icon name="visibility" size={18} />
                         </Link>
                         {inv.showSignature && <Icon name="draw" size={16} className="text-on-surface-variant" />}
-                        <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeleting(inv)}>
+                        <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => setDeleting(inv)}>
                           <Icon name="delete" size={18} />
                         </button>
                       </div>
@@ -240,8 +238,8 @@ export function InvoicesView({ tab, invoices, generatedInvoices, filter }: Props
       <ConfirmDialog
         open={!!deleting}
         onClose={() => setDeleting(null)}
-        title="حذف الفاتورة الإلكترونية"
-        message="هل أنت متأكد من حذف هذه الفاتورة؟"
+        title={t("حذف الفاتورة الإلكترونية")}
+        message={t("هل أنت متأكد من حذف هذه الفاتورة؟")}
         onConfirm={() => deleteGeneratedInvoice(deleting!.id)}
         onConfirmed={() => router.refresh()}
       />

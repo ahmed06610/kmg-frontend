@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -28,6 +29,7 @@ function RecoveryCard({
   canManage: boolean;
   onRecover: () => Promise<{ success: boolean; message?: string }>;
 }) {
+  const t = useT();
   const router = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -38,27 +40,25 @@ function RecoveryCard({
         {recovered ? (
           <span className="text-xs text-success font-semibold flex items-center gap-1">
             <Icon name="check_circle" size={14} />
-            مسترد
-          </span>
+            {t("مسترد")}</span>
         ) : (
           canManage && (
             <button type="button" onClick={() => setConfirmOpen(true)} className="text-xs text-primary font-semibold hover:underline">
-              تم الاسترداد
-            </button>
+              {t("تم الاسترداد")}</button>
           )
         )}
       </div>
-      <p dir="ltr" className="text-title-sm text-mono-data text-on-surface text-right">
+      <p dir="ltr" className="text-title-sm text-mono-data text-on-surface text-page-start">
         {formatCurrency(amount)}
       </p>
-      {dueDate && <p className="text-xs text-on-surface-variant mt-1">تاريخ الاستحقاق: {formatDate(dueDate)}</p>}
+      {dueDate && <p className="text-xs text-on-surface-variant mt-1">{t("تاريخ الاستحقاق: ")}{formatDate(dueDate)}</p>}
 
       <ConfirmDialog
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title={`استرداد ${title}`}
-        message={`هل أنت متأكد من استرداد ${title} بقيمة ${formatCurrency(amount)}؟ هيتسجل كحركة دخول فعلية في الخزنة.`}
-        confirmLabel="تأكيد الاسترداد"
+        title={t("استرداد {0}", [title])}
+        message={t("هل أنت متأكد من استرداد {0} بقيمة {1}؟ هيتسجل كحركة دخول فعلية في الخزنة.", [title, formatCurrency(amount)])}
+        confirmLabel={t("تأكيد الاسترداد")}
         onConfirm={onRecover}
         onConfirmed={() => router.refresh()}
       />
@@ -73,7 +73,7 @@ function Kpi({ label, value, icon, tone }: { label: string; value: string; icon:
         <span className="text-xs font-semibold text-on-surface-variant">{label}</span>
         <Icon name={icon} size={16} className={tone} />
       </div>
-      <p dir="ltr" className="text-title-sm text-mono-data text-on-surface text-right">
+      <p dir="ltr" className="text-title-sm text-mono-data text-on-surface text-page-start">
         {value}
       </p>
     </div>
@@ -81,6 +81,7 @@ function Kpi({ label, value, icon, tone }: { label: string; value: string; icon:
 }
 
 function CircularGauge({ percent }: { percent: number }) {
+  const t = useT();
   const clamped = Math.min(100, Math.max(0, percent));
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
@@ -108,7 +109,7 @@ function CircularGauge({ percent }: { percent: number }) {
         <span dir="ltr" className="text-headline-md text-mono-data text-on-surface font-bold">
           {percent}%
         </span>
-        <span className="text-[10px] text-on-surface-variant">تم الصرف</span>
+        <span className="text-[10px] text-on-surface-variant">{t("مصروف من العقد")}</span>
       </div>
     </div>
   );
@@ -127,6 +128,7 @@ export function OverviewTab({
   categories: MaterialCategoryDTO[];
   canManage: boolean;
 }) {
+  const t = useT();
   const totalCost = project.totalCost;
   const spendRatio = project.contractValue > 0 ? Math.round((totalCost / project.contractValue) * 100) : 0;
   const activeMission = missions.find((m) => m.status !== "Settled");
@@ -135,11 +137,11 @@ export function OverviewTab({
   return (
     <div className="flex flex-col gap-stack-lg">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-gutter">
-        <Kpi label="قيمة العقد" value={formatCurrency(project.contractValue)} icon="account_balance_wallet" tone="text-on-surface-variant" />
-        <Kpi label="المحصَّل" value={formatCurrency(project.totalCollected)} icon="download_done" tone="text-success" />
-        <Kpi label="المتبقي" value={formatCurrency(project.remainingBalance)} icon="hourglass_empty" tone="text-warning" />
+        <Kpi label={t("قيمة العقد")} value={formatCurrency(project.contractValue)} icon="account_balance_wallet" tone="text-on-surface-variant" />
+        <Kpi label={t("المحصَّل")} value={formatCurrency(project.totalCollected)} icon="download_done" tone="text-success" />
+        <Kpi label={t("المتبقي")} value={formatCurrency(project.remainingBalance)} icon="hourglass_empty" tone="text-warning" />
         <Kpi
-          label="صافي الربح"
+          label={t("صافي الربح")}
           value={formatCurrency(project.netProfit)}
           icon="insights"
           tone={project.netProfit >= 0 ? "text-success" : "text-error"}
@@ -149,12 +151,12 @@ export function OverviewTab({
       {project.tenderTaxAmount > 0 && (
         <div className="grid grid-cols-2 gap-gutter">
           <Kpi
-            label={`الضريبة المضافة (${project.tenderTaxPercent}%)`}
+            label={t("الضريبة المضافة ({0}%)", [project.tenderTaxPercent])}
             value={formatCurrency(project.tenderTaxAmount)}
             icon="percent"
             tone="text-on-surface-variant"
           />
-          <Kpi label="الإجمالي بالضريبة" value={formatCurrency(project.contractValueWithTax)} icon="summarize" tone="text-on-surface-variant" />
+          <Kpi label={t("الإجمالي بالضريبة")} value={formatCurrency(project.contractValueWithTax)} icon="summarize" tone="text-on-surface-variant" />
         </div>
       )}
 
@@ -162,7 +164,7 @@ export function OverviewTab({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-gutter">
           {project.tenderInsuranceAmount > 0 && (
             <RecoveryCard
-              title="تأمين المناقصة"
+              title={t("تأمين المناقصة")}
               amount={project.tenderInsuranceAmount}
               dueDate={project.insuranceDueDate}
               recovered={project.insuranceRecovered}
@@ -172,7 +174,7 @@ export function OverviewTab({
           )}
           {project.workGuaranteeAmount > 0 && (
             <RecoveryCard
-              title="ضمان الأعمال"
+              title={t("ضمان الأعمال")}
               amount={project.workGuaranteeAmount}
               dueDate={project.workGuaranteeDueDate}
               recovered={project.workGuaranteeRecovered}
@@ -185,11 +187,11 @@ export function OverviewTab({
 
       {project.totalWriteOffs > 0 && (
         <p className="text-xs text-on-surface-variant -mt-2">
-          (المتبقي وصافي الربح أعلاه بعد خصم أعمال بقيمة{" "}
+          {t("(المتبقي وصافي الربح أعلاه بعد خصم أعمال بقيمة")}{" "}
           <span dir="ltr" className="font-mono-data">
             {formatCurrency(project.totalWriteOffs)}
           </span>{" "}
-          - قيمة العقد الفعلية بعد الخصم:{" "}
+          {t("- قيمة العقد الفعلية بعد الخصم:")}{" "}
           <span dir="ltr" className="font-mono-data">
             {formatCurrency(project.effectiveContractValue)}
           </span>
@@ -202,13 +204,12 @@ export function OverviewTab({
           <Card>
             <p className="text-title-sm text-on-surface mb-4 flex items-center gap-2">
               <Icon name="donut_large" size={18} className="text-on-surface-variant" />
-              التباين المالي
-            </p>
+              {t("التباين المالي")}</p>
             <CircularGauge percent={spendRatio} />
             <div className="flex flex-col gap-3 mt-4">
               <div>
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-on-surface-variant">قيمة العقد</span>
+                  <span className="text-on-surface-variant">{t("قيمة العقد")}</span>
                   <span dir="ltr" className="text-mono-data text-on-surface">
                     {formatCurrency(project.contractValue)}
                   </span>
@@ -219,7 +220,7 @@ export function OverviewTab({
               </div>
               <div>
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-on-surface-variant">التكلفة الفعلية</span>
+                  <span className="text-on-surface-variant">{t("التكلفة الفعلية")}</span>
                   <span dir="ltr" className="text-mono-data text-on-surface">
                     {formatCurrency(totalCost)}
                   </span>
@@ -231,14 +232,14 @@ export function OverviewTab({
             </div>
             <div className="grid grid-cols-2 gap-gutter mt-4 pt-4 border-t border-outline-variant">
               {[
-                { label: "خامات", value: project.totalMaterialsCost },
-                { label: "نثرية", value: project.totalPettyExpenses },
-                { label: "عمالة", value: project.totalLaborCost },
-                { label: "عهد (مأموريات + جانبية)", value: project.totalCustodyCost },
+                { label: t("خامات"), value: project.totalMaterialsCost },
+                { label: t("نثرية"), value: project.totalPettyExpenses },
+                { label: t("عمالة"), value: project.totalLaborCost },
+                { label: t("عهد (مأموريات + جانبية)"), value: project.totalCustodyCost },
               ].map((item) => (
                 <div key={item.label}>
                   <p className="text-xs text-on-surface-variant mb-1">{item.label}</p>
-                  <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-right">
+                  <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-page-start">
                     {formatCurrency(item.value)}
                   </p>
                 </div>
@@ -247,7 +248,7 @@ export function OverviewTab({
           </Card>
 
           <Card>
-            <p className="text-title-sm text-on-surface mb-1">بيانات العميل</p>
+            <p className="text-title-sm text-on-surface mb-1">{t("بيانات العميل")}</p>
             <div className="pb-3 mb-3 border-b border-outline-variant">
               <p className="text-body-sm font-semibold text-on-surface">{project.clientName}</p>
             </div>
@@ -275,7 +276,7 @@ export function OverviewTab({
                 )}
               </div>
             ) : (
-              <p className="text-body-sm text-on-surface-variant">لا توجد بيانات تواصل مسجلة</p>
+              <p className="text-body-sm text-on-surface-variant">{t("لا توجد بيانات تواصل مسجلة")}</p>
             )}
           </Card>
         </div>
@@ -290,31 +291,31 @@ export function OverviewTab({
 
           {project.description && (
             <Card>
-              <p className="text-body-sm text-on-surface-variant mb-1">وصف المشروع</p>
+              <p className="text-body-sm text-on-surface-variant mb-1">{t("وصف المشروع")}</p>
               <p className="text-body-md text-on-surface">{project.description}</p>
             </Card>
           )}
 
           {activeMission ? (
             <Card className="border-primary relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-1 h-full bg-primary" />
+              <div className="absolute top-0 start-0 w-1 h-full bg-primary" />
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-semibold text-primary uppercase tracking-wide">مأمورية نشطة حاليًا</p>
+                <p className="text-xs font-semibold text-primary uppercase tracking-wide">{t("مأمورية نشطة حاليًا")}</p>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-gutter">
                 <div>
-                  <p className="text-xs text-on-surface-variant mb-1">رئيس العمال</p>
+                  <p className="text-xs text-on-surface-variant mb-1">{t("رئيس العمال")}</p>
                   <p className="text-body-sm text-on-surface font-semibold">{activeMission.foremanName}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-on-surface-variant mb-1">تاريخ البداية</p>
-                  <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-right">
+                  <p className="text-xs text-on-surface-variant mb-1">{t("تاريخ البداية")}</p>
+                  <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-page-start">
                     {formatDate(activeMission.startDate)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-on-surface-variant mb-1">قيمة العهدة</p>
-                  <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-right">
+                  <p className="text-xs text-on-surface-variant mb-1">{t("قيمة العهدة")}</p>
+                  <p dir="ltr" className="text-body-sm text-mono-data text-on-surface text-page-start">
                     {formatCurrency(activeMission.advanceAmount)}
                   </p>
                 </div>
@@ -323,10 +324,9 @@ export function OverviewTab({
           ) : (
             missions.length > 0 && (
               <Card>
-                <p className="text-title-sm text-on-surface mb-1">المأموريات</p>
+                <p className="text-title-sm text-on-surface mb-1">{t("المأموريات")}</p>
                 <p className="text-body-sm text-on-surface-variant">
-                  كل المأموريات ({missions.length}) متسواة حاليًا، مفيش مأمورية مفتوحة على المشروع ده دلوقتي.
-                </p>
+                  {t("كل المأموريات (")}{missions.length}{t(") متسواة حاليًا، مفيش مأمورية مفتوحة على المشروع ده دلوقتي.")}</p>
               </Card>
             )
           )}
@@ -335,10 +335,10 @@ export function OverviewTab({
             <Card className="bg-error-container/30 border-error/30">
               <div className="flex items-center gap-2 mb-1">
                 <Icon name="warning" size={18} className="text-error" />
-                <p className="text-body-sm font-semibold text-on-error-container">نسبة تحصيل منخفضة</p>
+                <p className="text-body-sm font-semibold text-on-error-container">{t("نسبة تحصيل منخفضة")}</p>
               </div>
               <p className="text-xs text-on-surface-variant">
-                لسه متبقي {formatCurrency(project.remainingBalance)} من قيمة العقد ({formatCurrency(project.contractValue)}).
+                {t("لسه متبقي ")}{formatCurrency(project.remainingBalance)} {t(" من قيمة العقد (")}{formatCurrency(project.contractValue)}).
               </p>
             </Card>
           )}
@@ -348,8 +348,7 @@ export function OverviewTab({
               <div className="flex items-center justify-between mb-3">
                 <p className="text-title-sm text-on-surface flex items-center gap-2">
                   <Icon name="description" size={18} className="text-on-surface-variant" />
-                  أحدث المستندات
-                </p>
+                  {t("أحدث المستندات")}</p>
                 <span className="text-xs text-on-surface-variant">{project.attachments.length}</span>
               </div>
               <div className="flex flex-col gap-2">

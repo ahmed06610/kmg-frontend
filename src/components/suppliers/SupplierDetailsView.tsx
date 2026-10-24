@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { deleteSupplier, deleteSupplierPayment } from "@/actions/suppliers";
@@ -63,6 +64,7 @@ export function SupplierDetailsView({
   categories: MaterialCategoryDTO[];
   canManage: boolean;
 }) {
+  const t = useT();
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -89,7 +91,7 @@ export function SupplierDetailsView({
         <div>
           <h1 className="text-headline-md text-on-surface">{supplier.name}</h1>
           <p className="text-body-sm text-on-surface-variant">
-            {supplier.phone ?? "بدون هاتف"} {supplier.email ? `· ${supplier.email}` : ""}
+            {supplier.phone ?? t("بدون هاتف")} {supplier.email ? `· ${supplier.email}` : ""}
           </p>
         </div>
         <div className="flex gap-stack-sm">
@@ -97,14 +99,14 @@ export function SupplierDetailsView({
             filename={supplier.name}
             sheets={[
               {
-                name: "المشتريات",
+                name: t("المشتريات"),
                 columns: [
-                  { header: "الخامة", key: "materialName" },
-                  { header: "الكمية", key: "quantity" },
-                  { header: "سعر الوحدة", key: "unitPriceAtTime" },
-                  { header: "قيمة النقل", key: "transportCost" },
-                  { header: "الإجمالي بالنقل", key: "totalWithTransport" },
-                  { header: "التاريخ", key: "date" },
+                  { header: t("الخامة"), key: "materialName" },
+                  { header: t("الكمية"), key: "quantity" },
+                  { header: t("سعر الوحدة"), key: "unitPriceAtTime" },
+                  { header: t("قيمة النقل"), key: "transportCost" },
+                  { header: t("الإجمالي بالنقل"), key: "totalWithTransport" },
+                  { header: t("التاريخ"), key: "date" },
                 ],
                 rows: supplier.purchases.map((p) => ({
                   materialName: p.materialName,
@@ -116,16 +118,16 @@ export function SupplierDetailsView({
                 })),
               },
               {
-                name: "الدفعات",
+                name: t("الدفعات"),
                 columns: [
-                  { header: "المبلغ", key: "amount" },
-                  { header: "الطريقة", key: "method" },
-                  { header: "التاريخ", key: "date" },
-                  { header: "ملاحظات", key: "notes" },
+                  { header: t("المبلغ"), key: "amount" },
+                  { header: t("الطريقة"), key: "method" },
+                  { header: t("التاريخ"), key: "date" },
+                  { header: t("ملاحظات"), key: "notes" },
                 ],
                 rows: supplier.payments.map((p) => ({
                   amount: p.amount,
-                  method: p.isCheck ? `شيك (${checkStatusLabels[p.checkStatus ?? ""] ?? p.checkStatus})` : "نقدي",
+                  method: p.isCheck ? t("شيك ({0})", [t(checkStatusLabels[p.checkStatus ?? ""] ?? p.checkStatus)]) : t("نقدي"),
                   date: formatDate(p.paymentDate),
                   notes: p.notes ?? "-",
                 })),
@@ -136,16 +138,13 @@ export function SupplierDetailsView({
             <>
               <Button variant="secondary" onClick={() => setEditOpen(true)}>
                 <Icon name="edit" size={18} />
-                تعديل
-              </Button>
+                {t("تعديل")}</Button>
               <Button onClick={() => setPaymentOpen(true)}>
                 <Icon name="payments" size={18} />
-                تسجيل دفعة
-              </Button>
+                {t("تسجيل دفعة")}</Button>
               <Button variant="danger" onClick={() => setDeleteSupplierOpen(true)}>
                 <Icon name="delete" size={18} />
-                حذف المورد
-              </Button>
+                {t("حذف المورد")}</Button>
             </>
           )}
         </div>
@@ -153,20 +152,20 @@ export function SupplierDetailsView({
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-gutter">
         <Card>
-          <p className="text-body-sm text-on-surface-variant">إجمالي المشتريات</p>
-          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-right">
+          <p className="text-body-sm text-on-surface-variant">{t("إجمالي المشتريات")}</p>
+          <p dir="ltr" className="text-title-sm text-mono-data text-on-surface mt-1 text-page-start">
             {formatCurrency(supplier.totalPurchases)}
           </p>
         </Card>
         <Card>
-          <p className="text-body-sm text-on-surface-variant">إجمالي المدفوع</p>
-          <p dir="ltr" className="text-title-sm text-mono-data text-success mt-1 text-right">
+          <p className="text-body-sm text-on-surface-variant">{t("إجمالي المدفوع")}</p>
+          <p dir="ltr" className="text-title-sm text-mono-data text-success mt-1 text-page-start">
             {formatCurrency(supplier.totalPaid)}
           </p>
         </Card>
         <Card>
-          <p className="text-body-sm text-on-surface-variant">المتبقي</p>
-          <p dir="ltr" className="text-title-sm text-mono-data text-error mt-1 text-right">
+          <p className="text-body-sm text-on-surface-variant">{t("المتبقي")}</p>
+          <p dir="ltr" className="text-title-sm text-mono-data text-error mt-1 text-page-start">
             {formatCurrency(supplier.totalRemaining)}
           </p>
         </Card>
@@ -174,27 +173,27 @@ export function SupplierDetailsView({
 
       <Card>
         <CardHeader className="flex items-center justify-between flex-wrap gap-stack-sm">
-          <CardTitle>سجل المشتريات ({supplier.purchases.length})</CardTitle>
+          <CardTitle>{t("سجل المشتريات (")}{supplier.purchases.length})</CardTitle>
           {supplier.purchases.length > 0 && (
-            <SearchInput value={purchasesTable.search} onChange={purchasesTable.setSearch} placeholder="بحث بالخامة..." className="sm:w-56" />
+            <SearchInput value={purchasesTable.search} onChange={purchasesTable.setSearch} placeholder={t("بحث بالخامة...")} className="sm:w-56" />
           )}
         </CardHeader>
         {supplier.purchases.length === 0 ? (
-          <EmptyState icon="inventory_2" title="لا توجد مشتريات مسجلة بعد" />
+          <EmptyState icon="inventory_2" title={t("لا توجد مشتريات مسجلة بعد")} />
         ) : purchasesTable.totalCount === 0 ? (
-          <EmptyState icon="search_off" title="لا توجد نتائج مطابقة" />
+          <EmptyState icon="search_off" title={t("لا توجد نتائج مطابقة")} />
         ) : (
           <>
             <Table>
               <THead>
                 <tr>
-                  <Th>الخامة</Th>
-                  <Th>الكمية</Th>
-                  <Th>سعر الوحدة</Th>
-                  <Th>قيمة النقل</Th>
-                  <Th>الإجمالي بالنقل</Th>
-                  <Th>التاريخ</Th>
-                  {canManage && <Th>إجراءات</Th>}
+                  <Th>{t("الخامة")}</Th>
+                  <Th>{t("الكمية")}</Th>
+                  <Th>{t("سعر الوحدة")}</Th>
+                  <Th>{t("قيمة النقل")}</Th>
+                  <Th>{t("الإجمالي بالنقل")}</Th>
+                  <Th>{t("التاريخ")}</Th>
+                  {canManage && <Th>{t("إجراءات")}</Th>}
                 </tr>
               </THead>
               <TBody>
@@ -211,7 +210,7 @@ export function SupplierDetailsView({
                       <Td>{formatDate(p.movementDate)}</Td>
                       {canManage && (
                         <Td>
-                          <button className="text-on-surface-variant hover:text-on-surface" title="تعديل خطأ" onClick={() => setEditingPurchase(p)}>
+                          <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل خطأ")} onClick={() => setEditingPurchase(p)}>
                             <Icon name="edit" size={18} />
                           </button>
                         </Td>
@@ -230,25 +229,25 @@ export function SupplierDetailsView({
 
       <Card>
         <CardHeader className="flex items-center justify-between flex-wrap gap-stack-sm">
-          <CardTitle>سجل الدفعات ({supplier.payments.length})</CardTitle>
+          <CardTitle>{t("سجل الدفعات (")}{supplier.payments.length})</CardTitle>
           {supplier.payments.length > 0 && (
-            <SearchInput value={paymentsTable.search} onChange={paymentsTable.setSearch} placeholder="بحث بالملاحظات أو المبلغ..." className="sm:w-56" />
+            <SearchInput value={paymentsTable.search} onChange={paymentsTable.setSearch} placeholder={t("بحث بالملاحظات أو المبلغ...")} className="sm:w-56" />
           )}
         </CardHeader>
         {supplier.payments.length === 0 ? (
-          <EmptyState icon="receipt_long" title="لا توجد دفعات مسجلة بعد" />
+          <EmptyState icon="receipt_long" title={t("لا توجد دفعات مسجلة بعد")} />
         ) : paymentsTable.totalCount === 0 ? (
-          <EmptyState icon="search_off" title="لا توجد نتائج مطابقة" />
+          <EmptyState icon="search_off" title={t("لا توجد نتائج مطابقة")} />
         ) : (
           <>
           <Table>
             <THead>
               <tr>
-                <Th>المبلغ</Th>
-                <Th>الطريقة</Th>
-                <Th>التاريخ</Th>
-                <Th>ملاحظات</Th>
-                {canManage && <Th>إجراءات</Th>}
+                <Th>{t("المبلغ")}</Th>
+                <Th>{t("الطريقة")}</Th>
+                <Th>{t("التاريخ")}</Th>
+                <Th>{t("ملاحظات")}</Th>
+                {canManage && <Th>{t("إجراءات")}</Th>}
               </tr>
             </THead>
             <TBody>
@@ -258,13 +257,13 @@ export function SupplierDetailsView({
                   <Td>
                     {p.isCheck ? (
                       <div className="flex items-center gap-1.5">
-                        <span>شيك{p.checkDueDate ? ` (${formatDate(p.checkDueDate)})` : ""}</span>
+                        <span>{t("شيك")}{p.checkDueDate ? ` (${formatDate(p.checkDueDate)})` : ""}</span>
                         {p.checkStatus && (
-                          <Badge tone={checkStatusTone[p.checkStatus] ?? "neutral"}>{checkStatusLabels[p.checkStatus] ?? p.checkStatus}</Badge>
+                          <Badge tone={checkStatusTone[p.checkStatus] ?? "neutral"}>{t(checkStatusLabels[p.checkStatus] ?? p.checkStatus)}</Badge>
                         )}
                       </div>
                     ) : (
-                      "نقدي"
+                      t("نقدي")
                     )}
                   </Td>
                   <Td>{formatDate(p.paymentDate)}</Td>
@@ -275,16 +274,16 @@ export function SupplierDetailsView({
                         {p.isCheck && p.checkStatus === "Pending" && (
                           <button
                             className="text-warning hover:opacity-80"
-                            title="تسوية الشيك"
+                            title={t("تسوية الشيك")}
                             onClick={() => setResolvingPayment(p)}
                           >
                             <Icon name="fact_check" size={18} />
                           </button>
                         )}
-                        <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingPayment(p)}>
+                        <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل")} onClick={() => setEditingPayment(p)}>
                           <Icon name="edit" size={18} />
                         </button>
-                        <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeletingPayment(p)}>
+                        <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => setDeletingPayment(p)}>
                           <Icon name="delete" size={18} />
                         </button>
                       </div>
@@ -327,16 +326,16 @@ export function SupplierDetailsView({
       <ConfirmDialog
         open={!!deletingPayment}
         onClose={() => setDeletingPayment(null)}
-        title="حذف الدفعة"
-        message="هل أنت متأكد من حذف هذه الدفعة؟ سيتم إلغاء أثرها في الخزنة لو كانت مسجلة."
+        title={t("حذف الدفعة")}
+        message={t("هل أنت متأكد من حذف هذه الدفعة؟ سيتم إلغاء أثرها في الخزنة لو كانت مسجلة.")}
         onConfirm={() => deleteSupplierPayment(deletingPayment!.id, supplier.id)}
         onConfirmed={() => router.refresh()}
       />
       <ConfirmDialog
         open={deleteSupplierOpen}
         onClose={() => setDeleteSupplierOpen(false)}
-        title="حذف المورد"
-        message="هل أنت متأكد من حذف هذا المورد نهائيًا؟"
+        title={t("حذف المورد")}
+        message={t("هل أنت متأكد من حذف هذا المورد نهائيًا؟")}
         onConfirm={() => deleteSupplier(supplier.id)}
         onConfirmed={() => router.push("/suppliers")}
       />

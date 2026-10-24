@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { Icon } from "./Icon";
 
 interface PaginationProps {
@@ -10,20 +11,21 @@ interface PaginationProps {
 }
 
 export function Pagination({ page, pageSize, totalCount, onPageChange }: PaginationProps) {
+  const t = useT();
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   if (totalPages <= 1) return null;
 
   return (
     <div className="flex items-center justify-between px-1">
       <p className="text-xs text-on-surface-variant">
-        عرض {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, totalCount)} من {totalCount}
+        {t("عرض ")}{(page - 1) * pageSize + 1}-{Math.min(page * pageSize, totalCount)} {t(" من ")}{totalCount}
       </p>
       <div className="flex items-center gap-1">
         <button
           className="p-1.5 rounded hover:bg-surface-container-high text-on-surface-variant disabled:opacity-40 disabled:hover:bg-transparent"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          aria-label="الصفحة السابقة"
+          aria-label={t("الصفحة السابقة")}
         >
           <Icon name="chevron_right" size={18} />
         </button>
@@ -34,7 +36,7 @@ export function Pagination({ page, pageSize, totalCount, onPageChange }: Paginat
           className="p-1.5 rounded hover:bg-surface-container-high text-on-surface-variant disabled:opacity-40 disabled:hover:bg-transparent"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          aria-label="الصفحة التالية"
+          aria-label={t("الصفحة التالية")}
         >
           <Icon name="chevron_left" size={18} />
         </button>

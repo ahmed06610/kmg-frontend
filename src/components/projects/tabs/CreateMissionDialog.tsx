@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -15,6 +16,7 @@ import { createMissionSchema, type CreateMissionFormValues } from "@/schema/miss
 import type { EmployeeListDTO } from "@/types/employee";
 
 export function CreateMissionDialog({ open, onClose, projectId, workers }: { open: boolean; onClose: () => void; projectId: number; workers: EmployeeListDTO[] }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -38,7 +40,7 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
     const result = await createMission({ projectId, ...data, notes: data.notes || null });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     reset();
@@ -50,21 +52,20 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
     <Dialog
       open={open}
       onClose={onClose}
-      title="مأمورية جديدة"
+      title={t("مأمورية جديدة")}
       maxWidth="max-w-2xl"
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="create-mission-form" disabled={loading}>
-            {loading ? "جاري الإنشاء..." : "إنشاء المأمورية"}
+            {loading ? t("جاري الإنشاء...") : t("إنشاء المأمورية")}
           </Button>
         </>
       }
     >
       <form id="create-mission-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="رئيس العمال" error={errors.foremanEmployeeId?.message}>
+        <FieldGroup label={t("رئيس العمال")} error={errors.foremanEmployeeId?.message}>
           <Controller
             name="foremanEmployeeId"
             control={control}
@@ -72,7 +73,7 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
               <Combobox
                 value={field.value ? String(field.value) : ""}
                 onChange={(v) => field.onChange(Number(v))}
-                placeholder="اختر رئيس عمال"
+                placeholder={t("اختر رئيس عمال")}
                 options={workers.map((w) => ({ value: String(w.id), label: w.name }))}
               />
             )}
@@ -80,43 +81,42 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
         </FieldGroup>
 
         <div className="grid grid-cols-2 gap-stack-md">
-          <FieldGroup label="تاريخ البداية" error={errors.startDate?.message}>
+          <FieldGroup label={t("تاريخ البداية")} error={errors.startDate?.message}>
             <Input type="date" {...register("startDate")} />
           </FieldGroup>
-          <FieldGroup label="قيمة العهدة" error={errors.advanceAmount?.message}>
+          <FieldGroup label={t("قيمة العهدة")} error={errors.advanceAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("advanceAmount", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
 
-        <FieldGroup label="ملاحظات" error={errors.notes?.message}>
+        <FieldGroup label={t("ملاحظات")} error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
 
         <div className="flex flex-col gap-stack-sm">
           <div className="flex items-center justify-between">
-            <span className="text-label-caps text-on-surface-variant">العمال المشاركين</span>
+            <span className="text-label-caps text-on-surface-variant">{t("العمال المشاركين")}</span>
             <button
               type="button"
               onClick={() => append({ employeeId: 0, daysCount: 1, dailyRate: 0 })}
               className="text-primary text-body-sm font-semibold flex items-center gap-1"
             >
               <Icon name="add" size={16} />
-              إضافة عامل
-            </button>
+              {t("إضافة عامل")}</button>
           </div>
           {errors.workers?.message && <p className="text-error text-xs">{errors.workers.message}</p>}
 
           {fields.length > 0 && (
             <div className="flex items-center gap-stack-sm px-1">
-              <span className="flex-1 text-xs text-on-surface-variant">العامل</span>
-              <span className="w-28 text-xs text-on-surface-variant">عدد الأيام</span>
-              <span className="w-32 text-xs text-on-surface-variant">الأجر اليومي</span>
+              <span className="flex-1 text-xs text-on-surface-variant">{t("العامل")}</span>
+              <span className="w-28 text-xs text-on-surface-variant">{t("عدد الأيام")}</span>
+              <span className="w-32 text-xs text-on-surface-variant">{t("الأجر اليومي")}</span>
               <span className="w-[18px]" />
             </div>
           )}
 
           {fields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-stack-sm">
+            <div key={field.id} className="flex flex-wrap items-center gap-stack-sm">
               <div className="flex-1">
                 <Controller
                   name={`workers.${index}.employeeId`}
@@ -132,7 +132,7 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
                           update(index, { ...field, employeeId, dailyRate: selected.wageAmount * 2 });
                         }
                       }}
-                      placeholder="اختر عامل"
+                      placeholder={t("اختر عامل")}
                       options={workers.map((w) => ({ value: String(w.id), label: w.name }))}
                     />
                   )}
@@ -143,7 +143,7 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
                 step="0.25"
                 min={0}
                 dir="ltr"
-                placeholder="عدد الأيام"
+                placeholder={t("عدد الأيام")}
                 className="w-28"
                 {...register(`workers.${index}.daysCount`, { valueAsNumber: true })}
               />
@@ -151,18 +151,18 @@ export function CreateMissionDialog({ open, onClose, projectId, workers }: { ope
                 type="number"
                 step="0.01"
                 dir="ltr"
-                placeholder="الأجر اليومي"
+                placeholder={t("الأجر اليومي")}
                 className="w-32"
                 {...register(`workers.${index}.dailyRate`, { valueAsNumber: true })}
               />
-              <button type="button" onClick={() => remove(index)} className="text-error shrink-0" aria-label="حذف">
+              <button type="button" onClick={() => remove(index)} className="text-error shrink-0" aria-label={t("حذف")}>
                 <Icon name="delete" size={18} />
               </button>
             </div>
           ))}
         </div>
 
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -24,6 +25,7 @@ import type { EmployeeListDTO } from "@/types/employee";
 import type { AdvanceDTO } from "@/types/payroll";
 
 export function AdvancesSection({ advances, employees, canManage }: { advances: AdvanceDTO[]; employees: EmployeeListDTO[]; canManage: boolean }) {
+  const t = useT();
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAdvance, setEditingAdvance] = useState<AdvanceDTO | null>(null);
@@ -38,31 +40,30 @@ export function AdvancesSection({ advances, employees, canManage }: { advances: 
   return (
     <div className="flex flex-col gap-stack-md">
       <div className="flex items-center justify-between gap-stack-sm flex-wrap">
-        {advances.length > 0 && <SearchInput value={table.search} onChange={table.setSearch} placeholder="بحث بالموظف..." />}
+        {advances.length > 0 && <SearchInput value={table.search} onChange={table.setSearch} placeholder={t("بحث بالموظف...")} />}
         {canManage && (
           <Button size="sm" onClick={() => setDialogOpen(true)}>
             <Icon name="add" size={18} />
-            سلفة جديدة
-          </Button>
+            {t("سلفة جديدة")}</Button>
         )}
       </div>
 
       {advances.length === 0 ? (
-        <EmptyState icon="account_balance" title="لا توجد سلف مسجلة بعد" />
+        <EmptyState icon="account_balance" title={t("لا توجد سلف مسجلة بعد")} />
       ) : table.totalCount === 0 ? (
-        <EmptyState icon="search_off" title="لا توجد نتائج مطابقة" />
+        <EmptyState icon="search_off" title={t("لا توجد نتائج مطابقة")} />
       ) : (
         <>
         <Table>
           <THead>
             <tr>
-              <Th>الموظف</Th>
-              <Th>المبلغ الكلي</Th>
-              <Th>القسط</Th>
-              <Th>المتبقي</Th>
-              <Th>التاريخ</Th>
-              <Th>الحالة</Th>
-              {canManage && <Th>إجراءات</Th>}
+              <Th>{t("الموظف")}</Th>
+              <Th>{t("المبلغ الكلي")}</Th>
+              <Th>{t("القسط")}</Th>
+              <Th>{t("المتبقي")}</Th>
+              <Th>{t("التاريخ")}</Th>
+              <Th>{t("الحالة")}</Th>
+              {canManage && <Th>{t("إجراءات")}</Th>}
             </tr>
           </THead>
           <TBody>
@@ -76,21 +77,21 @@ export function AdvancesSection({ advances, employees, canManage }: { advances: 
                   <TdMono>{formatCurrency(a.remainingAmount)}</TdMono>
                   <Td>{formatDate(a.issueDate)}</Td>
                   <Td>
-                    <Badge tone={advanceStatusTone(a.status)}>{a.status === "Settled" ? "مسددة" : "نشطة"}</Badge>
+                    <Badge tone={advanceStatusTone(a.status)}>{a.status === "Settled" ? t("مسددة") : t("نشطة")}</Badge>
                   </Td>
                   {canManage && (
                     <Td>
                       {canEdit ? (
                         <div className="flex items-center gap-1">
-                          <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingAdvance(a)}>
+                          <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل")} onClick={() => setEditingAdvance(a)}>
                             <Icon name="edit" size={18} />
                           </button>
-                          <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeletingAdvance(a)}>
+                          <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => setDeletingAdvance(a)}>
                             <Icon name="delete" size={18} />
                           </button>
                         </div>
                       ) : (
-                        <span className="text-xs text-on-surface-variant">تم خصم أقساط منها</span>
+                        <span className="text-xs text-on-surface-variant">{t("تم خصم أقساط منها")}</span>
                       )}
                     </Td>
                   )}
@@ -108,8 +109,8 @@ export function AdvancesSection({ advances, employees, canManage }: { advances: 
       <ConfirmDialog
         open={!!deletingAdvance}
         onClose={() => setDeletingAdvance(null)}
-        title="حذف السلفة"
-        message="هل أنت متأكد من حذف هذه السلفة؟ سيتم إلغاء أثرها في الخزنة."
+        title={t("حذف السلفة")}
+        message={t("هل أنت متأكد من حذف هذه السلفة؟ سيتم إلغاء أثرها في الخزنة.")}
         onConfirm={() => deleteAdvance(deletingAdvance!.id)}
         onConfirmed={() => router.refresh()}
       />
@@ -118,6 +119,7 @@ export function AdvancesSection({ advances, employees, canManage }: { advances: 
 }
 
 function CreateAdvanceDialog({ open, onClose, employees }: { open: boolean; onClose: () => void; employees: EmployeeListDTO[] }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -139,7 +141,7 @@ function CreateAdvanceDialog({ open, onClose, employees }: { open: boolean; onCl
     const result = await createAdvance({ ...data, notes: data.notes || null });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     reset();
@@ -151,20 +153,19 @@ function CreateAdvanceDialog({ open, onClose, employees }: { open: boolean; onCl
     <Dialog
       open={open}
       onClose={onClose}
-      title="سلفة جديدة"
+      title={t("سلفة جديدة")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="create-advance-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "تسليم السلفة"}
+            {loading ? t("جاري الحفظ...") : t("تسليم السلفة")}
           </Button>
         </>
       }
     >
       <form id="create-advance-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="الموظف" error={errors.employeeId?.message}>
+        <FieldGroup label={t("الموظف")} error={errors.employeeId?.message}>
           <Controller
             name="employeeId"
             control={control}
@@ -172,30 +173,31 @@ function CreateAdvanceDialog({ open, onClose, employees }: { open: boolean; onCl
               <Combobox
                 value={field.value ? String(field.value) : ""}
                 onChange={(v) => field.onChange(Number(v))}
-                placeholder="اختر موظف"
+                placeholder={t("اختر موظف")}
                 options={employees.map((e) => ({ value: String(e.id), label: e.name }))}
               />
             )}
           />
         </FieldGroup>
         <div className="grid grid-cols-2 gap-stack-md">
-          <FieldGroup label="قيمة السلفة" error={errors.totalAmount?.message}>
+          <FieldGroup label={t("قيمة السلفة")} error={errors.totalAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("totalAmount", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="قيمة القسط الأسبوعي" error={errors.installmentAmount?.message}>
+          <FieldGroup label={t("قيمة القسط الأسبوعي")} error={errors.installmentAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("installmentAmount", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
-        <FieldGroup label="ملاحظات" error={errors.notes?.message}>
+        <FieldGroup label={t("ملاحظات")} error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );
 }
 
 function EditAdvanceDialog({ open, onClose, advance }: { open: boolean; onClose: () => void; advance: AdvanceDTO | null }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -225,7 +227,7 @@ function EditAdvanceDialog({ open, onClose, advance }: { open: boolean; onClose:
     const result = await updateAdvance({ id: advance.id, ...data, notes: data.notes || null });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     onClose();
@@ -236,31 +238,30 @@ function EditAdvanceDialog({ open, onClose, advance }: { open: boolean; onClose:
     <Dialog
       open={open}
       onClose={onClose}
-      title="تعديل السلفة"
+      title={t("تعديل السلفة")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="edit-advance-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ"}
+            {loading ? t("جاري الحفظ...") : t("حفظ")}
           </Button>
         </>
       }
     >
       <form id="edit-advance-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
         <div className="grid grid-cols-2 gap-stack-md">
-          <FieldGroup label="قيمة السلفة" error={errors.totalAmount?.message}>
+          <FieldGroup label={t("قيمة السلفة")} error={errors.totalAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("totalAmount", { valueAsNumber: true })} />
           </FieldGroup>
-          <FieldGroup label="قيمة القسط الأسبوعي" error={errors.installmentAmount?.message}>
+          <FieldGroup label={t("قيمة القسط الأسبوعي")} error={errors.installmentAmount?.message}>
             <Input type="number" step="0.01" dir="ltr" {...register("installmentAmount", { valueAsNumber: true })} />
           </FieldGroup>
         </div>
-        <FieldGroup label="ملاحظات" error={errors.notes?.message}>
+        <FieldGroup label={t("ملاحظات")} error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

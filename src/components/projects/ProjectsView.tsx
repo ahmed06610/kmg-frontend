@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import Link from "next/link";
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
@@ -19,6 +20,7 @@ import type { ProjectListDTO } from "@/types/project";
 import { CreateProjectDialog } from "./CreateProjectDialog";
 
 export function ProjectsView({ projects, clients, canManage }: { projects: ProjectListDTO[]; clients: ClientListDTO[]; canManage: boolean }) {
+  const t = useT();
   const [dialogOpen, setDialogOpen] = useState(false);
   const table = useTableState({
     rows: projects,
@@ -31,38 +33,37 @@ export function ProjectsView({ projects, clients, canManage }: { projects: Proje
     <div className="flex flex-col gap-stack-lg">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-headline-md text-on-surface">المشاريع</h1>
-          <p className="text-body-sm text-on-surface-variant">{projects.length} مشروع</p>
+          <h1 className="text-headline-md text-on-surface">{t("المشاريع")}</h1>
+          <p className="text-body-sm text-on-surface-variant">{t("{0} مشروع", [projects.length])}</p>
         </div>
         {canManage && (
           <Button onClick={() => setDialogOpen(true)}>
             <Icon name="add" />
-            مشروع جديد
-          </Button>
+            {t("مشروع جديد")}</Button>
         )}
       </div>
 
       {projects.length > 0 && (
         <div className="flex items-center justify-between gap-stack-sm flex-wrap">
-          <SearchInput value={table.search} onChange={table.setSearch} placeholder="بحث بالاسم أو الكود أو العميل..." />
+          <SearchInput value={table.search} onChange={table.setSearch} placeholder={t("بحث بالاسم أو الكود أو العميل...")} />
           <ExportButton
-            filename="المشاريع"
+            filename={t("المشاريع")}
             columns={[
-              { header: "اسم المشروع", key: "name" },
-              { header: "الكود", key: "code" },
-              { header: "العميل", key: "client" },
-              { header: "النوع", key: "type" },
-              { header: "الحالة", key: "status" },
-              { header: "القيمة", key: "value" },
-              { header: "المحصَّل", key: "collected" },
-              { header: "صافي الربح", key: "netProfit" },
+              { header: t("اسم المشروع"), key: "name" },
+              { header: t("الكود"), key: "code" },
+              { header: t("العميل"), key: "client" },
+              { header: t("النوع"), key: "type" },
+              { header: t("الحالة"), key: "status" },
+              { header: t("القيمة"), key: "value" },
+              { header: t("المحصَّل"), key: "collected" },
+              { header: t("صافي الربح"), key: "netProfit" },
             ]}
             rows={table.filteredRows.map((p) => ({
               name: p.name,
               code: p.projectCode,
               client: p.clientName,
-              type: projectTypeLabels[p.projectType] ?? p.projectType,
-              status: projectStatusLabels[p.status] ?? p.status,
+              type: t(projectTypeLabels[p.projectType] ?? p.projectType),
+              status: t(projectStatusLabels[p.status] ?? p.status),
               value: p.contractValue,
               collected: p.totalCollected,
               netProfit: p.netProfit,
@@ -72,21 +73,21 @@ export function ProjectsView({ projects, clients, canManage }: { projects: Proje
       )}
 
       {projects.length === 0 ? (
-        <EmptyState icon="account_tree" title="لا توجد مشاريع بعد" description="ابدأ بإنشاء أول مشروع" />
+        <EmptyState icon="account_tree" title={t("لا توجد مشاريع بعد")} description={t("ابدأ بإنشاء أول مشروع")} />
       ) : table.totalCount === 0 ? (
-        <EmptyState icon="search_off" title="لا توجد مشاريع مطابقة للبحث" />
+        <EmptyState icon="search_off" title={t("لا توجد مشاريع مطابقة للبحث")} />
       ) : (
         <>
           <Table>
             <THead>
               <tr>
-                <Th>اسم المشروع</Th>
-                <Th>العميل</Th>
-                <Th>النوع</Th>
-                <Th>الحالة</Th>
-                <Th>القيمة</Th>
-                <Th>المحصَّل</Th>
-                <Th>صافي الربح</Th>
+                <Th>{t("اسم المشروع")}</Th>
+                <Th>{t("العميل")}</Th>
+                <Th>{t("النوع")}</Th>
+                <Th>{t("الحالة")}</Th>
+                <Th>{t("القيمة")}</Th>
+                <Th>{t("المحصَّل")}</Th>
+                <Th>{t("صافي الربح")}</Th>
               </tr>
             </THead>
             <TBody>
@@ -99,9 +100,9 @@ export function ProjectsView({ projects, clients, canManage }: { projects: Proje
                     <p className="text-xs text-on-surface-variant">{p.projectCode}</p>
                   </Td>
                   <Td>{p.clientName}</Td>
-                  <Td>{projectTypeLabels[p.projectType] ?? p.projectType}</Td>
+                  <Td>{t(projectTypeLabels[p.projectType] ?? p.projectType)}</Td>
                   <Td>
-                    <Badge tone={projectStatusTone(p.status)}>{projectStatusLabels[p.status] ?? p.status}</Badge>
+                    <Badge tone={projectStatusTone(p.status)}>{t(projectStatusLabels[p.status] ?? p.status)}</Badge>
                   </Td>
                   <TdMono>{formatCurrency(p.contractValue)}</TdMono>
                   <TdMono>{formatCurrency(p.totalCollected)}</TdMono>

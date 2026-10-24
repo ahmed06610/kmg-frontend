@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { useState } from "react";
 import { Tabs } from "@/components/ui/Tabs";
 import type { EmployeeListDTO } from "@/types/employee";
@@ -33,24 +34,25 @@ export function PayrollView({
   misrInsuranceHistory: MisrInsurancePayoutDTO[];
   canManage: boolean;
 }) {
+  const t = useT();
   const [tab, setTab] = useState("run");
 
   return (
     <div className="flex flex-col gap-stack-lg">
       <div>
-        <h1 className="text-headline-md text-on-surface">الرواتب والتأمينات</h1>
-        <p className="text-body-sm text-on-surface-variant">تشغيل الرواتب لموظف واحد في كل مرة، وصرف تأمينات الموظفين</p>
+        <h1 className="text-headline-md text-on-surface">{t("الرواتب والتأمينات")}</h1>
+        <p className="text-body-sm text-on-surface-variant">{t("تشغيل الرواتب لموظف واحد في كل مرة، وصرف تأمينات الموظفين")}</p>
       </div>
 
       <Tabs
         active={tab}
         onChange={setTab}
         items={[
-          { key: "run", label: "تشغيل راتب" },
-          { key: "advances", label: "السلف", badge: advances.length },
-          { key: "adjustments", label: "الخصومات والحوافز", badge: adjustments.length },
-          { key: "insurance", label: "تأمين الموظفين", badge: insuranceSummary.length },
-          { key: "misr-insurance", label: "مصر للتأمين", badge: misrInsuranceSummary.length },
+          { key: "run", label: t("تشغيل راتب") },
+          { key: "advances", label: t("السلف"), badge: advances.length },
+          { key: "adjustments", label: t("الخصومات والحوافز"), badge: adjustments.length },
+          { key: "insurance", label: t("تأمين الموظفين"), badge: insuranceSummary.length },
+          { key: "misr-insurance", label: t("مصر للتأمين"), badge: misrInsuranceSummary.length },
         ]}
       />
 

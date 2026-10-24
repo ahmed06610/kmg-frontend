@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -15,6 +16,7 @@ import { ExpenseCategory } from "@/types/enums";
 import type { ProjectExpenseDTO } from "@/types/project";
 
 export function RecordExpenseDialog({ open, onClose, projectId }: { open: boolean; onClose: () => void; projectId: number }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -42,7 +44,7 @@ export function RecordExpenseDialog({ open, onClose, projectId }: { open: boolea
     });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     reset();
@@ -55,44 +57,42 @@ export function RecordExpenseDialog({ open, onClose, projectId }: { open: boolea
     <Dialog
       open={open}
       onClose={onClose}
-      title="تسجيل مصروف نثري"
+      title={t("تسجيل مصروف نثري")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="project-expense-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "تسجيل المصروف"}
+            {loading ? t("جاري الحفظ...") : t("تسجيل المصروف")}
           </Button>
         </>
       }
     >
       <form id="project-expense-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="التصنيف" error={errors.category?.message}>
+        <FieldGroup label={t("التصنيف")} error={errors.category?.message}>
           <Select {...register("category", { valueAsNumber: true })}>
-            <option value={0}>اختر التصنيف</option>
-            <option value={ExpenseCategory.TenderInsurance}>تأمين مناقصة</option>
-            <option value={ExpenseCategory.TenderTax}>ضريبة مناقصة</option>
-            <option value={ExpenseCategory.Procedural}>دفعة إجرائية</option>
-            <option value={ExpenseCategory.Breakdown}>عطل</option>
-            <option value={ExpenseCategory.Other}>أخرى</option>
+            <option value={0}>{t("اختر التصنيف")}</option>
+            <option value={ExpenseCategory.TenderInsurance}>{t("تأمين مناقصة")}</option>
+            <option value={ExpenseCategory.TenderTax}>{t("ضريبة مناقصة")}</option>
+            <option value={ExpenseCategory.Procedural}>{t("دفعة إجرائية")}</option>
+            <option value={ExpenseCategory.Breakdown}>{t("عطل")}</option>
+            <option value={ExpenseCategory.Other}>{t("أخرى")}</option>
           </Select>
         </FieldGroup>
-        <FieldGroup label="القيمة" error={errors.amount?.message}>
+        <FieldGroup label={t("القيمة")} error={errors.amount?.message}>
           <Input type="number" step="0.01" dir="ltr" {...register("amount", { valueAsNumber: true })} />
         </FieldGroup>
-        <FieldGroup label="الوصف" error={errors.description?.message}>
+        <FieldGroup label={t("الوصف")} error={errors.description?.message}>
           <Input {...register("description")} />
         </FieldGroup>
-        <FieldGroup label="التاريخ" error={errors.expenseDate?.message}>
+        <FieldGroup label={t("التاريخ")} error={errors.expenseDate?.message}>
           <Input type="date" {...register("expenseDate")} />
         </FieldGroup>
         <label className="flex items-center gap-2 text-body-sm text-on-surface">
           <input type="checkbox" {...register("paidFromCashBox")} defaultChecked />
-          يخصم من الخزنة فورًا
-        </label>
+          {t("يخصم من الخزنة فورًا")}</label>
         <InvoiceAttachmentField folder="projects" value={attachment} onChange={setAttachment} />
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );
@@ -109,6 +109,7 @@ export function EditExpenseDialog({
   projectId: number;
   expense: ProjectExpenseDTO | null;
 }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -143,7 +144,7 @@ export function EditExpenseDialog({
     const result = await updateProjectExpense({ id: expense.id, ...data, description: data.description || null }, projectId);
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     onClose();
@@ -154,39 +155,38 @@ export function EditExpenseDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title="تعديل مصروف نثري"
+      title={t("تعديل مصروف نثري")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="edit-project-expense-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ"}
+            {loading ? t("جاري الحفظ...") : t("حفظ")}
           </Button>
         </>
       }
     >
       <form id="edit-project-expense-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="التصنيف" error={errors.category?.message}>
+        <FieldGroup label={t("التصنيف")} error={errors.category?.message}>
           <Select {...register("category", { valueAsNumber: true })}>
-            <option value={0}>اختر التصنيف</option>
-            <option value={ExpenseCategory.TenderInsurance}>تأمين مناقصة</option>
-            <option value={ExpenseCategory.TenderTax}>ضريبة مناقصة</option>
-            <option value={ExpenseCategory.Procedural}>دفعة إجرائية</option>
-            <option value={ExpenseCategory.Breakdown}>عطل</option>
-            <option value={ExpenseCategory.Other}>أخرى</option>
+            <option value={0}>{t("اختر التصنيف")}</option>
+            <option value={ExpenseCategory.TenderInsurance}>{t("تأمين مناقصة")}</option>
+            <option value={ExpenseCategory.TenderTax}>{t("ضريبة مناقصة")}</option>
+            <option value={ExpenseCategory.Procedural}>{t("دفعة إجرائية")}</option>
+            <option value={ExpenseCategory.Breakdown}>{t("عطل")}</option>
+            <option value={ExpenseCategory.Other}>{t("أخرى")}</option>
           </Select>
         </FieldGroup>
-        <FieldGroup label="القيمة" error={errors.amount?.message}>
+        <FieldGroup label={t("القيمة")} error={errors.amount?.message}>
           <Input type="number" step="0.01" dir="ltr" {...register("amount", { valueAsNumber: true })} />
         </FieldGroup>
-        <FieldGroup label="الوصف" error={errors.description?.message}>
+        <FieldGroup label={t("الوصف")} error={errors.description?.message}>
           <Input {...register("description")} />
         </FieldGroup>
-        <FieldGroup label="التاريخ" error={errors.expenseDate?.message}>
+        <FieldGroup label={t("التاريخ")} error={errors.expenseDate?.message}>
           <Input type="date" {...register("expenseDate")} />
         </FieldGroup>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

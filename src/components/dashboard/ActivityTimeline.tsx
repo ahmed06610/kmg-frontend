@@ -1,14 +1,18 @@
+"use client";
+
+import { useT } from "@/lib/i18n/client";
 import { formatDate } from "@/lib/utils";
 import type { RecentActivityDTO } from "@/types/dashboard";
 
 const dotTones = ["bg-primary", "bg-secondary", "bg-outline"];
 
 export function ActivityTimeline({ activity }: { activity: RecentActivityDTO[] }) {
+  const t = useT();
   return (
     <div className="bg-surface-container-lowest rounded-xl elevation-1 shadow-[var(--shadow-soft)] border border-outline-variant p-stack-lg flex-1">
-      <h3 className="text-title-sm text-on-surface font-bold mb-4">سجل النشاط الحديث</h3>
+      <h3 className="text-title-sm text-on-surface font-bold mb-4">{t("سجل النشاط الحديث")}</h3>
       {activity.length === 0 ? (
-        <p className="text-body-sm text-on-surface-variant text-center py-stack-md">لا يوجد نشاط مسجل بعد</p>
+        <p className="text-body-sm text-on-surface-variant text-center py-stack-md">{t("لا يوجد نشاط مسجل بعد")}</p>
       ) : (
         <div className="space-y-4">
           {activity.map((a, i) => (

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,6 +14,7 @@ import { settleMissionSchema, type SettleMissionFormValues } from "@/schema/miss
 import type { MissionListDTO } from "@/types/mission";
 
 export function SettleMissionDialog({ open, onClose, mission, projectId }: { open: boolean; onClose: () => void; mission: MissionListDTO; projectId: number }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -33,7 +35,7 @@ export function SettleMissionDialog({ open, onClose, mission, projectId }: { ope
     const result = await settleMission({ missionId: mission.id, ...data, notes: data.notes || null }, projectId);
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     reset();
@@ -45,32 +47,31 @@ export function SettleMissionDialog({ open, onClose, mission, projectId }: { ope
     <Dialog
       open={open}
       onClose={onClose}
-      title={`تسوية عهدة المأمورية - ${mission.foremanName}`}
+      title={t("تسوية عهدة المأمورية - {0}", [mission.foremanName])}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="settle-mission-form" disabled={loading}>
-            {loading ? "جاري التسوية..." : "تسوية العهدة"}
+            {loading ? t("جاري التسوية...") : t("تسوية العهدة")}
           </Button>
         </>
       }
     >
       <p className="text-body-sm text-on-surface-variant">
-        قيمة العهدة المسلمة: <span dir="ltr" className="font-mono-data text-on-surface">{mission.advanceAmount.toFixed(2)}</span>
+        {t("قيمة العهدة المسلمة: ")}<span dir="ltr" className="font-mono-data text-on-surface">{mission.advanceAmount.toFixed(2)}</span>
       </p>
       <form id="settle-mission-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="تاريخ الانتهاء" error={errors.endDate?.message}>
+        <FieldGroup label={t("تاريخ الانتهاء")} error={errors.endDate?.message}>
           <Input type="date" {...register("endDate")} />
         </FieldGroup>
-        <FieldGroup label="المصروف الفعلي" error={errors.actualSpent?.message}>
+        <FieldGroup label={t("المصروف الفعلي")} error={errors.actualSpent?.message}>
           <Input type="number" step="0.01" dir="ltr" {...register("actualSpent", { valueAsNumber: true })} />
         </FieldGroup>
-        <FieldGroup label="ملاحظات" error={errors.notes?.message}>
+        <FieldGroup label={t("ملاحظات")} error={errors.notes?.message}>
           <Input {...register("notes")} />
         </FieldGroup>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

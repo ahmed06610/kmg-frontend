@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export function ClientFormDialog({ open, onClose, client }: Props) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -48,7 +50,7 @@ export function ClientFormDialog({ open, onClose, client }: Props) {
 
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     onClose();
@@ -59,32 +61,31 @@ export function ClientFormDialog({ open, onClose, client }: Props) {
     <Dialog
       open={open}
       onClose={onClose}
-      title={client ? "تعديل بيانات العميل" : "عميل جديد"}
+      title={client ? t("تعديل بيانات العميل") : t("عميل جديد")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="client-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ"}
+            {loading ? t("جاري الحفظ...") : t("حفظ")}
           </Button>
         </>
       }
     >
       <form id="client-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="اسم الشركة / العميل" error={errors.name?.message}>
+        <FieldGroup label={t("اسم الشركة / العميل")} error={errors.name?.message}>
           <Input {...register("name")} />
         </FieldGroup>
-        <FieldGroup label="رقم الهاتف" error={errors.phone?.message}>
+        <FieldGroup label={t("رقم الهاتف")} error={errors.phone?.message}>
           <Input {...register("phone")} />
         </FieldGroup>
-        <FieldGroup label="البريد الإلكتروني" error={errors.email?.message}>
+        <FieldGroup label={t("البريد الإلكتروني")} error={errors.email?.message}>
           <Input {...register("email")} />
         </FieldGroup>
-        <FieldGroup label="العنوان" error={errors.address?.message}>
+        <FieldGroup label={t("العنوان")} error={errors.address?.message}>
           <Input {...register("address")} />
         </FieldGroup>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );

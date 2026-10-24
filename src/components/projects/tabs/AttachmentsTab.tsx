@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -16,6 +17,7 @@ import { projectAttachmentSchema, updateProjectAttachmentSchema, type ProjectAtt
 import type { ProjectAttachmentDTO } from "@/types/project";
 
 export function AttachmentsTab({ projectId, attachments, canManage }: { projectId: number; attachments: ProjectAttachmentDTO[]; canManage: boolean }) {
+  const t = useT();
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAttachment, setEditingAttachment] = useState<ProjectAttachmentDTO | null>(null);
@@ -24,17 +26,16 @@ export function AttachmentsTab({ projectId, attachments, canManage }: { projectI
   return (
     <div className="flex flex-col gap-stack-md">
       <div className="flex items-center justify-between">
-        <p className="text-body-sm text-on-surface-variant">مرفقات المشروع - ارفع ملف من جهازك أو أضف رابط جاهز</p>
+        <p className="text-body-sm text-on-surface-variant">{t("مرفقات المشروع - ارفع ملف من جهازك أو أضف رابط جاهز")}</p>
         {canManage && (
           <Button size="sm" onClick={() => setDialogOpen(true)}>
             <Icon name="add" size={18} />
-            إضافة مرفق
-          </Button>
+            {t("إضافة مرفق")}</Button>
         )}
       </div>
 
       {attachments.length === 0 ? (
-        <EmptyState icon="attach_file" title="لا توجد مرفقات بعد" description="فواتير، كراسة المناقصة، شهادات التأمين..." />
+        <EmptyState icon="attach_file" title={t("لا توجد مرفقات بعد")} description={t("فواتير، كراسة المناقصة، شهادات التأمين...")} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-gutter">
           {attachments.map((a) => (
@@ -56,10 +57,10 @@ export function AttachmentsTab({ projectId, attachments, canManage }: { projectI
               </a>
               {canManage && (
                 <div className="flex items-center gap-1 shrink-0">
-                  <button className="text-on-surface-variant hover:text-on-surface" title="تعديل" onClick={() => setEditingAttachment(a)}>
+                  <button className="text-on-surface-variant hover:text-on-surface" title={t("تعديل")} onClick={() => setEditingAttachment(a)}>
                     <Icon name="edit" size={18} />
                   </button>
-                  <button className="text-error hover:opacity-80" title="حذف" onClick={() => setDeletingAttachment(a)}>
+                  <button className="text-error hover:opacity-80" title={t("حذف")} onClick={() => setDeletingAttachment(a)}>
                     <Icon name="delete" size={18} />
                   </button>
                 </div>
@@ -79,8 +80,8 @@ export function AttachmentsTab({ projectId, attachments, canManage }: { projectI
       <ConfirmDialog
         open={!!deletingAttachment}
         onClose={() => setDeletingAttachment(null)}
-        title="حذف المرفق"
-        message="هل أنت متأكد من حذف هذا المرفق؟"
+        title={t("حذف المرفق")}
+        message={t("هل أنت متأكد من حذف هذا المرفق؟")}
         onConfirm={() => deleteProjectAttachment(deletingAttachment!.id, projectId)}
         onConfirmed={() => router.refresh()}
       />
@@ -99,6 +100,7 @@ function EditAttachmentDialog({
   projectId: number;
   attachment: ProjectAttachmentDTO | null;
 }) {
+  const t = useT();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -128,7 +130,7 @@ function EditAttachmentDialog({
     const result = await updateProjectAttachment({ id: attachment.id, description: data.description || null }, projectId);
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     onClose();
@@ -139,29 +141,29 @@ function EditAttachmentDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title="تعديل وصف المرفق"
+      title={t("تعديل وصف المرفق")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={onClose}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           <Button type="submit" form="edit-attachment-form" disabled={loading}>
-            {loading ? "جاري الحفظ..." : "حفظ"}
+            {loading ? t("جاري الحفظ...") : t("حفظ")}
           </Button>
         </>
       }
     >
       <form id="edit-attachment-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-stack-md">
-        <FieldGroup label="الوصف" error={errors.description?.message}>
+        <FieldGroup label={t("الوصف")} error={errors.description?.message}>
           <Input {...register("description")} />
         </FieldGroup>
-        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+        {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
       </form>
     </Dialog>
   );
 }
 
 function AddAttachmentDialog({ open, onClose, projectId }: { open: boolean; onClose: () => void; projectId: number }) {
+  const t = useT();
   const router = useRouter();
   const [mode, setMode] = useState<"upload" | "link">("upload");
   const [serverError, setServerError] = useState<string | null>(null);
@@ -193,7 +195,7 @@ function AddAttachmentDialog({ open, onClose, projectId }: { open: boolean; onCl
     const result = await addProjectAttachment({ projectId, fileUrl: data.fileUrl, fileName: data.fileName || null, description: data.description || null });
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     closeAndReset();
@@ -203,7 +205,7 @@ function AddAttachmentDialog({ open, onClose, projectId }: { open: boolean; onCl
   const onSubmitUpload = async () => {
     const file = fileInputRef.current?.files?.[0];
     if (!file) {
-      setServerError("اختر ملف أولاً");
+      setServerError(t("اختر ملف أولاً"));
       return;
     }
     setLoading(true);
@@ -216,7 +218,7 @@ function AddAttachmentDialog({ open, onClose, projectId }: { open: boolean; onCl
     const result = await uploadProjectAttachment(projectId, formData);
     setLoading(false);
     if (!result.success) {
-      setServerError(result.message ?? "حدث خطأ");
+      setServerError(result.message ?? t("حدث خطأ"));
       return;
     }
     closeAndReset();
@@ -227,19 +229,18 @@ function AddAttachmentDialog({ open, onClose, projectId }: { open: boolean; onCl
     <Dialog
       open={open}
       onClose={closeAndReset}
-      title="إضافة مرفق"
+      title={t("إضافة مرفق")}
       footer={
         <>
           <Button variant="secondary" type="button" onClick={closeAndReset}>
-            إلغاء
-          </Button>
+            {t("إلغاء")}</Button>
           {mode === "link" ? (
             <Button type="submit" form="attachment-link-form" disabled={loading}>
-              {loading ? "جاري الحفظ..." : "إضافة"}
+              {loading ? t("جاري الحفظ...") : t("إضافة")}
             </Button>
           ) : (
             <Button type="button" onClick={onSubmitUpload} disabled={loading}>
-              {loading ? "جاري الرفع..." : "رفع وإضافة"}
+              {loading ? t("جاري الرفع...") : t("رفع وإضافة")}
             </Button>
           )}
         </>
@@ -254,8 +255,7 @@ function AddAttachmentDialog({ open, onClose, projectId }: { open: boolean; onCl
           }`}
         >
           <Icon name="upload_file" size={16} />
-          رفع من الجهاز
-        </button>
+          {t("رفع من الجهاز")}</button>
         <button
           type="button"
           onClick={() => setMode("link")}
@@ -264,17 +264,16 @@ function AddAttachmentDialog({ open, onClose, projectId }: { open: boolean; onCl
           }`}
         >
           <Icon name="link" size={16} />
-          رابط
-        </button>
+          {t("رابط")}</button>
       </div>
 
       {mode === "upload" ? (
         <div className="flex flex-col gap-stack-md">
-          <FieldGroup label="الملف">
+          <FieldGroup label={t("الملف")}>
             <label className="flex flex-col items-center justify-center gap-2 rounded border border-dashed border-outline-variant bg-surface-container-lowest p-stack-lg cursor-pointer hover:border-primary transition-colors">
               <Icon name="upload_file" size={28} className="text-on-surface-variant" />
               <span className="text-body-sm text-on-surface-variant text-center">
-                {fileName ?? "اضغط لاختيار ملف من جهازك (بحد أقصى 20 ميجا)"}
+                {fileName ?? t("اضغط لاختيار ملف من جهازك (بحد أقصى 20 ميجا)")}
               </span>
               <input
                 ref={fileInputRef}
@@ -284,23 +283,23 @@ function AddAttachmentDialog({ open, onClose, projectId }: { open: boolean; onCl
               />
             </label>
           </FieldGroup>
-          <FieldGroup label="الوصف">
-            <Input ref={descriptionRef} placeholder="فاتورة، كراسة مناقصة، شهادة تأمين..." />
+          <FieldGroup label={t("الوصف")}>
+            <Input ref={descriptionRef} placeholder={t("فاتورة، كراسة مناقصة، شهادة تأمين...")} />
           </FieldGroup>
-          {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+          {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
         </div>
       ) : (
         <form id="attachment-link-form" onSubmit={handleSubmit(onSubmitLink)} className="flex flex-col gap-stack-md">
-          <FieldGroup label="رابط الملف" error={errors.fileUrl?.message}>
+          <FieldGroup label={t("رابط الملف")} error={errors.fileUrl?.message}>
             <Input dir="ltr" placeholder="https://..." {...register("fileUrl")} />
           </FieldGroup>
-          <FieldGroup label="اسم الملف" error={errors.fileName?.message}>
+          <FieldGroup label={t("اسم الملف")} error={errors.fileName?.message}>
             <Input {...register("fileName")} />
           </FieldGroup>
-          <FieldGroup label="الوصف" error={errors.description?.message}>
-            <Input placeholder="فاتورة، كراسة مناقصة، شهادة تأمين..." {...register("description")} />
+          <FieldGroup label={t("الوصف")} error={errors.description?.message}>
+            <Input placeholder={t("فاتورة، كراسة مناقصة، شهادة تأمين...")} {...register("description")} />
           </FieldGroup>
-          {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{serverError}</div>}
+          {serverError && <div className="rounded bg-error-container text-on-error-container text-body-sm px-stack-md py-2">{t(serverError)}</div>}
         </form>
       )}
     </Dialog>

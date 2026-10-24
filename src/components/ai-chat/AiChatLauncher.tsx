@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n/client";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { loadLatestAiChatMessages } from "@/actions/aiChat";
@@ -14,6 +15,7 @@ type PanelState =
   | { status: "ready"; page: AiChatPageDTO; loadedAt: number };
 
 export function AiChatLauncher({ username }: { username: string }) {
+  const t = useT();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [panel, setPanel] = useState<PanelState>({ status: "loading" });
@@ -24,7 +26,7 @@ export function AiChatLauncher({ username }: { username: string }) {
     setPanel(
       result.success && result.data
         ? { status: "ready", page: result.data, loadedAt: Date.now() }
-        : { status: "error", message: result.message ?? "تعذر تحميل المحادثة" },
+        : { status: "error", message: result.message ?? t("تعذر تحميل المحادثة") },
     );
   }, []);
 
@@ -49,10 +51,10 @@ export function AiChatLauncher({ username }: { username: string }) {
       {open && (
         <div
           role="dialog"
-          aria-label="مساعد KMG الذكي"
+          aria-label={t("مساعد KMG الذكي")}
           className={cn(
             "fixed z-40 flex flex-col overflow-hidden bg-surface-container-lowest",
-            "inset-0 sm:inset-auto sm:bottom-24 sm:left-6 sm:w-[420px] sm:h-[min(640px,calc(100dvh-8rem))]",
+            "inset-0 sm:inset-auto sm:bottom-24 sm:end-6 sm:w-[420px] sm:h-[min(640px,calc(100dvh-8rem))]",
             "sm:rounded-2xl sm:border sm:border-outline-variant sm:shadow-2xl",
           )}
         >
@@ -63,20 +65,18 @@ export function AiChatLauncher({ username }: { username: string }) {
               {panel.status === "loading" ? (
                 <>
                   <Icon name="progress_activity" size={28} className="animate-spin text-primary" />
-                  <span className="text-body-sm text-on-surface-variant">جاري تحميل المحادثة...</span>
+                  <span className="text-body-sm text-on-surface-variant">{t("جاري تحميل المحادثة...")}</span>
                 </>
               ) : (
                 <>
                   <Icon name="error" size={28} className="text-error" />
-                  <span className="text-body-sm text-error">{panel.message}</span>
+                  <span className="text-body-sm text-error">{t(panel.message)}</span>
                   <button type="button" onClick={() => void loadLatest()} className="text-body-sm text-primary hover:underline">
-                    حاول تاني
-                  </button>
+                    {t("حاول تاني")}</button>
                 </>
               )}
               <button type="button" onClick={() => setOpen(false)} className="text-xs text-on-surface-variant hover:text-on-surface">
-                قفل
-              </button>
+                {t("قفل")}</button>
             </div>
           )}
         </div>
@@ -85,11 +85,11 @@ export function AiChatLauncher({ username }: { username: string }) {
       <button
         type="button"
         onClick={toggle}
-        aria-label={open ? "قفل المساعد" : "افتح مساعد KMG الذكي"}
+        aria-label={open ? t("قفل المساعد") : t("افتح مساعد KMG الذكي")}
         aria-expanded={open}
-        title="مساعد KMG الذكي"
+        title={t("مساعد KMG الذكي")}
         className={cn(
-          "fixed bottom-6 left-6 z-40 flex items-center justify-center w-14 h-14 rounded-full",
+          "fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] end-4 md:bottom-6 md:end-6 z-40 flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full",
           "bg-primary text-on-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all",
           open && "hidden sm:flex",
         )}

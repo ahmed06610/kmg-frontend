@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 export function Table({ className, ...props }: HTMLAttributes<HTMLTableElement>) {
   return (
     <div className="w-full overflow-x-auto rounded-xl border border-outline-variant bg-surface-container-lowest">
-      <table className={cn("w-full text-right border-collapse", className)} {...props} />
+      <table className={cn("w-full min-w-[720px] text-start border-collapse", className)} {...props} />
     </div>
   );
 }
@@ -24,7 +24,7 @@ export function Tr({ className, ...props }: HTMLAttributes<HTMLTableRowElement>)
 export function Th({ className, ...props }: ThHTMLAttributes<HTMLTableCellElement>) {
   return (
     <th
-      className={cn("p-stack-md text-label-caps text-on-surface-variant font-semibold", className)}
+      className={cn("p-stack-md text-start text-label-caps text-on-surface-variant font-semibold", className)}
       {...props}
     />
   );
@@ -35,5 +35,5 @@ export function Td({ className, ...props }: TdHTMLAttributes<HTMLTableCellElemen
 }
 
 export function TdMono({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) {
-  return <td dir="ltr" className={cn("p-stack-md text-mono-data text-on-surface text-right", className)} {...props} />;
+  return <td dir="ltr" className={cn("p-stack-md text-mono-data text-on-surface text-page-start", className)} {...props} />;
 }

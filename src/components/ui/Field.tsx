@@ -1,4 +1,7 @@
+"use client";
+
 import { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, forwardRef } from "react";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils";
 
 function fieldClasses(hasError?: boolean) {
@@ -10,12 +13,14 @@ function fieldClasses(hasError?: boolean) {
 }
 
 export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
-  return <label className={cn("text-label-caps text-on-surface-variant text-right block mb-1", className)} {...props} />;
+  return <label className={cn("text-label-caps text-on-surface-variant text-start block mb-1", className)} {...props} />;
 }
 
 export function ErrorText({ children }: { children?: string }) {
+  const t = useT();
   if (!children) return null;
-  return <p className="text-error text-xs mt-1">{children}</p>;
+  // رسايل الـ validation (zod) متكتوبة عربي في الـ schema - بتتترجم هنا وقت العرض
+  return <p className="text-error text-xs mt-1">{t(children)}</p>;
 }
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {

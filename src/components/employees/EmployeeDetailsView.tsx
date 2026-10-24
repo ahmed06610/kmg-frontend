@@ -1,3 +1,6 @@
+"use client";
+
+import { useT } from "@/lib/i18n/client";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -19,6 +22,7 @@ export function EmployeeDetailsView({
   adjustments: PayrollAdjustmentDTO[];
   payoutHistory: PayrollPayoutDTO[];
 }) {
+  const t = useT();
   return (
     <div className="flex flex-col gap-stack-lg">
       <div>
@@ -34,19 +38,19 @@ export function EmployeeDetailsView({
 
       <Card>
         <CardHeader>
-          <CardTitle>السلف ({advances.length})</CardTitle>
+          <CardTitle>{t("السلف (")}{advances.length})</CardTitle>
         </CardHeader>
         {advances.length === 0 ? (
-          <EmptyState icon="account_balance" title="لا توجد سلف مسجلة" />
+          <EmptyState icon="account_balance" title={t("لا توجد سلف مسجلة")} />
         ) : (
           <Table>
             <THead>
               <tr>
-                <Th>المبلغ الكلي</Th>
-                <Th>القسط</Th>
-                <Th>المتبقي</Th>
-                <Th>التاريخ</Th>
-                <Th>الحالة</Th>
+                <Th>{t("المبلغ الكلي")}</Th>
+                <Th>{t("القسط")}</Th>
+                <Th>{t("المتبقي")}</Th>
+                <Th>{t("التاريخ")}</Th>
+                <Th>{t("الحالة")}</Th>
               </tr>
             </THead>
             <TBody>
@@ -57,7 +61,7 @@ export function EmployeeDetailsView({
                   <TdMono>{formatCurrency(a.remainingAmount)}</TdMono>
                   <Td>{formatDate(a.issueDate)}</Td>
                   <Td>
-                    <Badge tone={advanceStatusTone(a.status)}>{a.status === "Settled" ? "مسددة" : "نشطة"}</Badge>
+                    <Badge tone={advanceStatusTone(a.status)}>{a.status === "Settled" ? t("مسددة") : t("نشطة")}</Badge>
                   </Td>
                 </Tr>
               ))}
@@ -68,31 +72,31 @@ export function EmployeeDetailsView({
 
       <Card>
         <CardHeader>
-          <CardTitle>الخصومات والحوافز ({adjustments.length})</CardTitle>
+          <CardTitle>{t("الخصومات والحوافز (")}{adjustments.length})</CardTitle>
         </CardHeader>
         {adjustments.length === 0 ? (
-          <EmptyState icon="tune" title="لا توجد خصومات أو حوافز مسجلة" />
+          <EmptyState icon="tune" title={t("لا توجد خصومات أو حوافز مسجلة")} />
         ) : (
           <Table>
             <THead>
               <tr>
-                <Th>النوع</Th>
-                <Th>القيمة</Th>
-                <Th>السبب</Th>
-                <Th>التاريخ</Th>
-                <Th>مُطبَّق</Th>
+                <Th>{t("النوع")}</Th>
+                <Th>{t("القيمة")}</Th>
+                <Th>{t("السبب")}</Th>
+                <Th>{t("التاريخ")}</Th>
+                <Th>{t("مُطبَّق")}</Th>
               </tr>
             </THead>
             <TBody>
               {adjustments.map((a) => (
                 <Tr key={a.id}>
                   <Td>
-                    <Badge tone={a.type === "Bonus" ? "success" : "error"}>{adjustmentTypeLabels[a.type] ?? a.type}</Badge>
+                    <Badge tone={a.type === "Bonus" ? "success" : "error"}>{t(adjustmentTypeLabels[a.type] ?? a.type)}</Badge>
                   </Td>
                   <TdMono>{formatCurrency(a.amount)}</TdMono>
                   <Td>{a.reason}</Td>
                   <Td>{formatDate(a.date)}</Td>
-                  <Td>{a.applied ? "نعم" : "لا"}</Td>
+                  <Td>{a.applied ? t("نعم") : t("لا")}</Td>
                 </Tr>
               ))}
             </TBody>
@@ -102,21 +106,21 @@ export function EmployeeDetailsView({
 
       <Card>
         <CardHeader>
-          <CardTitle>سجل الرواتب المصروفة ({payoutHistory.length})</CardTitle>
+          <CardTitle>{t("سجل الرواتب المصروفة (")}{payoutHistory.length})</CardTitle>
         </CardHeader>
         {payoutHistory.length === 0 ? (
-          <EmptyState icon="payments" title="لا يوجد راتب مصروف بعد" />
+          <EmptyState icon="payments" title={t("لا يوجد راتب مصروف بعد")} />
         ) : (
           <Table>
             <THead>
               <tr>
-                <Th>الفترة</Th>
-                <Th>الأساسي</Th>
-                <Th>أجر أيام المأمورية الإضافي</Th>
-                <Th>خصومات</Th>
-                <Th>حوافز</Th>
-                <Th>قسط سلفة</Th>
-                <Th>الصافي</Th>
+                <Th>{t("الفترة")}</Th>
+                <Th>{t("الأساسي")}</Th>
+                <Th>{t("أجر أيام المأمورية الإضافي")}</Th>
+                <Th>{t("خصومات")}</Th>
+                <Th>{t("حوافز")}</Th>
+                <Th>{t("قسط سلفة")}</Th>
+                <Th>{t("الصافي")}</Th>
               </tr>
             </THead>
             <TBody>
